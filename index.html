@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insane - Emscripten</title>
+    <link rel="icon" href="Assets/favicon/favicon.ico">
+    <script type="text/javascript" src="Insane.js"></script>
+</head>
+
+<body>
+    <h1>Emscripten - Tests</h1>
+    <button onclick="onclickEvent(0)">Instantiate</button>
+    <button onclick="onclickEvent(1)">Save</button>
+    <button onclick="onclickEvent(2)">Show</button>
+    <button onclick="onclickEvent(3)">Check</button>
+    <p id="txtResult"></p>
+    <script>
+        function GetBrowserName() {
+            const { userAgent } = navigator;
+            let result = {};
+            const opera = ' OPR/';
+            var isOpera = !!window.opr || !!window.opera || userAgent.indexOf(opera) >= 0;
+            if (isOpera) {
+                let index = userAgent.substr(userAgent.indexOf(opera) + opera.length);
+                index
+                return "Opera"
+            };
+
+        }
+
+        function onclickEvent(btn) {
+            const id = document.getElementById("txtResult");
+            try {
+                switch (btn) {
+                    case 0:
+                        window.Main = {};
+                        CreateModuleInstance()
+                            .then(instance => {
+                                window.Main.Module = instance;
+                                document.getElementById("txtResult").innerHTML += "InstanceCreated <br />";
+                            });
+                        break;
+                    case 1:
+                        Main.Module.SetVolatileValue("HelloWorld", "HelloWorldValue 🐶🐶🐶", "12345");
+                        id.innerHTML += "SetValue OK." + "<br />";
+                        break;
+                    case 2:
+
+                        id.innerHTML += Main.Module.GetVolatileValue("HelloWorld", "12345") + "<br />";
+                        //alert();
+                        break;
+                    case 3:
+                        //Reference: https://amiunique.org/fp
+                        //https://webglreport.com/
+                        //https://panopticlick.eff.org/
+                        var myDate = new Date();
+                        id.innerHTML += "<b>Browser : </b>" + (Main.Module.BrowserGetName(null) || "🚫") + "<br /><br />";
+                        id.innerHTML += "<b>Browser : </b>" + (Main.Module.BrowserGetName("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 OPR/71.0.3770.228") || "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenHeight:</b> " + (window.screen.height ?? "🚫") + "<br />";//(Main.Module != undefined)
+                        id.innerHTML += "<b>ScreenWidth:</b> " + (window.screen.width ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenTotalPixels:</b> " + ((window.screen.height * window.screen.width) ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenAvailableHeight:</b> " + (window.screen.availHeight ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenAvailableWidth:</b> " + (window.screen.availWidth ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenTotalAvailablePixels:</b> " + ((window.screen.availHeight * window.screen.availWidth) ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>ScreenColorDepth:</b> " + (window.screen.colorDepth ?? "🚫") + "<br />";
+
+                        id.innerHTML += "<b>DateTimezoneOffset:</b> " + (-myDate.getTimezoneOffset()) + "<br />";
+                        id.innerHTML += "<b>NavigatorUserAgent:</b> " + window.navigator.userAgent + "<br />";
+                        id.innerHTML += "<b>NavigatorVendor:</b> " + (navigator.vendor ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorPlatform:</b> " + (navigator.platform ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorLanguage:</b> " + (navigator.language ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorDoNotTrack:</b> " + (!!navigator.doNotTrack ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorCookieEnabled:</b> " + (navigator.cookieEnabled ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorJavaEnabled:</b> " + (navigator.javaEnabled() ?? "🚫") + "<br />";
+                        //id.innerHTML += "<b>NavigatorLanguages:</b> " + (Main.Module.GetWebGLRenderer() ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorMaxTouchPoints:</b> " + (navigator.maxTouchPoints ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorDeviceMemory:</b> " + (navigator.deviceMemory ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorHardwareConcurrency:</b> " + (navigator.hardwareConcurrency ?? "🚫") + "<br />";
+                        id.innerHTML += "<b>NavigatorMimeTypes:</b> " + (navigator.mimeTypes.length ?? "🚫") + "<br />";
+                        id.innerHTML += "<ul>";
+                        for (let i = 0; i < navigator.mimeTypes.length; i++) {
+                            id.innerHTML += "<li><b>Type</b>: " + (navigator.mimeTypes.item(i).type ?? "🚫") + "; <b>Description:</b> " + (navigator.mimeTypes.item(i).description ?? "🚫") + "; <b>Suffixes:</b> " + ((navigator.mimeTypes.item(i).suffixes ?? "🚫")||"🚫") + "</li>";
+                        }
+                        id.innerHTML += "</ul>";
+                        id.innerHTML += "<b>NavigatorPlugins:</b> " + (navigator.plugins.length || "🚫") + "<br />";
+                        id.innerHTML += "<ul>";
+                        for (let i = 0; i < navigator.plugins.length; i++) {
+                            id.innerHTML += "<li><b>Name</b>: " + (navigator.plugins.item(i).name|| "🚫") + "</li>";
+                        }
+                        id.innerHTML += "</ul>";
+                        let counter = 0;
+                        for (let value in navigator) {
+                            counter++;
+                        }
+                        id.innerHTML += "<b>WebGLRenderer : </b>" + (Main.Module.BrowserGetWebGLRenderer() || "🚫") + "<br />";
+                        id.innerHTML += "<b>WebGLVendor : </b>" + (Main.Module.BrowserGetWebGLVendor() || "🚫") + "<br />";
+                        id.innerHTML += "<b>Navigator TotalProperties: </b>" + (counter ?? "🚫") + "<br />";
+                        break;
+                }
+            } catch (error) {
+                id.innerHTML += String(error) + "<br />";
+            }
+
+        }
+    </script>
+</body>
+
+</html>
