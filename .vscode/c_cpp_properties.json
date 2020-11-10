@@ -10,10 +10,10 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "__EMSCRIPTEN__"
             ],
-            "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "${EMSCRIPTEN_DIR}/upstream/emscripten/em++.bat",
+            "compilerPath": "${EMSCRIPTEN_DIR}/upstream/emscripten/em++",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"

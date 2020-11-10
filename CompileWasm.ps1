@@ -5,6 +5,14 @@ param (
     $Clean
 )
 
+function Test-LastExitCode {
+    if($LASTEXITCODE -ne 0){
+        Write-Host "ERROR: Check and try again. ErrorCode = $($LASTEXITCODE)." -ForegroundColor Red
+        exit
+    }  
+}
+
+
 $ErrorActionPreference = "Stop"
 
 if($Clean.IsPresent)
@@ -15,6 +23,8 @@ else {
     & ./CompileLib.ps1
 }
 
+Test-LastExitCode
+
 Write-Host "██ Compiling Insane.js" -ForegroundColor DarkGray
 Write-Host
 Write-Host "Minifying js files..."
@@ -24,12 +34,15 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 --language_in ECMASCRIPT_NEXT `
 --language_out STABLE `
 
+Test-LastExitCode
+
 java -jar "./Tools/closure-compiler-v20200406.jar" `
 --js "./Js/Post.js" `
 --js_output_file "./Js/Post_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
 --language_out STABLE `
 
+Test-LastExitCode
 
 java -jar "./Tools/closure-compiler-v20200406.jar" `
 --js "./Js/ExternPre.js" `
@@ -37,11 +50,15 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 --language_in ECMASCRIPT_NEXT `
 --language_out STABLE `
 
+Test-LastExitCode
+
 java -jar "./Tools/closure-compiler-v20200406.jar" `
 --js "./Js/ExternPost.js" `
 --js_output_file "./Js/ExternPost_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
 --language_out STABLE `
+
+Test-LastExitCode
 
 Write-Host "Compiling..."
 em++.bat `
@@ -72,6 +89,8 @@ Insane.bc `
 # -s ASYNCIFY_IMPORTS=[] `
 #-s USE_PTHREADS=1 `
 #-s PTHREAD_POOL_SIZE=2 `
+
+Test-LastExitCode
 
 Write-Host "█ Compiling Insane.js - Finished" -ForegroundColor DarkGray
 Write-Host

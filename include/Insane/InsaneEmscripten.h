@@ -29,50 +29,65 @@
 
 #define INSANE_PROPERTY_SUFFIX u8"Property_"s
 
+static inline emscripten::val operator"" _valb(unsigned long long value)
+{
+    USING_EMSCRIPTEN;
+    return val::global().call<val>("Boolean", value != 0);
+}
+
+static inline emscripten::val operator"" _val(unsigned long long value)
+{
+    USING_EMSCRIPTEN;
+    return val::global().call<val>("parseInt", std::to_string(value));
+}
+
+static inline emscripten::val operator"" _val(long double value)
+{
+    USING_EMSCRIPTEN;
+    return val::global().call<val>("parseFloat", std::to_string(value));
+}
+
+static inline emscripten::val operator"" _val(const char *value, size_t size)
+{
+    USING_EMSCRIPTEN;
+    return val(String(value, size));
+}
+
+static inline emscripten::val operator"" _val(char value)
+{
+    USING_EMSCRIPTEN;
+    return val(value);
+}
+
 namespace Insane::Emscripten
 {
+    
 
-    static inline emscripten::val operator"" _valb(UInt64 value)
+    class Operators final
     {
+    private:
+    public:
+        static void SetAdditionOperator();
+    };
 
-        USING_EMSCRIPTEN;
-        return val::global().call<val>("Boolean", value != 0);
-    }
-
-    static inline emscripten::val operator"" _val(UInt64 value)
+    class Promise
     {
-        USING_EMSCRIPTEN;
-        return val::global().call<val>("parseInt", std::to_string(value));
-    }
-
-    static inline emscripten::val operator"" _val(long double value)
-    {
-        USING_EMSCRIPTEN;
-        return val::global().call<val>("parseFloat", std::to_string(value));
-    }
-
-    static inline emscripten::val operator"" _val(const char *value, size_t size)
-    {
-        USING_EMSCRIPTEN;
-        return val(String(value, size));
-    }
-
-    static inline emscripten::val operator"" _val(char value)
-    {
-        USING_EMSCRIPTEN;
-        return val(value);
-    }
-    enum class ConsoleMessageType
-    {
-        LOG,
-        INFO,
-        WARN,
-        ERROR
+    private:
+    public:
+        static emscripten::val Resolve(const emscripten::val &value);
+        static emscripten::val Reject(const emscripten::val &value);
     };
 
     class Console
     {
     private:
+        enum class ConsoleMessageType
+        {
+            LOG,
+            INFO,
+            WARN,
+            ERROR
+        };
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
@@ -81,7 +96,7 @@ namespace Insane::Emscripten
         static inline void Print(ConsoleMessageType type, const ParamType &... args)
         {
             USING_EMSCRIPTEN;
-            String method = EMPTY_STR;
+            String method = EMPTY_STRING;
             switch (type)
             {
             case ConsoleMessageType::INFO:
@@ -156,7 +171,7 @@ namespace Insane::Emscripten
     {
         static String value()
         {
-            return EMPTY_STR;
+            return EMPTY_STRING;
         }
     };
 
@@ -169,6 +184,17 @@ namespace Insane::Emscripten
         }
     };
 
+    enum class OrientationType
+    {
+        LANDSCAPE = 0,
+        PORTRAIT = 1,
+        SQUARE = 2
+    };
+
+    // emscripten::val operator+(const emscripten::val &a, const emscripten::val &b)
+    // {
+    // }
+
     class Browser
     {
     private:
@@ -177,15 +203,31 @@ namespace Insane::Emscripten
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetUserAgent();
 
-        // template <typename ReturnType = emscripten::val,
-        //           typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetName();
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetTimezoneOffsetMinutes();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetTimezoneOffsetSeconds();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetTimezoneOffsetMilliseconds();
+
+        template <typename ParamType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
+        [[nodiscard]] static emscripten::val GetNameAsync(const ParamType &userAgent = DefaultValue<ParamType>::value());
+
+        template <typename ParamType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
+        [[nodiscard]] static String GetName(const ParamType &userAgent = DefaultValue<ParamType>::value());
 
         template <typename ReturnType = emscripten::val,
                   typename ParamType = emscripten::val,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetName(const ParamType &userAgent = DefaultValue<ParamType>::value());
+                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetOS(const ParamType &userAgent = DefaultValue<ParamType>::value());
 
         template <typename ReturnType = emscripten::val,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>>
@@ -194,33 +236,108 @@ namespace Insane::Emscripten
         template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetWebGLRenderer();
 
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetFingerprint();
-
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetNavigatorVendor();
-
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetNavigatorPlatform();
-
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetNavigatorLanguage();
-
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetNavigatorDoNotTrack();
-
-        // template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, bool> ||
-        //                                                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        // [[nodiscard]] static ReturnType GetNavigatorCookieEnabled();
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetScreenHeight();
 
         template <typename ReturnType = emscripten::val,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, std::vector<String>> || std::is_same_v<ReturnType, emscripten::val>>>
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetScreenWidth();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetScreenSize();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, OrientationType> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetScreenOrientation();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetAvailableScreenHeight();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetAvailableScreenWidth();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetAvailableScreenSize();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, OrientationType> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetAvailableScreenOrientation();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetViewportWidth();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetViewportHeight();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetViewportSize();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, OrientationType> || std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetViewportOrientation();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetLanguage();
+
+        template <typename ReturnType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, std::vector<String>> ||
+                                                       std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetLanguages();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetMaxTouchPoints();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, float> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetDeviceMemory();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, int> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetHardwareConcurrency();
+
+        struct MimeType
+        {
+            String Type;
+            String Description;
+            String Suffixes;
+        };
+
+        struct Plugin
+        {
+            String Name;
+            std::vector<MimeType> MimeTypes;
+        };
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, std::vector<Plugin>> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetPlugins();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, std::vector<MimeType>> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetMimeTypes();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetDoNotTrack();
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetFingerprint();
+        //Features
+
+        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, bool> ||
+                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType HasCookiesSupport();
 
         Browser() = delete;
         ~Browser() = delete;
@@ -232,7 +349,7 @@ namespace Insane::Emscripten
     public:
         template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
                                                                                               std::is_same_v<ReturnType, emscripten::val>>>
-        static ReturnType ToString(const emscripten::val &object);
+        static ReturnType Serialize(const emscripten::val &object);
     };
 
     class Js
@@ -289,12 +406,12 @@ namespace Insane::Emscripten
         template <typename ReturnType = String,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
                                                        std::is_same_v<ReturnType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetValue(const String &key, const String &password = EMPTY_STR) noexcept;
+        [[nodiscard]] static ReturnType GetValue(const String &key, const String &password = EMPTY_STRING) noexcept;
 
-        static bool SetValue(const String &key, const String &value, const String &password = EMPTY_STR) noexcept;
+        static bool SetValue(const String &key, const String &value, const String &password = EMPTY_STRING) noexcept;
 
-        [[nodiscard]] static String GetVolatileValue(const String &key, const String &password = EMPTY_STR) noexcept;
-        static bool SetVolatileValue(const String &key, const String &value, const String &password = EMPTY_STR) noexcept;
+        [[nodiscard]] static String GetVolatileValue(const String &key, const String &password = EMPTY_STRING) noexcept;
+        static bool SetVolatileValue(const String &key, const String &value, const String &password = EMPTY_STRING) noexcept;
 
         template <typename ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||

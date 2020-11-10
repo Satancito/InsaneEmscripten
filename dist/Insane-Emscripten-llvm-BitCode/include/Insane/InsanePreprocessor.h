@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __INSANE_PREPROCESSOR_H__
-#define __INSANE_PREPROCESSOR_H__
+#ifndef INSANE_PREPROCESSOR_H
+#define INSANE_PREPROCESSOR_H
 #include <Insane/Insane.h>
 #define INSANE_REPEAT_MAX 512
 
@@ -2091,8 +2091,8 @@
 #define INSANE_REPEAT_ADVANCED(x,n,p1,p2,p3,p4,p5) INSANE_REPEAT_ADVANCED_##n(x,n,p1,p2,p3,p4,p5)
 
 #define VOID_TYPE() void
-#define STRING_TYPE() std::string
+#define STRING_TYPE() String
 #define INT32_TYPE() Int32
 #define Int64_TYPE() Int64
 
-#endif // __INSANE_PREPROCESSOR_H__
+#endif // !INSANE_PREPROCESSOR_H

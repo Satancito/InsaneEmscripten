@@ -8,7 +8,7 @@
             "type": "edge",
             "request": "launch",
             "name": "Iniciar Edge para localhost",
-            "url": "http://localhost:9999",
+            "url": "https://localhost:9999",
             "webRoot": "${workspaceFolder}"
         }
     ]
