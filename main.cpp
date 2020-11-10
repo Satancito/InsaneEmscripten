@@ -3,6 +3,7 @@
 #include <iostream>
 #include <Insane/InsaneEmscripten.h>
 #include <Insane/InsaneCryptography.h>
+#include <Insane/InsaneCore.h>
 
 void TestBrowser()
 {
@@ -28,8 +29,8 @@ void TestBrowser()
     Console::Log(10.8_val);
     Console::Log(10.8_val);
 
-    Console::Log("From Suffix float = "s, val(32.8f));
-    Console::Log("From Suffix double = "s, val(32.8));
+    Console::Log("From val float = "s, val(32.8f));
+    Console::Log("From val double = "s, val(32.8));
     Console::Log("From float = "s, 32.50f);
     Console::Log("From double = "s, 32.50);
     Console::Log("From Suffix float = "s, 10.8_val);
@@ -111,72 +112,111 @@ int main()
     // TestBrowser();
     // TestLocalStorage();
     Console::Log(Browser::GetName());
-    Console::Log(Browser::GetName<String>());
-}
+    Console::Log(Browser::GetName(emscripten::val::null()));
+    Console::Log(Browser::GetName(emscripten::val::undefined()));
+    Console::Log(Browser::GetNameAsync());
+    Console::Log(Browser::GetNameAsync(emscripten::val::null()));
+    Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
 
-emscripten::val IsBrave()
-{
-    using namespace emscripten;
-    bool isBrave = !!val::global()[u8"navigator"][u8"brave"] &&
-                   !!(val::global()[u8"navigator"][u8"brave"].call<val>(u8"isBrave").await());
-    if (isBrave)
+    Console::Log(Browser::GetAvailableScreenHeight<int>());
+    Console::Log(Browser::GetAvailableScreenWidth<int>());
+    Insane::Emscripten::OrientationType orientation = Browser::GetAvailableScreenOrientation<Insane::Emscripten::OrientationType>();
+    Console::Log(static_cast<int>(orientation));
+    Console::Log(Browser::GetScreenHeight<int>());
+    Console::Log(Browser::GetScreenWidth<int>());
+    Insane::Emscripten::OrientationType orientation2 = Browser::GetScreenOrientation<Insane::Emscripten::OrientationType>();
+    Console::Log(static_cast<int>(orientation2));
+    Console::Log(Browser::GetViewportHeight<int>());
+    Console::Log(Browser::GetViewportWidth<int>());
+    Insane::Emscripten::OrientationType orientation3 = Browser::GetViewportOrientation<Insane::Emscripten::OrientationType>();
+    Console::Log(static_cast<int>(orientation3));
+    Console::Log(u8"BrowserLang: "s, Browser::GetLanguage());
+    std::vector<String> langs = Browser::GetLanguages<std::vector<String>>();
+    Console::Log(u8"█ Languages"s);
+    for (auto value : langs)
     {
-        std::cout << "It's Brave." << std::endl;
-        return val(u8"Brave"s);
+        Console::Log("- Language: "s, value);
     }
-    else
+    Console::Log(u8"BrowserDeviceMemory: "s, Browser::GetDeviceMemory());
+    Console::Log(u8"BrowserMaxTouchPoints: "s, Browser::GetMaxTouchPoints());
+    Console::Log(u8"BrowserHardwareConcurrency: "s, Browser::GetHardwareConcurrency());
+    Console::Log(u8"█ BrowserPlugins"s);
+    for (Browser::Plugin value : Browser::GetPlugins<std::vector<Browser::Plugin>>())
     {
-        std::cout << "It's other." << std::endl;
-        return val(u8"Unknown"s);
+        Console::Log(u8"- Plugin: %s"s, val(value.Name));
+        for (auto mime : value.MimeTypes)
+        {
+            Console::Log(u8"    MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
+        }
     }
-}
 
-// emscripten::val IsBrave()
-// {
-//     using namespace emscripten;
-//     bool isBrave = !!val::global()[u8"navigator"][u8"brave"] && !!(val::global()[u8"navigator"][u8"brave"].call<val>(u8"isBrave").await());
-//     if(isBrave)
-//     {
-//         std::cout<< "It's Brave." << std::endl;
-//         return val(u8"Brave"s);
-//     }
-//     else
-//     {
-//         std::cout<< "It's other." << std::endl;
-//         return val(u8"Unknown"s);
-//     }
-// }
+    Console::Log(u8"█ BrowserMimeTypes"s);
+    for (auto mime : Browser::GetMimeTypes<std::vector<Browser::MimeType>>())
+    {
+        Console::Log(u8"- MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
+    }
+    
+    Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
+    Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
 
-String IsBraveStr()
-{
-    using namespace emscripten;
-    bool isBrave = !!val::global()[u8"navigator"][u8"brave"] && (val::global()[u8"navigator"][u8"brave"].call<val>(u8"isBrave").await().as<bool>());
-    if (isBrave)
-    {
-        std::cout << "It's Brave." << std::endl;
-        return u8"Brave";
-    }
-    else
-    {
-        std::cout << "It's other." << std::endl;
-        return u8"Unknown";
-    }
+    // Insane::Core::Console::Pause();
+    // Insane::Core::Console::PauseAny();
+    // Insane::Core::Console::Clear();
 }
 
 EMSCRIPTEN_BINDINGS(exports)
 {
     USING_EMSCRIPTEN;
-    EMSCRIPTEN_EXPORT_ALL_FUNCTORS(10);
-    function<bool>(u8"SetVolatileValue", &Insane::Emscripten::LocalStorage::SetVolatileValue);
-    function<String>(u8"GetVolatileValue", &Insane::Emscripten::LocalStorage::GetVolatileValue);
-    function<void>(u8"RemoveValue", &Insane::Emscripten::LocalStorage::RemoveValue<val>);
-    function<void>(u8"Clear", &Insane::Emscripten::LocalStorage::Clear);
-    function<String>(u8"BrowserGetWebGLRenderer", &Insane::Emscripten::Browser::GetWebGLRenderer<String>);
-    function<val>(u8"BrowserGetWebGLVendor", &Insane::Emscripten::Browser::GetWebGLVendor);
-    function<val>(u8"BrowserGetName", &Insane::Emscripten::Browser::GetName<val>);
-    function<val>(u8"IsBrave", &IsBrave);
-    function<String>(u8"IsBraveStr", &IsBraveStr);
+    USING_INSANE_EMSCRIPTEN;
+    function<val>(u8"BrowserGetNameAsync", &Browser::GetNameAsync<>);
+    function<val>(u8"BrowserGetOS", &Browser::GetOS<>);
+    function<val>(u8"BrowserGetWebGLRenderer", &Browser::GetWebGLRenderer);
+    function<val>(u8"BrowserGetWebGLVendor", &Browser::GetWebGLVendor);
+    function<val>(u8"BrowserGetAvailableScreenHeight", &Browser::GetAvailableScreenHeight);
+    function<val>(u8"BrowserGetAvailableScreenWidth", &Browser::GetAvailableScreenWidth);
+    function<val>(u8"BrowserGetScreenHeight", &Browser::GetScreenHeight);
+    function<val>(u8"BrowserGetScreenWidth", &Browser::GetScreenWidth);
+    function<val>(u8"BrowserGetViewportHeight", &Browser::GetViewportHeight);
+    function<val>(u8"BrowserGetViewportWidth", &Browser::GetViewportWidth);
+    function<val>(u8"BrowserGetAvailableScreenOrientation", &Browser::GetAvailableScreenOrientation);
+    function<val>(u8"BrowserGetScreenOrientation", &Browser::GetScreenOrientation);
+    function<val>(u8"BrowserGetViewportOrientation", &Browser::GetViewportOrientation);
+    function<val>(u8"BrowserGetAvailableScreenSize", &Browser::GetAvailableScreenSize);
+    function<val>(u8"BrowserGetScreenSize", &Browser::GetScreenSize);
+    function<val>(u8"BrowserGetViewportSize", &Browser::GetViewportSize);
+    function<val>(u8"BrowserGetLanguages", &Browser::GetLanguages);
+    function<val>(u8"BrowserGetLanguage", &Browser::GetLanguage);
+    function<val>(u8"BrowserGetUserAgent", &Browser::GetUserAgent);
+    function<val>(u8"BrowserGetTimezoneOffsetMinutes", &Browser::GetTimezoneOffsetMinutes);
+    function<val>(u8"BrowserGetTimezoneOffsetSeconds", &Browser::GetTimezoneOffsetSeconds);
+    function<val>(u8"BrowserGetTimezoneOffsetMilliseconds", &Browser::GetTimezoneOffsetMilliseconds);
+    function<val>(u8"BrowserGetMaxTouchPoints", &Browser::GetMaxTouchPoints);
+    function<val>(u8"BrowserGetDeviceMemory", &Browser::GetDeviceMemory);
+    function<val>(u8"BrowserGetHardwareConcurrency", &Browser::GetHardwareConcurrency);
+    function<val>(u8"BrowserGetPlugins", &Browser::GetPlugins);
+    function<val>(u8"BrowserGetDoNotTrack", &Browser::GetDoNotTrack);
+    function<val>(u8"BrowserHasCookiesSupport", &Browser::HasCookiesSupport);
+    function<val>(u8"BrowserGetMimeTypes", &Browser::GetMimeTypes);
+    function<val>(u8"BrowserGetFingerprint", &Browser::GetFingerprint);
+    function<val>(u8"JsonSerialize", &Json::Serialize<>);
+    function<val>(u8"Resolve", &Promise::Resolve);
+    function<val>(u8"Reject", &Promise::Reject);
 
-    register_vector<String>("VectorString");
-    //function<void>(u8"RemoveVolatileValues", &Insane::Emscripten::LocalStorage::RemoveVolatileValues);
+    EMSCRIPTEN_EXPORT_ALL_FUNCTORS(5);
+    value_object<Browser::MimeType>(u8"Mime")
+        .field("Description", &Insane::Emscripten::Browser::MimeType::Description)
+        .field("Type", &Insane::Emscripten::Browser::MimeType::Type);
+    register_vector<Browser::MimeType>("VectorB");
+    value_object<Browser::Plugin>(u8"PluginClass").field("Name", &Browser::Plugin::Name).field("MimeTypes", &Browser::Plugin::MimeTypes);
+    register_vector<Browser::Plugin>("VectorA");
+
+    // function<bool>(u8"SetVolatileValue", &Insane::Emscripten::LocalStorage::SetVolatileValue);
+    // function<String>(u8"GetVolatileValue", &Insane::Emscripten::LocalStorage::GetVolatileValue);
+    // function<void>(u8"RemoveValue", &Insane::Emscripten::LocalStorage::RemoveValue<val>);
+    // function<void>(u8"Clear", &Insane::Emscripten::LocalStorage::Clear);
+    // function<val>(u8"BrowserGetName", &Insane::Emscripten::Browser::GetName<val>);
+    // function<val>(u8"IsBrave", &IsBrave);
+    // function<String>(u8"IsBraveStr", &IsBraveStr);
+    // register_vector<String>("VectorString");
+    // function<void>(u8"RemoveVolatileValues", &Insane::Emscripten::LocalStorage::RemoveVolatileValues);
 }
