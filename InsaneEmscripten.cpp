@@ -15,6 +15,11 @@
 #define INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX u8"Volatile_ES_"s
 #define INSANE_ESPECIAL_PROPERTY_SUFFIX u8"Property_ES_"s
 
+// window.addEventListener("mousedown", event=> console.log("clicked from window's eventlistener"))
+// document.addEventListener("mousedown", event=> console.log("clicked from document's eventlistener"))
+// window.onmousedown = event =>{console.log("clicked from window")}
+// document.onmousedown = event =>{console.log("clicked from document")}
+
 namespace Insane::Emscripten::Internal
 {
 
@@ -71,22 +76,90 @@ namespace Insane::Emscripten::Internal
     }
 } // namespace Insane::Emscripten::Internal
 /* Operators */
-void Insane::Emscripten::Operators::SetAdditionOperator()
+EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType)
 {
-    emscripten_run_script(
-        u8R"(
-            console.log("Add function created!!!");
-            function Insane_Add(a,b)
-            {
-                var x;
-                for(var i=1; i<2;i++)
-                {
-                    console.log("yes");
-                }
-                return a+b;
-            }
-        )"
-    );
+    USING_EMSCRIPTEN;
+    USING_INSANE_CRYPTO;
+    USING_INSANE_STR;
+    val global = val::global();
+    if (!val::global()[u8"Insane"])
+    {
+        global.set(u8"Insane", val::object());
+    }
+    String opName = u8"OP"s + Strings::RemoveAll(HashManager::ToBase64(RandomManager::Generate(16)), {u8"+", u8"/", u8"="});
+    String script = u8"Insane."s + opName + u8"= (a,b) => {return a ### b;}"s;
+    String op = EMPTY_STRING;
+    switch (operatorType)
+    {
+    case OperatorType::Addition:
+        op = u8"+"s;
+        break;
+    case OperatorType::Subtraction:
+        op = u8"-"s;
+        break;
+    case OperatorType::Multiplication:
+        op = u8"*"s;
+        break;
+    case OperatorType::Division:
+        op = u8"/"s;
+        break;
+    default:
+        Js::ThrowError("Not implemented operator.");
+        break;
+    }
+    global.call<val>(u8"eval", Strings::ReplaceAll(script, {{u8"###"s, op}}));
+    val insane = val::global()[u8"Insane"];
+    val result = insane.call<val>(opName.c_str(), a, b);
+    insane.delete_(opName);
+    return result;
+}
+
+EmscriptenVal Insane::Emscripten::Operator::Add(EmscriptenVal a, EmscriptenVal b)
+{
+    return CallOperator(a, b, OperatorType::Addition);
+}
+
+EmscriptenVal Insane::Emscripten::Operator::Subtract(EmscriptenVal a, EmscriptenVal b)
+{
+    return CallOperator(a, b, OperatorType::Subtraction);
+}
+
+EmscriptenVal Insane::Emscripten::Operator::Multiply(EmscriptenVal a, EmscriptenVal b)
+{
+    return CallOperator(a, b, OperatorType::Multiplication);
+}
+
+EmscriptenVal Insane::Emscripten::Operator::Divide(EmscriptenVal a, EmscriptenVal b)
+{
+    return CallOperator(a, b, OperatorType::Division);
+}
+/* Json */
+template <>
+emscripten::val Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+{
+    USING_EMSCRIPTEN;
+    return val::global()["JSON"].call<val>(u8"stringify", object);
+}
+
+template <>
+String Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+{
+    return Serialize(object).as<String>();
+}
+
+/* Converter */
+template <>
+emscripten::val Insane::Emscripten::Converter::ToString(const emscripten::val &value)
+{
+    USING_EMSCRIPTEN;
+    return val::global().call<val>(u8"String", val(value));
+}
+
+template <>
+String Insane::Emscripten::Converter::ToString(const emscripten::val &value)
+{
+    USING_EMSCRIPTEN;
+    return ToString(value).as<String>();
 }
 
 /* Promise */
@@ -206,18 +279,6 @@ emscripten::val Insane::Emscripten::Browser::GetNameAsync(const String &ua)
     return GetNameAsync(ua.empty() ? GetUserAgent() : val(ua));
 }
 
-template <>
-String Insane::Emscripten::Browser::GetName(const emscripten::val &ua)
-{
-    return GetNameAsync(ua).await().as<String>();
-}
-
-template <>
-String Insane::Emscripten::Browser::GetName(const String &ua)
-{
-    return GetNameAsync(ua).await().as<String>();
-}
-
 // String edgeChromium = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.63";
 // String chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
 // String firefox = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0";
@@ -240,6 +301,7 @@ String Insane::Emscripten::Browser::GetName(const String &ua)
 //String safariIPod = "Mozilla/5.0 (iPod; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Mobile/15E148 Safari/604.1";
 //String safariIPad = "Mozilla/5.0 (iPad; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Mobile/15E148 Safari/604.1";
 //String safariIPad ="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15";
+
 template <>
 emscripten::val Insane::Emscripten::Browser::GetOS(const emscripten::val &ua)
 {
@@ -310,21 +372,6 @@ String Insane::Emscripten::Browser::GetOS(const String &ua)
 {
     USING_EMSCRIPTEN;
     return GetOS(ua.empty() ? GetUserAgent() : val(ua)).as<String>();
-}
-
-template<>
-emscripten::val Insane::Emscripten::Browser::GetFingerprint()
-{
-    USING_EMSCRIPTEN;
-    String result = Browser::GetUserAgent<String>();
-    result += std::to_string(Browser::GetTimezoneOffsetMilliseconds<int>());
-    return val::global()[u8"Insane"].call<val>(u8"Add", val(u8"1Hello"), val(u8"World"));
-}
-
-template<>
-String Insane::Emscripten::Browser::GetFingerprint<String>()
-{
-    USING_EMSCRIPTEN;
 }
 
 template <>
@@ -764,35 +811,51 @@ bool Insane::Emscripten::Browser::HasCookiesSupport()
     return HasCookiesSupport().as<bool>();
 }
 
-/* Json */
 template <>
-emscripten::val Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenVal &key)
 {
     USING_EMSCRIPTEN;
-    return val::global()["JSON"].call<val>(u8"stringify", object);
+    USING_INSANE_CRYPTO;
+    String result = Browser::GetUserAgent<String>();
+    result += std::to_string(Browser::GetTimezoneOffsetMilliseconds<int>());
+    result += std::to_string(Browser::GetTimezoneOffsetSeconds<int>());
+    result += std::to_string(Browser::GetTimezoneOffsetMinutes<int>());
+
+    EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
+    callback = [result, key](emscripten::val name) -> emscripten::val {
+        String ret = result;
+        ret += Browser::GetOS<String>();
+        ret += Browser::GetWebGLRenderer<String>();
+        ret += Browser::GetWebGLVendor<String>();
+        ret += std::to_string(Browser::GetScreenSize<int>());
+        ret += std::to_string(Browser::GetAvailableScreenSize<int>());
+        ret += std::to_string(Browser::GetViewportSize<int>());
+        ret += Browser::GetLanguage<String>();
+        ret += Json::Serialize<String>(Browser::GetLanguages());
+        ret += std::to_string(Browser::GetMaxTouchPoints<int>());
+        ret += std::to_string(Browser::GetDeviceMemory<float>());
+        ret += std::to_string(Browser::GetHardwareConcurrency<int>());
+        ret += Json::Serialize<String>(Browser::GetMimeTypes());
+        ret += Json::Serialize<String>(Browser::GetPlugins());
+        ret += Browser::GetDoNotTrack<String>();
+        ret += std::to_string(Browser::HasCookiesSupport<bool>());
+        val objectClass = val::global()[u8"Object"];
+        val props = objectClass.call<val>(u8"getOwnPropertyNames", objectClass.call<val>(u8"getPrototypeOf", val::global()[u8"navigator"])).call<val>(u8"sort");
+        ret += Json::Serialize<String>(props);
+        ret += Converter::ToString<String>(props[u8"length"]);
+        return Operator::Add(val(u8"Insane"s), val(HashManager::ToBase64Hmac(ret, Converter::ToString<String>(key))));
+    };
+    return Browser::GetNameAsync().call<val>(u8"then", Js::Bind(callback));
 }
 
 template <>
-String Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const String &key)
 {
-    return Serialize(object).as<String>();
+    USING_EMSCRIPTEN;
+    return GetFingerprintAsync(val(key));
 }
 
 /* Js */
-
-template <>
-emscripten::val Insane::Emscripten::Js::ToString(const emscripten::val &value)
-{
-    USING_EMSCRIPTEN;
-    return val::global().call<val>(u8"String", val(value));
-}
-
-template <>
-String Insane::Emscripten::Js::ToString(const emscripten::val &value)
-{
-    USING_EMSCRIPTEN;
-    return ToString(value).as<String>();
-}
 
 void Insane::Emscripten::Js::SetVars()
 {
@@ -911,7 +974,7 @@ void Insane::Emscripten::Js::CheckSignature(const String &name, const String &sn
     USING_EMSCRIPTEN;
     USING_INSANE_CRYPTO;
     USING_INSANE_EXCEPTION;
-    if (HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(name, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), mae, HashAlgorithm::SHA512) != Js::ToString<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(sname, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]))
+    if (HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(name, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), mae, HashAlgorithm::SHA512) != Converter::ToString<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(sname, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]))
     {
         throw ExceptionBase("BadState CheckSignature");
         //ThrowError(u8"BadState");
@@ -944,7 +1007,7 @@ emscripten::val Insane::Emscripten::LocalStorage::GetValue(const String &key, co
 }
 
 #define lkey LocalStorage::GetValue(Js::GetProperty(u8"key"s, INSANE_EMSCRIPTEN_KEY, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), INSANE_EMSCRIPTEN_KEY)
-#define lmatterEnergy LocalStorage::GetValue(Js::GetProperty(u8"MatterEnergy"s, lkey, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), INSANE_EMSCRIPTEN_KEY + Js::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + lkey)
+#define lmatterEnergy LocalStorage::GetValue(Js::GetProperty(u8"MatterEnergy"s, lkey, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), INSANE_EMSCRIPTEN_KEY + Converter::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + lkey)
 void Insane::Emscripten::Js::CheckState()
 {
     USING_EMSCRIPTEN;
@@ -1007,15 +1070,15 @@ emscripten::val Insane::Emscripten::Js::Init(const String &key)
     onFingerprint2LoadedCallback = [key](emscripten::val components) -> void {
         EMSCRIPTEN_VAL_FUNCTOR_TYPE(3)
         mapCallback = [](val component, val index, val array) -> val {
-            return Js::ToString(component[u8"value"]);
+            return Converter::ToString(component[u8"value"]);
         };
-        auto matterEnergy = HashManager::ToRawHash(Js::ToString(val::global(u8"Fingerprint2").call<val>(u8"x64hash128", components.call<val>(u8"map", Js::Bind(mapCallback)).call<val>(u8"join", val(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint"))), 31)).as<String>(), HashAlgorithm::SHA512);
+        auto matterEnergy = HashManager::ToRawHash(Converter::ToString(val::global(u8"Fingerprint2").call<val>(u8"x64hash128", components.call<val>(u8"map", Js::Bind(mapCallback)).call<val>(u8"join", val(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint"))), 31)).as<String>(), HashAlgorithm::SHA512);
 
         Console::Log("MATTER ENERGY CALLBACK: "s, HashManager::ToBase64(matterEnergy));
         Console::Log("KEY INIT: "s, HashManager::ToBase64(key));
         INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser1Signature"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(u8"Browser1", key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), matterEnergy, HashAlgorithm::SHA512));
         INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser2Signature"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(u8"Browser2", key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), matterEnergy, HashAlgorithm::SHA512));
-        LocalStorage::SetValue(Js::GetProperty(u8"MatterEnergy"s, key, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), matterEnergy, INSANE_EMSCRIPTEN_KEY + Js::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + key);
+        LocalStorage::SetValue(Js::GetProperty(u8"MatterEnergy"s, key, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), matterEnergy, INSANE_EMSCRIPTEN_KEY + Converter::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + key);
         LocalStorage::SetValue(Js::GetProperty(u8"key"s, INSANE_EMSCRIPTEN_KEY, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), key, INSANE_EMSCRIPTEN_KEY);
 
         Console::Info(u8"All Components Loaded"s);

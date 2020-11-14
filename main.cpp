@@ -111,9 +111,6 @@ int main()
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
     // TestBrowser();
     // TestLocalStorage();
-    Console::Log(Browser::GetName());
-    Console::Log(Browser::GetName(emscripten::val::null()));
-    Console::Log(Browser::GetName(emscripten::val::undefined()));
     Console::Log(Browser::GetNameAsync());
     Console::Log(Browser::GetNameAsync(emscripten::val::null()));
     Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
@@ -169,6 +166,7 @@ EMSCRIPTEN_BINDINGS(exports)
     USING_EMSCRIPTEN;
     USING_INSANE_EMSCRIPTEN;
     function<val>(u8"BrowserGetNameAsync", &Browser::GetNameAsync<>);
+    function<val>(u8"BrowserGetFingerprintAsync", &Browser::GetFingerprintAsync<>);
     function<val>(u8"BrowserGetOS", &Browser::GetOS<>);
     function<val>(u8"BrowserGetWebGLRenderer", &Browser::GetWebGLRenderer);
     function<val>(u8"BrowserGetWebGLVendor", &Browser::GetWebGLVendor);
@@ -197,14 +195,17 @@ EMSCRIPTEN_BINDINGS(exports)
     function<val>(u8"BrowserGetDoNotTrack", &Browser::GetDoNotTrack);
     function<val>(u8"BrowserHasCookiesSupport", &Browser::HasCookiesSupport);
     function<val>(u8"BrowserGetMimeTypes", &Browser::GetMimeTypes);
-    function<val>(u8"BrowserGetFingerprint", &Browser::GetFingerprint);
     function<val>(u8"JsonSerialize", &Json::Serialize<>);
-    function<val>(u8"Resolve", &Promise::Resolve);
-    function<val>(u8"Reject", &Promise::Reject);
-
+    function<val>(u8"PromiseResolve", &Promise::Resolve);
+    function<val>(u8"PromiseReject", &Promise::Reject);
+    function<val>(u8"OperatorAdd", &Operator::Add);
+    function<val>(u8"OperatorSubtract", &Operator::Subtract);
+    function<val>(u8"OperatorMultiply", &Operator::Multiply);
+    function<val>(u8"OperatorDivide", &Operator::Divide);
     EMSCRIPTEN_EXPORT_ALL_FUNCTORS(5);
     value_object<Browser::MimeType>(u8"Mime")
         .field("Description", &Insane::Emscripten::Browser::MimeType::Description)
+        .field("Description", &Insane::Emscripten::Browser::MimeType::Suffixes)
         .field("Type", &Insane::Emscripten::Browser::MimeType::Type);
     register_vector<Browser::MimeType>("VectorB");
     value_object<Browser::Plugin>(u8"PluginClass").field("Name", &Browser::Plugin::Name).field("MimeTypes", &Browser::Plugin::MimeTypes);

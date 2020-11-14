@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Emscripten",
+            "name": "EmscriptenWin",
             "includePath": [
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/../InsaneCpp/include",
@@ -13,7 +13,7 @@
                 "_UNICODE",
                 "__EMSCRIPTEN__"
             ],
-            "compilerPath": "${EMSCRIPTEN_DIR}/upstream/emscripten/em++",
+            "compilerPath": "${EMSCRIPTEN_DIR}/upstream/emscripten/em++.bat",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"
