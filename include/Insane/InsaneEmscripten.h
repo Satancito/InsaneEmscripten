@@ -10,6 +10,7 @@
 #include <functional>
 
 #define VAL_TYPE() emscripten::val
+
 #define EMSCRIPTEN_EXPORT_FUNCTOR(arity, returnType, name, p3, p4, p5) emscripten::class_<std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>>(STRINGIFY(name##arity)).constructor<>().function("opcall", &std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>::operator());
 #define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VOID_TYPE(), VoidFunctor, 0, 0, 0)
 #define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VAL_TYPE(), ValFunctor, 0, 0, 0)
@@ -59,23 +60,52 @@ static inline emscripten::val operator"" _val(char value)
     return val(value);
 }
 
+typedef emscripten::val EmscriptenVal;
+
 namespace Insane::Emscripten
 {
-    
 
-    class Operators final
+
+    class Operator final
+    {
+    private:
+        enum class OperatorType{
+            Addition,
+            Subtraction,
+            Multiplication,
+            Division
+        };
+
+        static String CreateOperator(const OperatorType& operatorType);
+        static EmscriptenVal CallOperator(const EmscriptenVal& a, const EmscriptenVal&b, const OperatorType& operatorType);
+    public:
+        [[nodiscard]] static EmscriptenVal Add(EmscriptenVal a, EmscriptenVal b);
+        [[nodiscard]] static EmscriptenVal Subtract(EmscriptenVal a, EmscriptenVal b);
+        [[nodiscard]] static EmscriptenVal Multiply(EmscriptenVal a, EmscriptenVal b);
+        [[nodiscard]] static EmscriptenVal Divide(EmscriptenVal a, EmscriptenVal b);
+    };
+
+    class Converter
     {
     private:
     public:
-        static void SetAdditionOperator();
+        template <typename ReturnType = emscripten::val,
+                  typename ParamType = emscripten::val,
+                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same_v<ParamType, emscripten::val> ||
+                                                                   std::is_floating_point_v<ParamType> ||
+                                                                   std::is_integral_v<ParamType>>>,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
+                                                       std::is_same_v<ReturnType, emscripten::val>>>
+        [[nodiscard]] static ReturnType ToString(const ParamType &value);
     };
 
     class Promise
     {
     private:
     public:
-        static emscripten::val Resolve(const emscripten::val &value);
-        static emscripten::val Reject(const emscripten::val &value);
+        [[nodiscard]] static emscripten::val Resolve(const emscripten::val &value);
+        [[nodiscard]] static emscripten::val Reject(const emscripten::val &value);
     };
 
     class Console
@@ -219,10 +249,6 @@ namespace Insane::Emscripten
                   typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
         [[nodiscard]] static emscripten::val GetNameAsync(const ParamType &userAgent = DefaultValue<ParamType>::value());
 
-        template <typename ParamType = emscripten::val,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
-        [[nodiscard]] static String GetName(const ParamType &userAgent = DefaultValue<ParamType>::value());
-
         template <typename ReturnType = emscripten::val,
                   typename ParamType = emscripten::val,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>,
@@ -330,14 +356,19 @@ namespace Insane::Emscripten
                                                                                               std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetDoNotTrack();
 
-        template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                                                              std::is_same_v<ReturnType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetFingerprint();
-        //Features
-
         template <typename ReturnType = emscripten::val, typename = typename std::enable_if_t<std::is_same_v<ReturnType, bool> ||
                                                                                               std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType HasCookiesSupport();
+
+        template <typename ReturnType = emscripten::val,
+                  typename ParamType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetFingerprint(const ParamType &key);
+
+        template <typename ParamType = emscripten::val,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
+        [[nodiscard]] static EmscriptenVal GetFingerprintAsync(const ParamType &key);
 
         Browser() = delete;
         ~Browser() = delete;
@@ -386,16 +417,7 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, String>>>>
         static emscripten::val ImportModule(const ParamType &scriptpath);
 
-        template <typename ReturnType = emscripten::val,
-                  typename ParamType = emscripten::val,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
-                                                                   std::is_same_v<ParamType, emscripten::val> ||
-                                                                   std::is_floating_point_v<ParamType> ||
-                                                                   std::is_integral_v<ParamType>>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        static ReturnType ToString(const ParamType &value);
-        static void ThrowError(const String &message);
+        static void ThrowError(const String &message = "An error has ocurred.");
         static emscripten::val Init(const String &key);
     };
 

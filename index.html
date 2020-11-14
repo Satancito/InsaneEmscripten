@@ -16,6 +16,7 @@
     <button onclick="onclickEvent(2)">Show</button>
     <button onclick="onclickEvent(3)">Check</button>
     <p id="txtResult"></p>
+    <iframe id="frameX" style="border: 1px double; height: 100px; width: 100px;"></iframe>
     <script>
         function GetOrientationString(orientation) {
             switch (orientation) {
@@ -121,10 +122,11 @@
                         innerHTML += "</ul><br />";
                         let counter = 0;
                         for (var value in Object.getOwnPropertyNames(Navigator.prototype)) {
-                            console.log(value.Name);
+                            //console.log(value.Name);
                             counter++;
                         }
                         innerHTML += "<b>Navigator TotalProperties: </b>" + (counter ?? "🚫") + "<br />";
+
                         id.innerHTML = innerHTML;
                         //console.log(innerHTML);
                         break;
