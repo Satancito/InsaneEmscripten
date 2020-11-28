@@ -66,6 +66,7 @@ main.cpp `
 Insane.bc `
 -I ../CommonCppIncludes `
 -I Include `
+-I Include/Insane `
 -I ../InsaneCpp/include `
 -o Insane.js `
 -std=c++17 `

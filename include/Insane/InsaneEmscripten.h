@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef __INSANE_EMSCRIPTEN_H__
 #define __INSANE_EMSCRIPTEN_H__
 
@@ -28,7 +28,9 @@
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneException.h>
 
-#define INSANE_PROPERTY_SUFFIX u8"Property_"s
+#define INSANE_PROPERTY_SUFFIX u8"Insane_"s
+#define VAL_GLOBAL emscripten::val::global()
+#define VAL_INSANE VAL_GLOBAL[INSANE_STRING]
 
 static inline emscripten::val operator"" _valb(unsigned long long value)
 {
@@ -65,27 +67,43 @@ typedef emscripten::val EmscriptenVal;
 namespace Insane::Emscripten
 {
 
-
     class Operator final
     {
     private:
-        enum class OperatorType{
+        enum class OperatorArityType
+        {
+            Unary,
+            Binary
+        };
+
+        enum class OperatorType
+        {
             Addition,
             Subtraction,
             Multiplication,
-            Division
+            Division,
+            Import,
+            TypeOf,
+            IsNull,
+            IsUndefined,
+            IsNullOrUndefined
         };
 
-        static String CreateOperator(const OperatorType& operatorType);
-        static EmscriptenVal CallOperator(const EmscriptenVal& a, const EmscriptenVal&b, const OperatorType& operatorType);
+        static EmscriptenVal CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType);
+
     public:
-        [[nodiscard]] static EmscriptenVal Add(EmscriptenVal a, EmscriptenVal b);
-        [[nodiscard]] static EmscriptenVal Subtract(EmscriptenVal a, EmscriptenVal b);
-        [[nodiscard]] static EmscriptenVal Multiply(EmscriptenVal a, EmscriptenVal b);
-        [[nodiscard]] static EmscriptenVal Divide(EmscriptenVal a, EmscriptenVal b);
+        [[nodiscard]] static EmscriptenVal Add(const EmscriptenVal &a, const EmscriptenVal &b);
+        [[nodiscard]] static EmscriptenVal Subtract(const EmscriptenVal &a, const EmscriptenVal &b);
+        [[nodiscard]] static EmscriptenVal Multiply(const EmscriptenVal &a, const EmscriptenVal &b);
+        [[nodiscard]] static EmscriptenVal Divide(const EmscriptenVal &a, const EmscriptenVal &b);
+        [[nodiscard]] static EmscriptenVal ImportAsync(const EmscriptenVal &a);
+        [[nodiscard]] static EmscriptenVal TypeOf(const EmscriptenVal &a);
+        [[nodiscard]] static bool IsNull(const EmscriptenVal &a);
+        [[nodiscard]] static bool IsUndefined(const EmscriptenVal &a);
+        [[nodiscard]] static bool IsNullOrUndefined(const EmscriptenVal &a);
     };
 
-    class Converter
+    class Converter final
     {
     private:
     public:
@@ -100,15 +118,36 @@ namespace Insane::Emscripten
         [[nodiscard]] static ReturnType ToString(const ParamType &value);
     };
 
-    class Promise
+    class Promise final
     {
     private:
     public:
-        [[nodiscard]] static emscripten::val Resolve(const emscripten::val &value);
-        [[nodiscard]] static emscripten::val Reject(const emscripten::val &value);
+        [[nodiscard]] static EmscriptenVal New(const EMSCRIPTEN_VOID_FUNCTOR_TYPE(2) & promiseCallback);
+
+        template <typename ParamType = EmscriptenVal,
+                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, String> ||
+                                                                   std::is_floating_point_v<ParamType> ||
+                                                                   std::is_integral_v<ParamType> ||
+                                                                   std::is_same_v<ParamType, EmscriptenVal>>>>
+        [[nodiscard]] static inline EmscriptenVal Resolve(const ParamType &value)
+        {
+            USING_EMSCRIPTEN;
+            return val::global()[u8"Promise"].call<val>(u8"resolve", EmscriptenVal(value));
+        }
+
+        template <typename ParamType = EmscriptenVal,
+                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, String> ||
+                                                                   std::is_floating_point_v<ParamType> ||
+                                                                   std::is_integral_v<ParamType> ||
+                                                                   std::is_same_v<ParamType, EmscriptenVal>>>>
+        [[nodiscard]] static EmscriptenVal Reject(const ParamType &value)
+        {
+            USING_EMSCRIPTEN;
+            return val::global()[u8"Promise"].call<val>(u8"reject", EmscriptenVal(value));
+        }
     };
 
-    class Console
+    class Console final
     {
     private:
         enum class ConsoleMessageType
@@ -221,11 +260,7 @@ namespace Insane::Emscripten
         SQUARE = 2
     };
 
-    // emscripten::val operator+(const emscripten::val &a, const emscripten::val &b)
-    // {
-    // }
-
-    class Browser
+    class Browser final
     {
     private:
     public:
@@ -360,12 +395,6 @@ namespace Insane::Emscripten
                                                                                               std::is_same_v<ReturnType, emscripten::val>>>
         [[nodiscard]] static ReturnType HasCookiesSupport();
 
-        template <typename ReturnType = emscripten::val,
-                  typename ParamType = emscripten::val,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> || std::is_same_v<ReturnType, emscripten::val>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetFingerprint(const ParamType &key);
-
         template <typename ParamType = emscripten::val,
                   typename = typename std::enable_if_t<std::is_same_v<ParamType, String> || std::is_same_v<ParamType, emscripten::val>>>
         [[nodiscard]] static EmscriptenVal GetFingerprintAsync(const ParamType &key);
@@ -374,7 +403,7 @@ namespace Insane::Emscripten
         ~Browser() = delete;
     };
 
-    class Json
+    class Json final
     {
     private:
     public:
@@ -383,16 +412,20 @@ namespace Insane::Emscripten
         static ReturnType Serialize(const emscripten::val &object);
     };
 
-    class Js
+    class Js final
     {
     private:
         static emscripten::val Bind(const emscripten::val &fx);
-        static void SetVars();
-        static void CheckSignature(const String &name, const String &sname, const String &key, const String &mae);
+        //static void SetVars();
+        //static void CheckSignature(const String &name, const String &sname, const String &key, const String &mae);
 
     public:
-        static void FreeState();
-        static void CheckState() noexcept(false);
+        //static void FreeState();
+        //static void CheckState() noexcept(false);
+        static void SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
+        static void SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
+        static void SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
+        static void SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists = true);
         static String GetProperty(const String &name, const String &key = EMPTY_STRING, const String &suffix = INSANE_PROPERTY_SUFFIX);
         template <typename ReturnType,
                   typename... ParamType,
@@ -405,35 +438,31 @@ namespace Insane::Emscripten
             return Bind(val(fx));
         }
 
-        static bool ValueIsNullOrUndefined(emscripten::val value);
-
-        template <typename ParamType,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, emscripten::val> ||
+        template <typename ParamType = EmscriptenVal,
+                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, EmscriptenVal> ||
                                                                    std::is_same_v<ParamType, String>>>>
-        static emscripten::val LoadScript(const ParamType &scriptpath, bool log);
-
-        template <typename ParamType,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, emscripten::val> ||
-                                                                   std::is_same_v<ParamType, String>>>>
-        static emscripten::val ImportModule(const ParamType &scriptpath);
+        static emscripten::val LoadScriptAsync(const ParamType &scriptpath);
 
         static void ThrowError(const String &message = "An error has ocurred.");
-        static emscripten::val Init(const String &key);
+        // static emscripten::val Init(const String &key);
     };
 
-    class LocalStorage
+    class LocalStorage final
     {
     private:
     public:
-        template <typename ReturnType = String,
+        template <typename ReturnType = EmscriptenVal,
+                  typename ParamsType = EmscriptenVal,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetValue(const String &key, const String &password = EMPTY_STRING) noexcept;
+                                                       std::is_same_v<ReturnType, emscripten::val>>,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
+                                                       std::is_same_v<ParamsType, emscripten::val>>>
+        [[nodiscard]] static ReturnType GetValue(const ParamsType &key, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
 
-        static bool SetValue(const String &key, const String &value, const String &password = EMPTY_STRING) noexcept;
-
-        [[nodiscard]] static String GetVolatileValue(const String &key, const String &password = EMPTY_STRING) noexcept;
-        static bool SetVolatileValue(const String &key, const String &value, const String &password = EMPTY_STRING) noexcept;
+        template <typename ParamsType = EmscriptenVal,
+                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
+                                                       std::is_same_v<ParamsType, emscripten::val>>>
+        static void SetValue(const ParamsType &key, const ParamsType &value, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept(false);
 
         template <typename ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
@@ -441,7 +470,11 @@ namespace Insane::Emscripten
         static void RemoveValue(const ParamType &key) noexcept;
 
         static void Clear();
-        static void RemoveValuesStartingWith(const String &preffix);
+
+        template <typename ParamType,
+                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same_v<ParamType, emscripten::val>>>>
+        static void RemoveValuesStartingWith(const ParamType &preffix);
     };
 
 } // namespace Insane::Emscripten

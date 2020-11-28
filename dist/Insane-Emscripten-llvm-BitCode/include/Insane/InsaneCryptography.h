@@ -34,6 +34,7 @@ namespace Insane::Crypto
 		[[nodiscard]] static String ToBase64Hash(const String& data, HashAlgorithm algorithm = HashAlgorithm::SHA512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
 		[[nodiscard]] static String ToRawHmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::SHA512);
 		[[nodiscard]] static String ToBase64Hmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::SHA512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
+		[[nodiscard]] static String ToAlphanumericBase64(const String& data, size_t lineBreaks = NO_LINE_BREAKS);
 	private:
 	};
 
