@@ -196,12 +196,14 @@ EMSCRIPTEN_BINDINGS(exports)
     function<val>(u8"BrowserHasCookiesSupport", &Browser::HasCookiesSupport);
     function<val>(u8"BrowserGetMimeTypes", &Browser::GetMimeTypes);
     function<val>(u8"JsonSerialize", &Json::Serialize<>);
-    function<val>(u8"PromiseResolve", &Promise::Resolve);
-    function<val>(u8"PromiseReject", &Promise::Reject);
+    function<val>(u8"PromiseResolve", &Promise::Resolve<>);
+    function<val>(u8"PromiseReject", &Promise::Reject<>);
     function<val>(u8"OperatorAdd", &Operator::Add);
     function<val>(u8"OperatorSubtract", &Operator::Subtract);
     function<val>(u8"OperatorMultiply", &Operator::Multiply);
     function<val>(u8"OperatorDivide", &Operator::Divide);
+    function<val>(u8"OperatorImport", &Operator::ImportAsync);
+    function<val>(u8"JsLoadScriptAsync", &Js::LoadScriptAsync<>);
     EMSCRIPTEN_EXPORT_ALL_FUNCTORS(5);
     value_object<Browser::MimeType>(u8"Mime")
         .field("Description", &Insane::Emscripten::Browser::MimeType::Description)

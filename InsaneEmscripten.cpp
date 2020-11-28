@@ -7,13 +7,7 @@
 #include <Insane/InsaneException.h>
 
 /* Internal API */
-#define INSANE_EMSCRIPTEN_KEY u8"InsaneKey"s + emscripten::val::global()[u8"navigator"][u8"userAgent"].as<String>()
-#define INSANE_EMSCRIPTEN_MAIN_PROPERTY emscripten::val::global(Js::GetProperty("Insane", EMPTY_STRING, INSANE_PROPERTY_SUFFIX).c_str())
-#define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s //Cambiar cada cierto tiempo largo. WARNING.
-#define INSANE_LOCAL_STORAGE_KEY u8"LocalStorageKey"s         //Cambiar cada cierto tiempo largo. WARNING.
-#define INSANE_LOCAL_STORAGE_VOLATILE_PREFFIX u8"Volatile_"s
-#define INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX u8"Volatile_ES_"s
-#define INSANE_ESPECIAL_PROPERTY_SUFFIX u8"Property_ES_"s
+#define INSANE_EMSCRIPTEN_KEY u8"Aqui la clave"
 
 // window.addEventListener("mousedown", event=> console.log("clicked from window's eventlistener"))
 // document.addEventListener("mousedown", event=> console.log("clicked from document's eventlistener"))
@@ -75,64 +69,141 @@ namespace Insane::Emscripten::Internal
         return TransformN(b, ++n, stra + strb, false);
     }
 } // namespace Insane::Emscripten::Internal
+
 /* Operators */
-EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType)
+EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
 {
     USING_EMSCRIPTEN;
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
     val global = val::global();
-    if (!val::global()[u8"Insane"])
+    if (!VAL_INSANE)
     {
-        global.set(u8"Insane", val::object());
+        VAL_GLOBAL.set(INSANE_STRING, val::object());
     }
-    String opName = u8"OP"s + Strings::RemoveAll(HashManager::ToBase64(RandomManager::Generate(16)), {u8"+", u8"/", u8"="});
-    String script = u8"Insane."s + opName + u8"= (a,b) => {return a ### b;}"s;
+    String opName = u8"OP"s + HashManager::ToAlphanumericBase64(HashManager::ToBase64(RandomManager::Generate(16)));
+    String script = EMPTY_STRING;
+    switch (operatorArityType)
+    {
+    case OperatorArityType::Unary:
+        script = u8"Insane."s + opName + u8"= (a) => { return ###; };"s;
+        break;
+    case OperatorArityType::Binary:
+        script = u8"Insane."s + opName + u8"= (a,b) => { return ###; };"s;
+        break;
+    default:
+        break;
+    }
+
     String op = EMPTY_STRING;
     switch (operatorType)
     {
     case OperatorType::Addition:
-        op = u8"+"s;
+        op = u8"a + b"s;
         break;
     case OperatorType::Subtraction:
-        op = u8"-"s;
+        op = u8"a - b"s;
         break;
     case OperatorType::Multiplication:
-        op = u8"*"s;
+        op = u8"a * b"s;
         break;
     case OperatorType::Division:
-        op = u8"/"s;
+        op = u8"a / b"s;
+        break;
+    case OperatorType::Import:
+        op = u8"import(a)"s;
+        break;
+    case OperatorType::TypeOf:
+        op = "typeof a";
+        break;
+    case OperatorType::IsNull:
+        op = "a === null";
+        break;
+    case OperatorType::IsUndefined:
+        op = "typeof a === 'undefined'";
+        break;
+    case OperatorType::IsNullOrUndefined:
         break;
     default:
-        Js::ThrowError("Not implemented operator.");
+        Js::ThrowError(u8"Not implemented operator.");
         break;
     }
+
     global.call<val>(u8"eval", Strings::ReplaceAll(script, {{u8"###"s, op}}));
     val insane = val::global()[u8"Insane"];
-    val result = insane.call<val>(opName.c_str(), a, b);
+
+    val result = val::null();
+    switch (operatorArityType)
+    {
+    case OperatorArityType::Unary:
+        result = insane.call<val>(opName.c_str(), a);
+        break;
+    case OperatorArityType::Binary:
+        result = insane.call<val>(opName.c_str(), a, b);
+        break;
+    default:
+        break;
+    }
     insane.delete_(opName);
     return result;
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Add(EmscriptenVal a, EmscriptenVal b)
+EmscriptenVal Insane::Emscripten::Operator::Add(const EmscriptenVal &a, const EmscriptenVal &b)
 {
-    return CallOperator(a, b, OperatorType::Addition);
+    return CallOperator(a, b, OperatorType::Addition, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Subtract(EmscriptenVal a, EmscriptenVal b)
+EmscriptenVal Insane::Emscripten::Operator::Subtract(const EmscriptenVal &a, const EmscriptenVal &b)
 {
-    return CallOperator(a, b, OperatorType::Subtraction);
+    return CallOperator(a, b, OperatorType::Subtraction, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Multiply(EmscriptenVal a, EmscriptenVal b)
+EmscriptenVal Insane::Emscripten::Operator::Multiply(const EmscriptenVal &a, const EmscriptenVal &b)
 {
-    return CallOperator(a, b, OperatorType::Multiplication);
+    return CallOperator(a, b, OperatorType::Multiplication, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Divide(EmscriptenVal a, EmscriptenVal b)
+EmscriptenVal Insane::Emscripten::Operator::Divide(const EmscriptenVal &a, const EmscriptenVal &b)
 {
-    return CallOperator(a, b, OperatorType::Division);
+    return CallOperator(a, b, OperatorType::Division, OperatorArityType::Binary);
 }
+
+EmscriptenVal Insane::Emscripten::Operator::ImportAsync(const EmscriptenVal &a)
+{
+    USING_EMSCRIPTEN;
+    return CallOperator(a, EmscriptenVal::null(), OperatorType::Import, OperatorArityType::Unary);
+}
+
+EmscriptenVal Insane::Emscripten::Operator::TypeOf(const EmscriptenVal &a)
+{
+    USING_EMSCRIPTEN;
+    return CallOperator(a, EmscriptenVal::null(), OperatorType::TypeOf, OperatorArityType::Unary);
+}
+
+bool Insane::Emscripten::Operator::IsNull(const EmscriptenVal &a)
+{
+    USING_EMSCRIPTEN;
+    return CallOperator(a, EmscriptenVal::null(), OperatorType::IsNull, OperatorArityType::Unary).as<bool>();
+}
+
+bool Insane::Emscripten::Operator::IsUndefined(const EmscriptenVal &a)
+{
+    USING_EMSCRIPTEN;
+    return CallOperator(a, EmscriptenVal::null(), OperatorType::IsUndefined, OperatorArityType::Unary).as<bool>();
+}
+
+bool Insane::Emscripten::Operator::IsNullOrUndefined(const emscripten::val &a)
+{
+    return IsNull(a) || IsUndefined(a);
+}
+
+/* Promise */
+EmscriptenVal Insane::Emscripten::Promise::New(const EMSCRIPTEN_VOID_FUNCTOR_TYPE(2)& promiseCallback)
+{
+    USING_EMSCRIPTEN;
+    return val::global()["Promise"].new_(Js::Bind(promiseCallback));
+}
+
 /* Json */
 template <>
 emscripten::val Insane::Emscripten::Json::Serialize(const emscripten::val &object)
@@ -160,20 +231,6 @@ String Insane::Emscripten::Converter::ToString(const emscripten::val &value)
 {
     USING_EMSCRIPTEN;
     return ToString(value).as<String>();
-}
-
-/* Promise */
-
-emscripten::val Insane::Emscripten::Promise::Resolve(const emscripten::val &value)
-{
-    USING_EMSCRIPTEN;
-    return val::global()[u8"Promise"].call<val>(u8"resolve", value);
-}
-
-emscripten::val Insane::Emscripten::Promise::Reject(const emscripten::val &value)
-{
-    USING_EMSCRIPTEN;
-    return val::global()[u8"Promise"].call<val>(u8"reject", value);
 }
 
 /* Browser */
@@ -857,25 +914,41 @@ EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const String &key
 
 /* Js */
 
-void Insane::Emscripten::Js::SetVars()
+void Insane::Emscripten::Js::SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists)
 {
-    USING_EMSCRIPTEN;
-    USING_INSANE_STR;
-    if (Js::ValueIsNullOrUndefined(INSANE_EMSCRIPTEN_MAIN_PROPERTY))
+    if (Operator::IsNullOrUndefined(object[property]))
     {
-        val::global().set(Js::GetProperty("Insane", EMPTY_STRING, INSANE_PROPERTY_SUFFIX).c_str(), val::object());
+        object.set(property, value);
     }
-    if (Js::ValueIsNullOrUndefined(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty("ImportModule", EMPTY_STRING, INSANE_PROPERTY_SUFFIX)]))
+    else
     {
-        emscripten_run_script((Js::GetProperty("Insane", EMPTY_STRING, INSANE_PROPERTY_SUFFIX) + "."s + Js::GetProperty("ImportModule", EMPTY_STRING, INSANE_PROPERTY_SUFFIX) + u8R"(= function(p){ return import(p); };)"s).c_str());
+        if (replaceIfExists)
+        {
+            object.set(property, value);
+        }
     }
+}
+
+void Insane::Emscripten::Js::SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+{
+    SetProperty(object, property, EmscriptenVal::global().object(), replaceIfExists);
+}
+
+void Insane::Emscripten::Js::SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+{
+    SetProperty(object, property, EmscriptenVal::global().array(), replaceIfExists);
+}
+
+void Insane::Emscripten::Js::SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+{
+    SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
 String Insane::Emscripten::Js::GetProperty(const String &name, const String &key, const String &suffix)
 {
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
-    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix + u8"_"s) + Strings::RemoveAll(HashManager::ToBase64Hmac(INSANE_PROPERTY_NAMES_KEY + name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::SHA512), {u8"+", u8"/", u8"="});
+    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix ) + HashManager::ToAlphanumericBase64(HashManager::ToBase64Hmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::SHA512));
 }
 
 emscripten::val Insane::Emscripten::Js::Bind(const emscripten::val &fx)
@@ -884,229 +957,122 @@ emscripten::val Insane::Emscripten::Js::Bind(const emscripten::val &fx)
     return fx["opcall"].call<val>("bind", fx);
 }
 
-bool Insane::Emscripten::Js::ValueIsNullOrUndefined(emscripten::val value)
-{
-    return value.isUndefined() || value.isNull();
-}
-
 template <>
-emscripten::val Insane::Emscripten::Js::LoadScript(const emscripten::val &scriptpath, bool log)
+emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
     USING_EMSCRIPTEN;
-    USING_INSANE_CRYPTO;
-    USING_INSANE_STR;
-    SetVars();
-    String id = Js::GetProperty(HashManager::ToBase64Hash(scriptpath.as<String>(), HashAlgorithm::SHA512), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
-    if (Js::ValueIsNullOrUndefined(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty("Loaded", EMPTY_STRING, INSANE_PROPERTY_SUFFIX)]))
+    String id = Js::GetProperty(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
+    Js::SetPropertyObject(val::global(), INSANE_STRING, false);
+    String loadedName = Js::GetProperty(u8"Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
+    Js::SetPropertyObject(val::global()[u8"Insane"], loadedName, false);
+    val loaded = VAL_INSANE[loadedName];
+    if (!Operator::IsNullOrUndefined(loaded[id]))
     {
-        INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty("Loaded", EMPTY_STRING, INSANE_PROPERTY_SUFFIX), val::object());
+        return Promise::Resolve(id);
     }
-    if (!Js::ValueIsNullOrUndefined(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty("Loaded", EMPTY_STRING, INSANE_PROPERTY_SUFFIX)][id]))
-    {
-        std::function<void(val, val)> promiseCallback = [scriptpath, id](val resolve, val reject) {
-            resolve(id);
-        };
-        return val::global("Promise").new_(Js::Bind(promiseCallback));
-    }
-    INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty("Loaded", EMPTY_STRING, INSANE_PROPERTY_SUFFIX)].set(id, val(true));
+    loaded.set(id, val(true));
     EMSCRIPTEN_VOID_FUNCTOR_TYPE(2)
-    promiseCallback = [scriptpath, id, log](val resolve, val reject) -> void {
-        val script = val::global("document").call<val>("createElement", val("script"));
-        script.set("id", val(id));
-        script.set("src", scriptpath);
-        script.set("type", val("text/javascript"));
+    promiseCallback = [scriptpath, id, loaded](val resolve, val reject) -> void {
+        val script = val::global(u8"document").call<val>(u8"createElement", val(u8"script"));
+        script.set(u8"id", val(id));
+        script.set(u8"src", scriptpath);
+        script.set(u8"type", val(u8"text/javascript"));
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-        onloadCallback = [scriptpath, resolve, id, log](val a) -> void {
-            if (log)
-            {
-                Console::Log(u8"Loaded: \"%s\""s, scriptpath);
-            }
+        onloadCallback = [scriptpath, resolve, id](val a) -> void {
             resolve(id);
         };
-        script.set("onload", Js::Bind(onloadCallback));
+        script.set(u8"onload", Js::Bind(onloadCallback));
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-        onerrorCallback = [scriptpath, id, reject, log](val a) -> void {
-            val::global("document").call<val>(u8"getElementById", val(id)).call<void>(u8"remove");
-            INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(u8"Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX)].delete_(id);
-            if (log)
-            {
-                Console::Log(u8"Error Loading: \"%s\""s, scriptpath);
-            }
+        onerrorCallback = [scriptpath, id, reject, loaded](val a) -> void {
+            val::global(u8"document").call<val>(u8"getElementById", val(id)).call<void>(u8"remove");
+            loaded.delete_(id);
             reject(id);
         };
-        script.set("onerror", Js::Bind(onerrorCallback));
-        val::global("document")["body"].call<val>("appendChild", script);
+        script.set(u8"onerror", Js::Bind(onerrorCallback));
+        val::global(u8"document")[u8"body"].call<val>(u8"appendChild", script);
     };
-    return val::global()["Promise"].new_(Js::Bind(promiseCallback));
+    return Promise::New(promiseCallback);
 }
 
 template <>
-emscripten::val Insane::Emscripten::Js::LoadScript(const String &scriptpath, bool log)
+emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const String &scriptpath)
 {
     USING_EMSCRIPTEN;
-    return LoadScript(val(scriptpath), log);
+    return LoadScriptAsync(val(scriptpath));
 }
+
+/* LocalStorage */
 
 template <>
-emscripten::val Insane::Emscripten::Js::ImportModule(const emscripten::val &scriptpath)
+emscripten::val Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
 {
     USING_EMSCRIPTEN;
-    SetVars();
-    return INSANE_EMSCRIPTEN_MAIN_PROPERTY.call<val>(Js::GetProperty(u8"ImportModule"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX).c_str(), scriptpath);
-}
-
-template <>
-emscripten::val Insane::Emscripten::Js::ImportModule(const String &scriptpath)
-{
-    USING_EMSCRIPTEN;
-    return ImportModule(val(scriptpath));
-}
-
-void Insane::Emscripten::Js::FreeState()
-{
-    USING_EMSCRIPTEN;
+    USING_INSANE_EXCEPTION;
+    USING_INSANE_CRYPTO;
     USING_INSANE_STR;
-    LocalStorage::RemoveValuesStartingWith(INSANE_LOCAL_STORAGE_VOLATILE_PREFFIX);
-}
-
-void Insane::Emscripten::Js::CheckSignature(const String &name, const String &sname, const String &key, const String &mae)
-{
-    USING_EMSCRIPTEN;
-    USING_INSANE_CRYPTO;
-    USING_INSANE_EXCEPTION;
-    if (HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(name, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), mae, HashAlgorithm::SHA512) != Converter::ToString<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(sname, key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]))
-    {
-        throw ExceptionBase("BadState CheckSignature");
-        //ThrowError(u8"BadState");
-    }
-}
-
-template <>
-String Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
-{
-    USING_EMSCRIPTEN;
-    USING_INSANE_EXCEPTION;
-    USING_INSANE_CRYPTO;
     try
     {
-        const val value = emscripten::val::global(u8"localStorage").call<emscripten::val>(u8"getItem", val(key));
-        return value.isNull() ? EMPTY_STRING : AesManager::DecryptFromBase64(value.as<String>(), password);
+        String passwordStr = password.as<String>();
+        const val value = val::global(u8"localStorage").call<val>(u8"getItem", key);
+        if(passwordStr == EMPTY_STRING)
+        {
+            return !value? val(EMPTY_STRING) : value;
+        }
+        return !value ? val(EMPTY_STRING) : val(AesManager::DecryptFromBase64(value.as<String>(), passwordStr));
     }
     catch (const Insane::Exception::ExceptionBase &ex)
     {
-        Console::Log("ERROR GetValue NULL_STRING"s);
-        return NULL_STRING;
+        return val(EMPTY_STRING);
     }
 }
 
-template <>
-emscripten::val Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
+template<>
+String Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
 {
-    USING_EMSCRIPTEN;
-    return val(GetValue(key, password));
+    return GetValue(key, password).as<String>();
 }
 
-#define lkey LocalStorage::GetValue(Js::GetProperty(u8"key"s, INSANE_EMSCRIPTEN_KEY, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), INSANE_EMSCRIPTEN_KEY)
-#define lmatterEnergy LocalStorage::GetValue(Js::GetProperty(u8"MatterEnergy"s, lkey, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), INSANE_EMSCRIPTEN_KEY + Converter::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + lkey)
-void Insane::Emscripten::Js::CheckState()
+template<>
+EmscriptenVal Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
 {
     USING_EMSCRIPTEN;
-    USING_INSANE_CRYPTO;
+    return GetValue(val(key), val(password));
+}
+
+template<>
+String Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
+{
+    USING_EMSCRIPTEN;
+    return GetValue(val(key), val(password)).as<String>();
+}
+
+template<>
+void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password)
+{
+    USING_EMSCRIPTEN;
     USING_INSANE_EXCEPTION;
-    val::global("console").call<void>("time", "CheckState"s);
+    USING_INSANE_CRYPTO;
+    USING_INSANE_STR;
     try
     {
-        if (lkey.empty() || lmatterEnergy.empty())
+        if(password.as<String>() == EMPTY_STRING)
         {
-            Console::Log("LKEY: "s, lkey);
-            Console::Log("LMATTERENERGY: "s, lmatterEnergy);
-            throw ExceptionBase(u8"BadState CheckState Empty"s);
+            val::global(u8"localStorage").call<void>(u8"setItem", key, value);    
+            return;
         }
-        CheckSignature(u8"Browser1"s, u8"Browser1Signature"s, lkey, lmatterEnergy);
-        CheckSignature(u8"Browser2"s, u8"Browser2Signature"s, lkey, lmatterEnergy);
-        Console::Info(u8"Optimal state"s);
-        val::global("console").call<void>("timeEnd", "CheckState"s);
+        val::global(u8"localStorage").call<void>(u8"setItem", key, AesManager::EncryptToBase64(value.as<String>(), password.as<String>()));
     }
-    catch (const ExceptionBase &e)
+    catch(const ExceptionBase& e)
     {
-        val::global("console").call<void>("timeEnd", "CheckState"s);
-        throw ExceptionBase(u8"BadState CheckState Exception. "s + "Base: " + e.Message());
-    }
+        
+    } 
 }
 
-emscripten::val Insane::Emscripten::Js::Init(const String &key)
+template<>
+void Insane::Emscripten::LocalStorage::SetValue(const String &key, const String &value, const String &password)
 {
     USING_EMSCRIPTEN;
-    USING_INSANE_CRYPTO;
-    USING_INSANE_EXCEPTION;
-    //FreeState();
-    SetVars();
-    bool log = true;
-    EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
-    onFingerprintjs2LoadedCallback = [log](emscripten::val scriptId) -> emscripten::val {
-        return Js::LoadScript("Libs/ClientJS/client.min.js"s, log);
-    };
-
-    EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
-    onClientJSLoadedCallback = [log](emscripten::val scriptId) -> emscripten::val {
-        return Js::LoadScript("Libs/Ua-parser/ua-parser.min.js"s, log);
-    };
-
-    EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
-    onUaParserLoadedCallback = [log](emscripten::val scriptId) -> emscripten::val {
-        return Js::ImportModule("./Libs/Bowser/bowser.js"s);
-    };
-
-    std::function<val(val)> onBowserModuleLoadedCallback = [key](emscripten::val bowserModule) -> emscripten::val {
-        USING_INSANE_EMSCRIPTEN;
-        val browser1 = bowserModule[u8"default"].call<val>(u8"getParser", Browser::GetUserAgent());
-        val browser2 = val::global(u8"UAParser").new_(Browser::GetUserAgent());
-        INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser1"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), browser1);
-        INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser2"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), browser2);
-        return val::global(u8"Fingerprint2").call<val>(u8"getPromise");
-    };
-
-    EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-    onFingerprint2LoadedCallback = [key](emscripten::val components) -> void {
-        EMSCRIPTEN_VAL_FUNCTOR_TYPE(3)
-        mapCallback = [](val component, val index, val array) -> val {
-            return Converter::ToString(component[u8"value"]);
-        };
-        auto matterEnergy = HashManager::ToRawHash(Converter::ToString(val::global(u8"Fingerprint2").call<val>(u8"x64hash128", components.call<val>(u8"map", Js::Bind(mapCallback)).call<val>(u8"join", val(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint"))), 31)).as<String>(), HashAlgorithm::SHA512);
-
-        Console::Log("MATTER ENERGY CALLBACK: "s, HashManager::ToBase64(matterEnergy));
-        Console::Log("KEY INIT: "s, HashManager::ToBase64(key));
-        INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser1Signature"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(u8"Browser1", key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), matterEnergy, HashAlgorithm::SHA512));
-        INSANE_EMSCRIPTEN_MAIN_PROPERTY.set(Js::GetProperty(u8"Browser2Signature"s, key, INSANE_ESPECIAL_PROPERTY_SUFFIX), HashManager::ToBase64Hmac(Json::Serialize<String>(INSANE_EMSCRIPTEN_MAIN_PROPERTY[Js::GetProperty(u8"Browser2", key, INSANE_ESPECIAL_PROPERTY_SUFFIX)]), matterEnergy, HashAlgorithm::SHA512));
-        LocalStorage::SetValue(Js::GetProperty(u8"MatterEnergy"s, key, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), matterEnergy, INSANE_EMSCRIPTEN_KEY + Converter::ToString(val::global(u8"ClientJS").new_().call<val>(u8"getFingerprint")).as<String>() + key);
-        LocalStorage::SetValue(Js::GetProperty(u8"key"s, INSANE_EMSCRIPTEN_KEY, INSANE_LOCAL_STORAGE_VOLATILE_ESPECIAL_PROPERTY_SUFFIX), key, INSANE_EMSCRIPTEN_KEY);
-
-        Console::Info(u8"All Components Loaded"s);
-        try
-        {
-            Js::CheckState();
-        }
-        catch (const ExceptionBase &e)
-        {
-            //RemoveAllVolatile
-            Js::ThrowError(e.Message());
-        }
-    };
-
-    EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-    onErrorCallback = [](emscripten::val error) {
-        error.throw_();
-    };
-
-    Js::LoadScript(val(u8"Libs/Fingerprintjs2/fingerprint2.js"), log)
-        .call<val>(u8"then", Js::Bind(onFingerprintjs2LoadedCallback))
-        .call<val>(u8"then", Js::Bind(onClientJSLoadedCallback))
-        .call<val>(u8"then", Js::Bind(onUaParserLoadedCallback))
-        .call<val>(u8"then", Js::Bind(onBowserModuleLoadedCallback))
-        .call<val>(u8"then", Js::Bind(onFingerprint2LoadedCallback))
-        .call<val>(u8"catch", Js::Bind(onErrorCallback));
-    Console::Log("Executed"s);
-    return val(true);
+    SetValue(val(key), val(value), val(password));
 }
 
 void Insane::Emscripten::Js::ThrowError(const String &message)
@@ -1116,62 +1082,7 @@ void Insane::Emscripten::Js::ThrowError(const String &message)
     val::global("Error").new_(val(message)).throw_();
 }
 
-/* Console */
 
-/* LocalStorage */
-
-bool Insane::Emscripten::LocalStorage::SetValue(const String &key, const String &value, const String &password) noexcept
-{
-    USING_EMSCRIPTEN;
-    USING_INSANE_EXCEPTION;
-    USING_INSANE_CRYPTO;
-    try
-    {
-        emscripten::val::global(u8"localStorage").call<void>(u8"setItem", key, AesManager::EncryptToBase64(value, password));
-        return true;
-    }
-    catch (const ExceptionBase &e)
-    {
-        Console::Log("Error SetValue"s);
-        return false;
-    }
-}
-
-String Insane::Emscripten::LocalStorage::GetVolatileValue(const String &key, const String &password) noexcept
-{
-    USING_EMSCRIPTEN;
-    USING_INSANE_EXCEPTION;
-    USING_INSANE_CRYPTO;
-    try
-    {
-        Js::CheckState();
-    }
-    catch (const ExceptionBase &e)
-    {
-        Js::FreeState();
-        Js::ThrowError(e.Message());
-    }
-
-    String value = GetValue(INSANE_LOCAL_STORAGE_VOLATILE_PREFFIX + key, lmatterEnergy + password);
-    return value;
-}
-
-bool Insane::Emscripten::LocalStorage::SetVolatileValue(const String &key, const String &value, const String &password) noexcept
-{
-    USING_EMSCRIPTEN;
-    USING_INSANE_EXCEPTION;
-    USING_INSANE_CRYPTO;
-    try
-    {
-        Js::CheckState();
-    }
-    catch (const ExceptionBase &e)
-    {
-        Js::FreeState();
-        Js::ThrowError(e.Message());
-    }
-    return SetValue(INSANE_LOCAL_STORAGE_VOLATILE_PREFFIX + key, value, lmatterEnergy + password);
-}
 
 template <>
 void Insane::Emscripten::LocalStorage::RemoveValue(const emscripten::val &key) noexcept
@@ -1193,18 +1104,28 @@ void Insane::Emscripten::LocalStorage::Clear()
     val::global("localStorage").call<void>(u8"clear");
 }
 
-void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const String &preffix)
+template<>
+void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const EmscriptenVal &preffix)
 {
     USING_EMSCRIPTEN;
     USING_INSANE_STR;
     for (val value : emscripten::vecFromJSArray<val>(val::global("Object").call<val>(u8"entries", val::global("localStorage"))))
     {
-        if (Strings::StartsWith(value[0].as<String>(), preffix))
+        if (Strings::StartsWith(value[0].as<String>(), preffix.as<String>()))
         {
             LocalStorage::RemoveValue(value[0]);
         }
     }
 }
+
+template<>
+void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const String &preffix)
+{
+    USING_EMSCRIPTEN;
+    RemoveValuesStartingWith(val(preffix));
+}
+
+
 /* No eliminar, 
 esta función debe ir en el archivo .h, se encuentra en pruebas la implementación de especializaciones,
 si no cumple las espectativas se debe borrar el código y dejar solamente esta función*/

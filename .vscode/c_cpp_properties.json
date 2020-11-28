@@ -4,6 +4,7 @@
             "name": "EmscriptenWin",
             "includePath": [
                 "${workspaceFolder}/include",
+                "${workspaceFolder}/include/Insane",
                 "${workspaceFolder}/../InsaneCpp/include",
                 "${EMSCRIPTEN_DIR}/upstream/emscripten/system/include/**"
             ],
