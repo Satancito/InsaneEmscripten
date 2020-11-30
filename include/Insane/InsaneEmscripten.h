@@ -86,7 +86,8 @@ namespace Insane::Emscripten
             TypeOf,
             IsNull,
             IsUndefined,
-            IsNullOrUndefined
+            IsNullOrUndefined,
+            ToString
         };
 
         static EmscriptenVal CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType);
@@ -101,6 +102,7 @@ namespace Insane::Emscripten
         [[nodiscard]] static bool IsNull(const EmscriptenVal &a);
         [[nodiscard]] static bool IsUndefined(const EmscriptenVal &a);
         [[nodiscard]] static bool IsNullOrUndefined(const EmscriptenVal &a);
+        [[nodiscard]] static EmscriptenVal ToString(const EmscriptenVal &a);
     };
 
     class Converter final
@@ -454,7 +456,7 @@ namespace Insane::Emscripten
         template <typename ReturnType = EmscriptenVal,
                   typename ParamsType = EmscriptenVal,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                       std::is_same_v<ReturnType, emscripten::val>>,
+                                                       std::is_same_v<ReturnType, EmscriptenVal>>,
                   typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
                                                        std::is_same_v<ParamsType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetValue(const ParamsType &key, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
@@ -462,7 +464,7 @@ namespace Insane::Emscripten
         template <typename ParamsType = EmscriptenVal,
                   typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
                                                        std::is_same_v<ParamsType, emscripten::val>>>
-        static void SetValue(const ParamsType &key, const ParamsType &value, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept(false);
+        static void SetValue(const ParamsType &key, const ParamsType &value, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
 
         template <typename ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||

@@ -125,7 +125,6 @@ EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a,
     case OperatorType::IsNullOrUndefined:
         break;
     default:
-        Js::ThrowError(u8"Not implemented operator.");
         break;
     }
 
@@ -195,6 +194,12 @@ bool Insane::Emscripten::Operator::IsUndefined(const EmscriptenVal &a)
 bool Insane::Emscripten::Operator::IsNullOrUndefined(const emscripten::val &a)
 {
     return IsNull(a) || IsUndefined(a);
+}
+
+EmscriptenVal Insane::Emscripten::Operator::ToString(const emscripten::val &a)
+{
+    USING_EMSCRIPTEN;
+    return VAL_GLOBAL.call<val>(u8"String", a);
 }
 
 /* Promise */
@@ -1012,15 +1017,21 @@ emscripten::val Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &
     USING_INSANE_STR;
     try
     {
-        String passwordStr = password.as<String>();
+        String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
         const val value = val::global(u8"localStorage").call<val>(u8"getItem", key);
+        Console::Log("key='%s' password='%s'"s, key, passwordStr);
+        Console::Log("The value is %s"s,value);
         if(passwordStr == EMPTY_STRING)
         {
             return !value? val(EMPTY_STRING) : value;
         }
         return !value ? val(EMPTY_STRING) : val(AesManager::DecryptFromBase64(value.as<String>(), passwordStr));
     }
-    catch (const Insane::Exception::ExceptionBase &ex)
+    catch (const std::exception &ex)
+    {
+        return val(EMPTY_STRING);
+    }
+    catch (...)
     {
         return val(EMPTY_STRING);
     }
@@ -1047,7 +1058,7 @@ String Insane::Emscripten::LocalStorage::GetValue(const String &key, const Strin
 }
 
 template<>
-void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password)
+void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password) noexcept
 {
     USING_EMSCRIPTEN;
     USING_INSANE_EXCEPTION;
@@ -1055,12 +1066,13 @@ void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const 
     USING_INSANE_STR;
     try
     {
-        if(password.as<String>() == EMPTY_STRING)
+        String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
+        if(passwordStr == EMPTY_STRING)
         {
             val::global(u8"localStorage").call<void>(u8"setItem", key, value);    
             return;
         }
-        val::global(u8"localStorage").call<void>(u8"setItem", key, AesManager::EncryptToBase64(value.as<String>(), password.as<String>()));
+        val::global(u8"localStorage").call<void>(u8"setItem", key, AesManager::EncryptToBase64(Operator::ToString(value).as<String>(), passwordStr));
     }
     catch(const ExceptionBase& e)
     {
@@ -1069,7 +1081,7 @@ void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const 
 }
 
 template<>
-void Insane::Emscripten::LocalStorage::SetValue(const String &key, const String &value, const String &password)
+void Insane::Emscripten::LocalStorage::SetValue(const String &key, const String &value, const String &password) noexcept
 {
     USING_EMSCRIPTEN;
     SetValue(val(key), val(value), val(password));
