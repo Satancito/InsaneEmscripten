@@ -4,6 +4,7 @@
 
 #include <Insane/Insane.h>
 #define USING_INSANE_EXCEPTION using namespace Insane::Exception
+
 namespace Insane::Exception {
 
 	class ExceptionBase : public std::exception {

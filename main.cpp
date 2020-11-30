@@ -53,17 +53,25 @@ void TestLocalStorage()
 {
     USING_EMSCRIPTEN;
     USING_INSANE_EMSCRIPTEN;
-    LocalStorage::SetValue("ValorCifrado", "HelloWorld", "password");
-    LocalStorage::SetValue("ValorNoCifrado", "HelloWorld");
-    Console::Log(LocalStorage::GetValue("ValorCifrado", "password"));
-    Console::Log(LocalStorage::GetValue("ValorNoCifrado"));
+    LocalStorage::SetValue<String>("ValorCifrado", "HelloWorld", "password");
+    LocalStorage::SetValue<String>("ValorNoCifrado", "HelloWorld");
+    Console::Log(LocalStorage::GetValue<String>("ValorCifrado"s, "password"s));
+    Console::Log(LocalStorage::GetValue<String>("ValorNoCifrado"s));
 
-    auto x = LocalStorage::SetValue("ValorCifrado", "HelloWorld!!!", "password");
-    x = LocalStorage::SetValue("ValorNoCifrado", "HelloWorld!!!");
-    Console::Log(LocalStorage::GetValue("ValorCifrado", "password"));
-    Console::Log(LocalStorage::GetValue("ValorNoCifrado"));
-    Console::Log(LocalStorage::GetValue("ValorCifrado", "password15"));
-    Console::Log(LocalStorage::GetValue("ValorCifradoxxx"));
+    LocalStorage::SetValue<String>("ValorCifrado"s, "HelloWorld!!!"s, "password"s);
+    LocalStorage::SetValue<String>("ValorNoCifrado", "HelloWorld!!!");
+    Console::Log(LocalStorage::GetValue<String>("ValorCifrado"s, "password"s));
+    Console::Log(LocalStorage::GetValue<String>("ValorNoCifrado"s));
+    
+    Console::Log(LocalStorage::GetValue<>("ValorCifrado"s, "password15"s));
+    Console::Log(LocalStorage::GetValue<String>(val("ValorCifradoxxx"s)));
+
+    LocalStorage::SetValue(val::undefined(), val::undefined(), val("password"s));
+    LocalStorage::SetValue(val::null(), val::null(), val("password"s));
+    LocalStorage::SetValue(val::array(), val::undefined());
+    LocalStorage::SetValue(val::global(), val::null());
+    
+
 }
 
 #define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s
@@ -94,11 +102,12 @@ int main()
     Console::Log("Encrypted: "s, enc);
     try
     {
-        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key));
+        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key+"s"));
     }
-    catch (const ExceptionBase &e)
+
+    catch (ExceptionBase &ex)
     {
-        std::cerr << e.Message() << "- █ - " << e.Code() << '\n';
+        std::cerr << "ExceptionBase" << '\n';
     }
 
     //Js::Init(propertyKey);
@@ -109,8 +118,9 @@ int main()
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
-    // TestBrowser();
-    // TestLocalStorage();
+     TestBrowser();
+     TestLocalStorage();
+    
     Console::Log(Browser::GetNameAsync());
     Console::Log(Browser::GetNameAsync(emscripten::val::null()));
     Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
