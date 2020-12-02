@@ -21,7 +21,7 @@ namespace Insane::Emscripten::Internal
     {
         USING_EMSCRIPTEN;
         USING_INSANE_CRYPTO;
-        data = HashManager::ToRawHmac(data, INSANE_EMSCRIPTEN_KEY, HashAlgorithm::SHA512);
+        data = HashManager::ToRawHmac(data, INSANE_EMSCRIPTEN_KEY, HashAlgorithm::Sha512);
     begin:
         if (normal)
         {
@@ -953,7 +953,7 @@ String Insane::Emscripten::Js::GetProperty(const String &name, const String &key
 {
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
-    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix ) + HashManager::ToAlphanumericBase64(HashManager::ToBase64Hmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::SHA512));
+    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix ) + HashManager::ToAlphanumericBase64(HashManager::ToBase64Hmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::Sha512));
 }
 
 emscripten::val Insane::Emscripten::Js::Bind(const emscripten::val &fx)
@@ -1019,8 +1019,6 @@ emscripten::val Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &
     {
         String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
         const val value = val::global(u8"localStorage").call<val>(u8"getItem", key);
-        Console::Log("key='%s' password='%s'"s, key, passwordStr);
-        Console::Log("The value is %s"s,value);
         if(passwordStr == EMPTY_STRING)
         {
             return !value? val(EMPTY_STRING) : value;

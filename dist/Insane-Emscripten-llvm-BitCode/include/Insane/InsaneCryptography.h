@@ -12,11 +12,11 @@ namespace Insane::Crypto
 {
 	enum class HashAlgorithm
 	{
-		MD5,
-		SHA1,
-		SHA256,
-		SHA384,
-		SHA512
+		Md5,
+		Sha1,
+		Sha256,
+		Sha384,
+		Sha512
 	};
 
 	class HashManager
@@ -30,10 +30,10 @@ namespace Insane::Crypto
 		[[nodiscard]] static String RemoveLineBreaks(const String& base64);
 		[[nodiscard]] static String ToUrlEncodedBase64(const String& base64);
 		[[nodiscard]] static String ToDefaultEncodedBase64(const String& base64);
-		[[nodiscard]] static String ToRawHash(const String& data, HashAlgorithm algorithm = HashAlgorithm::SHA512);
-		[[nodiscard]] static String ToBase64Hash(const String& data, HashAlgorithm algorithm = HashAlgorithm::SHA512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
-		[[nodiscard]] static String ToRawHmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::SHA512);
-		[[nodiscard]] static String ToBase64Hmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::SHA512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
+		[[nodiscard]] static String ToRawHash(const String& data, HashAlgorithm algorithm = HashAlgorithm::Sha512);
+		[[nodiscard]] static String ToBase64Hash(const String& data, HashAlgorithm algorithm = HashAlgorithm::Sha512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
+		[[nodiscard]] static String ToRawHmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::Sha512);
+		[[nodiscard]] static String ToBase64Hmac(const String& data, const String& key, HashAlgorithm algorithm= HashAlgorithm::Sha512, size_t lineBreaks = NO_LINE_BREAKS, bool urlEncoded = false);
 		[[nodiscard]] static String ToAlphanumericBase64(const String& data, size_t lineBreaks = NO_LINE_BREAKS);
 	private:
 	};
@@ -78,16 +78,25 @@ namespace Insane::Crypto
 		std::string privateKey;
 	};
 
+	enum class RsaKeyEncoding
+	{
+		Ber,
+		Pem,
+		Xml,
+		Json
+	};
+
 	class RsaManager {
 	public:
 		[[nodiscard]] RsaManager();
 		~RsaManager();
-		[[nodiscard]] static Insane::Crypto::RsaKeyPair CreateKeyPair(const Size& keySize = 4096, bool keyAsXml = false, bool indentXml = false) noexcept(false);
+		[[nodiscard]] static Insane::Crypto::RsaKeyPair CreateKeyPair(const Size& keySize = 4096, const RsaKeyEncoding &encoding = RsaKeyEncoding::Ber, const bool& indent = true);
 		[[nodiscard]] static String EncryptRaw(const String& data, const String& publicKey, bool keyAsXml = false) noexcept(false);
 		[[nodiscard]] static String DecryptRaw(const String& data, const String& privateKey, bool keyAsXml = false) noexcept(false);
 		[[nodiscard]] static String EncryptToBase64(const String& data, const String& publicKey, bool keyAsXml = false, bool urlEncoded = false) noexcept(false);
 		[[nodiscard]] static String DecryptFromBase64(const String& data, const String& privateKey, bool keyAsXml = false) noexcept(false);
 	private:
+		[[nodiscard]] static RsaKeyEncoding GetKeyEncoding(const String& key);
 	};
 }
 

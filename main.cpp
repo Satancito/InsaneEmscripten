@@ -74,6 +74,26 @@ void TestLocalStorage()
 
 }
 
+void TestRsa()
+{
+    USING_EMSCRIPTEN;
+    USING_INSANE_CRYPTO;
+    USING_INSANE_EMSCRIPTEN;
+
+    RsaKeyPair keyPair = RsaManager::CreateKeyPair(4096, RsaKeyEncoding::Ber, false);
+    Console::Log(u8"█ BER \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Pem, false);
+    Console::Log(u8"█ PEM \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, true);
+    Console::Log(u8"█ JSON INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, false);
+    Console::Log(u8"█ JSON UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, true);
+    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, false);
+    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+}
+
 #define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s
 #define INSANE_KEY u8"InsaneKey"s
 
@@ -166,6 +186,7 @@ int main()
     Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
     Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
 
+TestRsa();
     // Insane::Core::Console::Pause();
     // Insane::Core::Console::PauseAny();
     // Insane::Core::Console::Clear();
