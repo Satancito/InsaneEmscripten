@@ -62,7 +62,7 @@ void TestLocalStorage()
     LocalStorage::SetValue<String>("ValorNoCifrado", "HelloWorld!!!");
     Console::Log(LocalStorage::GetValue<String>("ValorCifrado"s, "password"s));
     Console::Log(LocalStorage::GetValue<String>("ValorNoCifrado"s));
-    
+
     Console::Log(LocalStorage::GetValue<>("ValorCifrado"s, "password15"s));
     Console::Log(LocalStorage::GetValue<String>(val("ValorCifradoxxx"s)));
 
@@ -70,9 +70,8 @@ void TestLocalStorage()
     LocalStorage::SetValue(val::null(), val::null(), val("password"s));
     LocalStorage::SetValue(val::array(), val::undefined());
     LocalStorage::SetValue(val::global(), val::null());
-    
-
 }
+
 
 void TestRsa()
 {
@@ -80,18 +79,44 @@ void TestRsa()
     USING_INSANE_CRYPTO;
     USING_INSANE_EMSCRIPTEN;
 
-    RsaKeyPair keyPair = RsaManager::CreateKeyPair(4096, RsaKeyEncoding::Ber, false);
+    String data = u8"Hello world!!! 🐶"s;
+    String key = u8"🐶🐶🐶"s;
+
+    RsaKeyPair keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Ber, false);
     Console::Log(u8"█ BER \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    String encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+
     keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Pem, false);
     Console::Log(u8"█ PEM \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+
     keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, true);
     Console::Log(u8"█ JSON INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+
     keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, false);
     Console::Log(u8"█ JSON UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+
     keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, true);
-    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    Console::Log(u8"█ XML INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+
     keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, false);
-    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    Console::Log(u8"█ XML UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"Encrypted: %s"s, encrypted);
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 }
 
 #define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s
@@ -122,7 +147,7 @@ int main()
     Console::Log("Encrypted: "s, enc);
     try
     {
-        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key+"s"));
+        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key + "s"));
     }
 
     catch (ExceptionBase &ex)
@@ -138,9 +163,9 @@ int main()
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
     // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
-     TestBrowser();
-     TestLocalStorage();
-    
+    TestBrowser();
+    TestLocalStorage();
+
     Console::Log(Browser::GetNameAsync());
     Console::Log(Browser::GetNameAsync(emscripten::val::null()));
     Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
@@ -182,11 +207,11 @@ int main()
     {
         Console::Log(u8"- MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
     }
-    
+
     Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
     Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
 
-TestRsa();
+    TestRsa();
     // Insane::Core::Console::Pause();
     // Insane::Core::Console::PauseAny();
     // Insane::Core::Console::Clear();

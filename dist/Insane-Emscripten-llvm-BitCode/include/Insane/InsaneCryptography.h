@@ -2,6 +2,7 @@
 #ifndef INSANE_CRYPOGRAPHY_H
 #define INSANE_CRYPOGRAPHY_H
 #include <Insane/InsaneString.h>
+
 #define USING_INSANE_CRYPTO using namespace Insane::Crypto
 
 #define LINE_BREAKS_APPEAR_MIME ((size_t)76)
@@ -91,12 +92,14 @@ namespace Insane::Crypto
 		[[nodiscard]] RsaManager();
 		~RsaManager();
 		[[nodiscard]] static Insane::Crypto::RsaKeyPair CreateKeyPair(const Size& keySize = 4096, const RsaKeyEncoding &encoding = RsaKeyEncoding::Ber, const bool& indent = true);
-		[[nodiscard]] static String EncryptRaw(const String& data, const String& publicKey, bool keyAsXml = false) noexcept(false);
-		[[nodiscard]] static String DecryptRaw(const String& data, const String& privateKey, bool keyAsXml = false) noexcept(false);
-		[[nodiscard]] static String EncryptToBase64(const String& data, const String& publicKey, bool keyAsXml = false, bool urlEncoded = false) noexcept(false);
-		[[nodiscard]] static String DecryptFromBase64(const String& data, const String& privateKey, bool keyAsXml = false) noexcept(false);
-	private:
+		[[nodiscard]] static String EncryptRaw(const String& data, const String& publicKey) noexcept(false);
+		[[nodiscard]] static String DecryptRaw(const String& data, const String& privateKey) noexcept(false);
+		[[nodiscard]] static String EncryptToBase64(const String& data, const String& publicKey, bool urlEncoded = false) noexcept(false);
+		[[nodiscard]] static String DecryptFromBase64(const String& data, const String& privateKey) noexcept(false);
 		[[nodiscard]] static RsaKeyEncoding GetKeyEncoding(const String& key);
+		// [[nodiscard]] static bool IsValidPublicKey(const String& publicKey);
+		// [[nodiscard]] static bool IsValidPrivateKey(const String& privateKey);
+	private:
 	};
 }
 
