@@ -72,48 +72,64 @@ void TestLocalStorage()
     LocalStorage::SetValue(val::global(), val::null());
 }
 
+void HashManagerTests()
+{
+    USING_INSANE_EMSCRIPTEN;
+    USING_INSANE_CRYPTO;
+    Console::Log(u8"██████ HashManagerTests ██████"s);
+    String str = "A";
+    str = HashManager::ToBase64(str, 0, true);
+    Console::Log(str);
+    str = HashManager::FromBase64(str);
+    Console::Log(str);
 
-void TestRsa()
+    str = HashManager::ToBase64(str, 0, false);
+    Console::Log(str);
+    str = HashManager::FromBase64(str);
+    Console::Log(str);
+}
+
+void RsaManagerTests()
 {
     USING_EMSCRIPTEN;
     USING_INSANE_CRYPTO;
     USING_INSANE_EMSCRIPTEN;
-
+    Console::Log(u8"██████ RsaManagerTests ██████"s);
     String data = u8"Hello world!!! 🐶"s;
-    String key = u8"🐶🐶🐶"s;
+    UInt32 keySize = 4096;
 
-    RsaKeyPair keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Ber, false);
+    RsaKeyPair keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Ber, false);
     Console::Log(u8"█ BER \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     String encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 
-    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Pem, false);
+    keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Pem, false);
     Console::Log(u8"█ PEM \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 
-    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, true);
-    Console::Log(u8"█ JSON INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Json, true);
+    Console::Log(u8"█ JSON INDENTED \nPublic: \n@%s@\nPrivate: \n@%s@"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 
-    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Json, false);
+    keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Json, false);
     Console::Log(u8"█ JSON UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 
-    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, true);
+    keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Xml, true);
     Console::Log(u8"█ XML INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
 
-    keyPair = RsaManager::CreateKeyPair(1024, RsaKeyEncoding::Xml, false);
-    Console::Log(u8"█ XML UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
+    keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Xml, false);
+    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
     encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
     Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
@@ -122,6 +138,7 @@ void TestRsa()
 #define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s
 #define INSANE_KEY u8"InsaneKey"s
 
+#define JSON_RSA_PUBLIC_AND_PRIVATE_KEY_REGEX_PATTERN_STRING u8R"((\s*\{(?:\s*"Modulus"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Exponent"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"P"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Q"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"DP"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"DQ"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"InverseQ"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"D"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()){8}\s*\2\3\4\5\6\7\8\9\}\s*)|(\s*\{(?:\s*"Modulus"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Exponent"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()){2}\s*\11\12\}\s*))" //https://regex101.com/r/v5lUWw/1 //Add final Comma.
 int main()
 {
     USING_EMSCRIPTEN;
@@ -147,71 +164,74 @@ int main()
     Console::Log("Encrypted: "s, enc);
     try
     {
-        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key + "s"));
+        Console::Log("Decrypted: "s, AesManager::DecryptFromBase64(enc, key));
     }
 
     catch (ExceptionBase &ex)
     {
-        std::cerr << "ExceptionBase" << '\n';
+        std::cerr << "ExceptionBase" << ex.Message() << '\n';
     }
 
-    //Js::Init(propertyKey);
+    // TestBrowser();
+    //TestLocalStorage();
 
-    // Js::LoadScript(val("Libs/ClientJS/client.min1.js"));
-    // Js::LoadScript(val("Libs/ClientJS/client.min1.js"));
-    // Js::LoadScript(val("Libs/ClientJS/client.min1.js"));
-    // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
-    // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
-    // Js::LoadScript(val("Libs/ClientJS/client.min.js"));
-    TestBrowser();
-    TestLocalStorage();
+    // Console::Log(Browser::GetNameAsync());
+    // Console::Log(Browser::GetNameAsync(emscripten::val::null()));
+    // Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
 
-    Console::Log(Browser::GetNameAsync());
-    Console::Log(Browser::GetNameAsync(emscripten::val::null()));
-    Console::Log(Browser::GetNameAsync(emscripten::val::undefined()));
+    // Console::Log(Browser::GetAvailableScreenHeight<int>());
+    // Console::Log(Browser::GetAvailableScreenWidth<int>());
+    // Insane::Emscripten::OrientationType orientation = Browser::GetAvailableScreenOrientation<Insane::Emscripten::OrientationType>();
+    // Console::Log(static_cast<int>(orientation));
+    // Console::Log(Browser::GetScreenHeight<int>());
+    // Console::Log(Browser::GetScreenWidth<int>());
+    // Insane::Emscripten::OrientationType orientation2 = Browser::GetScreenOrientation<Insane::Emscripten::OrientationType>();
+    // Console::Log(static_cast<int>(orientation2));
+    // Console::Log(Browser::GetViewportHeight<int>());
+    // Console::Log(Browser::GetViewportWidth<int>());
+    // Insane::Emscripten::OrientationType orientation3 = Browser::GetViewportOrientation<Insane::Emscripten::OrientationType>();
+    // Console::Log(static_cast<int>(orientation3));
+    // Console::Log(u8"BrowserLang: "s, Browser::GetLanguage());
+    // std::vector<String> langs = Browser::GetLanguages<std::vector<String>>();
+    // Console::Log(u8"█ Languages"s);
+    // for (auto value : langs)
+    // {
+    //     Console::Log("- Language: "s, value);
+    // }
+    // Console::Log(u8"BrowserDeviceMemory: "s, Browser::GetDeviceMemory());
+    // Console::Log(u8"BrowserMaxTouchPoints: "s, Browser::GetMaxTouchPoints());
+    // Console::Log(u8"BrowserHardwareConcurrency: "s, Browser::GetHardwareConcurrency());
+    // Console::Log(u8"█ BrowserPlugins"s);
+    // for (Browser::Plugin value : Browser::GetPlugins<std::vector<Browser::Plugin>>())
+    // {
+    //     Console::Log(u8"- Plugin: %s"s, val(value.Name));
+    //     for (auto mime : value.MimeTypes)
+    //     {
+    //         Console::Log(u8"    MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
+    //     }
+    // }
 
-    Console::Log(Browser::GetAvailableScreenHeight<int>());
-    Console::Log(Browser::GetAvailableScreenWidth<int>());
-    Insane::Emscripten::OrientationType orientation = Browser::GetAvailableScreenOrientation<Insane::Emscripten::OrientationType>();
-    Console::Log(static_cast<int>(orientation));
-    Console::Log(Browser::GetScreenHeight<int>());
-    Console::Log(Browser::GetScreenWidth<int>());
-    Insane::Emscripten::OrientationType orientation2 = Browser::GetScreenOrientation<Insane::Emscripten::OrientationType>();
-    Console::Log(static_cast<int>(orientation2));
-    Console::Log(Browser::GetViewportHeight<int>());
-    Console::Log(Browser::GetViewportWidth<int>());
-    Insane::Emscripten::OrientationType orientation3 = Browser::GetViewportOrientation<Insane::Emscripten::OrientationType>();
-    Console::Log(static_cast<int>(orientation3));
-    Console::Log(u8"BrowserLang: "s, Browser::GetLanguage());
-    std::vector<String> langs = Browser::GetLanguages<std::vector<String>>();
-    Console::Log(u8"█ Languages"s);
-    for (auto value : langs)
-    {
-        Console::Log("- Language: "s, value);
-    }
-    Console::Log(u8"BrowserDeviceMemory: "s, Browser::GetDeviceMemory());
-    Console::Log(u8"BrowserMaxTouchPoints: "s, Browser::GetMaxTouchPoints());
-    Console::Log(u8"BrowserHardwareConcurrency: "s, Browser::GetHardwareConcurrency());
-    Console::Log(u8"█ BrowserPlugins"s);
-    for (Browser::Plugin value : Browser::GetPlugins<std::vector<Browser::Plugin>>())
-    {
-        Console::Log(u8"- Plugin: %s"s, val(value.Name));
-        for (auto mime : value.MimeTypes)
-        {
-            Console::Log(u8"    MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
-        }
-    }
+    // Console::Log(u8"█ BrowserMimeTypes"s);
+    // for (auto mime : Browser::GetMimeTypes<std::vector<Browser::MimeType>>())
+    // {
+    //     Console::Log(u8"- MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
+    // }
 
-    Console::Log(u8"█ BrowserMimeTypes"s);
-    for (auto mime : Browser::GetMimeTypes<std::vector<Browser::MimeType>>())
-    {
-        Console::Log(u8"- MimeType { Description: %s, Type: %s, Suffixes: %s }"s, mime.Description, mime.Type, mime.Suffixes);
-    }
+    // Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
+    // Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
 
-    Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
-    Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
+    HashManagerTests();
+    RsaManagerTests();
+//     String rsaKey = u8R"({
+// 	"Modulus": "sPEPEJ373N7UuKpUqPHc0CQxcH2M1JqrBaE+O2Pz6AyDeWxH1/NQxbK1MCFJYAMpWGiVTPBy2zJhta9Fu0xsXjrr+pn3QxWsqCrPjQGW62cdZrRJYid7cGEaxMNTz8GmovoP/YYhz4gRzIhKj363uHQbC7th9bWV6Kv50fAzkE6Ti1E8JxMYq728AmmE/OXLXXEvTjHp/T5g395LkVPuwnRbTyNUvX/fPEKZD9bnMPyKiNWUZRmy6xYFaICkgI+SyHWQMWNIZ1mxHDmKIlsm+qEhsnkSgyH0R19NjeAOLhMsYU4HUpDJR/WuvAdwq0C4M8s+CRR5hfWmcpmmTF347p9VuGnoGGxmEbGU9KCTj9X+MFmgGGD5bQXbl7TieXAYl1l1+knOdIeKy8FOC6jqXIirshU+dLbdWdcQuDYe9AKZFN1zfkXTS6AS77ET/qj0cnRbqXRGLHstPcZ/AFUkefy+VucSNpNNgdqfAlUa2S+gapQar5IWACMZkPFX5qiacoJcDd9PIzmKtnyUqQr6r25CBqdzxKUgTsMeetZa9awoyAyY8qh1AhR00AA5zFNa6jesB4NfCHXy69y5g7jh68Zfl81V0bKw1PCyWdn9ycb+UwcYO6Lw+m+skzlNBbmI6FDJQUvACBlyz65BlogPiw8gfyUaFlyHHRTrvl6g3n0=",
+// 	"Exponent": "AQAB"
+// })";
+//     rsaKey = Strings::ReplaceLastOf(rsaKey, u8"\"", u8"\",");
+//     if (Strings::IsMatch(rsaKey, JSON_RSA_PUBLIC_AND_PRIVATE_KEY_REGEX_PATTERN_STRING))
+//     {
+//         Console::Log("IS JSON"s);
+//     }
 
-    TestRsa();
     // Insane::Core::Console::Pause();
     // Insane::Core::Console::PauseAny();
     // Insane::Core::Console::Clear();
