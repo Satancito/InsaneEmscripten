@@ -10,11 +10,18 @@
 #define EMPTY_STRING (u8""s)
 #define NULL_STRING (u8"\0"s)
 #define CR_STRING (u8"\r"s)
+#define CARRIAGE_RETURN_STRING (u8"\r"s)
 #define CR_WSTRING (L"\r"s)
 #define LF_STRING (u8"\n"s)
+#define LINE_FEED_STRING (u8"\n"s)
 #define LF_WSTRING (L"\n"s)
 #define CRLF_STRING (u8"\r\n"s)
 #define CRLF_WSTRING (L"\r\n"s)
+#define VERTICAL_TAB_STRING (u8"\v"s)
+#define FORM_FEED_STRING (u8"\f"s)
+#define TAB_STRING (u8"\t"s)
+
+
 #define QUOTATION_MARK_STRING (u8"\"")
 #define QUOTATION_MARK_WSTRING (L"\"")
 #define UNDERSCORE_STRING (u8"_"s)
@@ -22,6 +29,7 @@
 #define SPACE_STRING (u8" "s)
 #define SPACE_WSTRING (L" "s)
 
+#define SPACE_CHAR ' '
 #define NULL_CHAR (static_cast<char>(0))
 #define NULL_WCHAR (static_cast<wchar_t>(0))
 #define LINE_FEED_CHAR (static_cast<char>(10))
@@ -47,6 +55,11 @@ namespace Insane::Str {
 		Strings();
 		~Strings();
 		static String Empty();
+		static String TrimStart(const String& data);
+		static String TrimEnd(const String& data);
+		static String Trim(const String& data);
+		static bool IsMatch(const String &input, const String & pattern);
+		static String ReplaceLastOf(const String & data, const String & toFind, const String & toReplace);
 		static String ReplaceAll(const String& data, const String& toFind, const String& toReplace);
 		static String ReplaceAll(const String& data, const std::initializer_list<std::pair<ToFind,ToReplace>>& pairs);
 		static String RemoveAll(const String& data, const String& toRemove);
@@ -55,6 +68,8 @@ namespace Insane::Str {
 		static std::vector<String> Split(const String& data, const String& toFind);
 		static size_t TotalChars(const String& data);
 		static String Reverse(const String& data, bool asUTF8 = true);
+		static String PadRight(const String& data, const size_t& totalWidth, const char& padding = SPACE_CHAR);
+		static String PadLeft(const String& data, const size_t& totalWidth, const char& padding = SPACE_CHAR);
 
 		static WString EmptyW();
 		static WString ReplaceAll(const WString& data, const WString& toFind, const WString& toReplace);

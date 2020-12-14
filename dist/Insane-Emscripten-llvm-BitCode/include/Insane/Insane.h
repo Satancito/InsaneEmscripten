@@ -26,6 +26,7 @@
 #include <vector>
 #include <set>
 #include <cstdlib>
+#include <regex>
 
 // WINDOWS
 #if (_WIN32)
