@@ -126,6 +126,9 @@ typedef size_t Size;
 typedef std::string String;
 typedef std::wstring WString;
 
+#define thisvalue (*this)
+
+
 using namespace std::string_literals;
 
 #endif // !INSANE_BASE_H

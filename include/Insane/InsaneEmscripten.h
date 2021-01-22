@@ -66,6 +66,27 @@ typedef emscripten::val EmscriptenVal;
 
 namespace Insane::Emscripten
 {
+    class EmscriptenValManager
+    {
+    public:
+        template <typename ParamType, typename ReturnType = ParamType>
+        static inline EmscriptenVal Transform(const ParamType &param)
+        {
+            return EmscriptenVal(param);
+        }
+
+        static inline EmscriptenVal Transform(const char *param)
+        {
+
+            return EmscriptenVal(String(param));
+        }
+
+        static inline EmscriptenVal Transform(char *param)
+        {
+
+            return EmscriptenVal(String(param));
+        }
+    };
 
     class Operator final
     {
@@ -161,6 +182,8 @@ namespace Insane::Emscripten
         };
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same<std::decay_t<ParamType>, const char *>::value ||
+                                                                   std::is_same<std::decay_t<ParamType>, char *>::value ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
@@ -183,14 +206,17 @@ namespace Insane::Emscripten
                 method = u8"log";
                 break;
             }
-            val::global("console").call<void>(method.c_str(), args...);
+            val::global("console").call<void>(method.c_str(), EmscriptenValManager::Transform(args)...);
         };
 
     public:
         Console() = default;
         ~Console() = default;
+
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same<std::decay_t<ParamType>, const char *>::value ||
+                                                                   std::is_same<std::decay_t<ParamType>, char *>::value ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
@@ -202,6 +228,8 @@ namespace Insane::Emscripten
 
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same<std::decay_t<ParamType>, const char *>::value ||
+                                                                   std::is_same<std::decay_t<ParamType>, char *>::value ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
@@ -213,6 +241,8 @@ namespace Insane::Emscripten
 
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same<std::decay_t<ParamType>, const char *>::value ||
+                                                                   std::is_same<std::decay_t<ParamType>, char *>::value ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
@@ -224,6 +254,8 @@ namespace Insane::Emscripten
 
         template <typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
+                                                                   std::is_same<std::decay_t<ParamType>, const char *>::value ||
+                                                                   std::is_same<std::decay_t<ParamType>, char *>::value ||
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
@@ -457,12 +489,12 @@ namespace Insane::Emscripten
                   typename ParamsType = EmscriptenVal,
                   typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
                                                        std::is_same_v<ReturnType, EmscriptenVal>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
+                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String> ||
                                                        std::is_same_v<ParamsType, emscripten::val>>>
         [[nodiscard]] static ReturnType GetValue(const ParamsType &key, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
 
         template <typename ParamsType = EmscriptenVal,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String>  ||
+                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String> ||
                                                        std::is_same_v<ParamsType, emscripten::val>>>
         static void SetValue(const ParamsType &key, const ParamsType &value, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
 

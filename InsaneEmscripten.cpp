@@ -54,7 +54,7 @@ namespace Insane::Emscripten::Internal
 
     bool AreEquals(String stra, String strb)
     {
-        const int b = (Insane::Crypto::RandomManager::Generate() / 612) * 216; //base
+        const int b = (Insane::Crypto::RandomManager::Next() / 612) * 216; //base
         int n = b;
         if (TransformN(b, n, stra + strb, true) && stra == strb)
         {
@@ -81,7 +81,7 @@ EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a,
     {
         VAL_GLOBAL.set(INSANE_STRING, val::object());
     }
-    String opName = u8"OP"s + HashManager::ToAlphanumericBase64(HashManager::ToBase64(RandomManager::Generate(16)));
+    String opName = u8"OP"s + HashManager::ToAlphanumericBase64(HashManager::ToBase64(RandomManager::Next(16)));
     String script = EMPTY_STRING;
     switch (operatorArityType)
     {
@@ -128,7 +128,7 @@ EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a,
         break;
     }
 
-    global.call<val>(u8"eval", Strings::ReplaceAll(script, {{u8"###"s, op}}));
+    global.call<val>(u8"eval", Strings::Replace(script, {{u8"###"s, op}}));
     val insane = val::global()[u8"Insane"];
 
     val result = val::null();
@@ -953,7 +953,7 @@ String Insane::Emscripten::Js::GetProperty(const String &name, const String &key
 {
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
-    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix ) + HashManager::ToAlphanumericBase64(HashManager::ToBase64Hmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::Sha512));
+    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix ) + HashManager::ToAlphanumericBase64(HashManager::ToRawHmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::Sha512));
 }
 
 emscripten::val Insane::Emscripten::Js::Bind(const emscripten::val &fx)

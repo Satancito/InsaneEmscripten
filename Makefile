@@ -26,7 +26,7 @@ OBJS = $(OBJ_DIR)/InsaneEmscripten.bc $(OBJ_DIR)/InsaneException.bc $(OBJ_DIR)/I
 All: Insane.bc
 	@echo ██ Copying files
 	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "$(INCLUDE_INSANE)/Insane" "$(DIST_DIR)/include/Insane") ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
-	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "$(INCLUDE_ME)" "$(DIST_DIR)" *.h) ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
+	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "$(INCLUDE_ME)/Insane" "$(DIST_DIR)/include/Insane" *.h) ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
 	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "Libs" "$(DIST_DIR)/js/Libs") ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
 	(Robocopy.exe /IS /NFL /NDL /NJH /NJS /nc /ns /np "." "$(DIST_DIR)/lib" "Insane.bc") ^& IF %ERRORLEVEL% LSS 4 exit /B 0
 

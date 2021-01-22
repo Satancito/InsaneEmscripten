@@ -2,6 +2,8 @@
 #ifndef INSANE_PREPROCESSOR_H
 #define INSANE_PREPROCESSOR_H
 #include <Insane/Insane.h>
+#include <Insane/InsaneException.h>
+#include <regex>
 #define INSANE_REPEAT_MAX 512
 
 #define AUXMACRO(x) x
@@ -28,6 +30,27 @@
 #define MERGE_1(x,x2) AUXMACRO(x)AUXMACRO(x2) 
 #define SEPARATE_0(x,x2) AUXMACRO(x)AUXMACRO(x2)
 #define SEPARATE_1(x,x2) AUXMACRO(x) AUXMACRO(x2)
+
+namespace Insane::Preprocessor
+{
+    static String Nameof(const String &name)
+    {
+        USING_INSANE_STR;
+        std::smatch groups;
+        String str = Strings::Trim(name);
+        if (std::regex_match(str, groups, std::regex(u8R"(^&?([_a-zA-Z]\w*(->|\.|::))*([_a-zA-Z]\w*)$)")))
+        {
+            if (groups.size() == 4)
+            {
+                return groups[3];
+            }
+        }
+        throw Insane::Exception::ArgumentException(Strings::Replace(u8R"(nameof(#). Invalid identifier "#".)", u8"#", name));
+    }
+} // namespace Insane::Preprocessor
+
+#define nameof(name) Insane::Preprocessor::Nameof(u8## #name ## s)
+#define cnameof(name) Insane::Preprocessor::Nameof(u8## #name ## s).c_str()
 
 #define INSANE_REPEAT_S_0(x)
 #define INSANE_REPEAT_S_1(x) x
@@ -2089,6 +2112,7 @@
 #define INSANE_REPEAT_ADVANCED_511(x,n,p1,p2,p3,p4,p5) x(n,p1,p2,p3,p4,p5)INSANE_REPEAT_ADVANCED_510(x,510,p1,p2,p3,p4,p5)
 #define INSANE_REPEAT_ADVANCED_512(x,n,p1,p2,p3,p4,p5) x(n,p1,p2,p3,p4,p5)INSANE_REPEAT_ADVANCED_511(x,511,p1,p2,p3,p4,p5)
 #define INSANE_REPEAT_ADVANCED(x,n,p1,p2,p3,p4,p5) INSANE_REPEAT_ADVANCED_##n(x,n,p1,p2,p3,p4,p5)
+
 
 #define VOID_TYPE() void
 #define STRING_TYPE() String

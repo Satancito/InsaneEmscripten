@@ -19,13 +19,19 @@ namespace Insane::Exception {
 
 	class ParseException : public ExceptionBase {
 	public:
-		ParseException(const String& _message = u8"Parse error.", const int& code = 0);
+		ParseException(const String& _message = u8"Parse exception.", const int& code = 0);
 	private:
 	};
 
 	class CryptoException : public ExceptionBase {
 	public:
-		CryptoException(const String& _message = u8"Crypto error.", const int& code = 0);
+		CryptoException(const String& _message = u8"Crypto exception.", const int& code = 0);
+	private:
+	};
+
+	class ArgumentException : public ExceptionBase {
+	public:
+		ArgumentException(const String& _message = u8"Argument exception.", const int& code = 0);
 	private:
 	};
 }
