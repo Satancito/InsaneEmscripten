@@ -27,38 +27,38 @@ Test-LastExitCode
 
 Write-Host "██ Compiling Insane.js" -ForegroundColor DarkGray
 Write-Host
-Write-Host "Minifying js files..."
-java -jar "./Tools/closure-compiler-v20200406.jar" `
---js "./Js/Pre.js" `
---js_output_file "./Js/Pre_Compiled.js" `
---language_in ECMASCRIPT_NEXT `
---language_out STABLE `
+# Write-Host "Minifying js files..."
+# java -jar "./Tools/closure-compiler-v20200406.jar" `
+# --js "./Js/Pre.js" `
+# --js_output_file "./Js/Pre_Compiled.js" `
+# --language_in ECMASCRIPT_NEXT `
+# --language_out STABLE `
 
-Test-LastExitCode
+# Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
---js "./Js/Post.js" `
---js_output_file "./Js/Post_Compiled.js" `
---language_in ECMASCRIPT_NEXT `
---language_out STABLE `
+# java -jar "./Tools/closure-compiler-v20200406.jar" `
+# --js "./Js/Post.js" `
+# --js_output_file "./Js/Post_Compiled.js" `
+# --language_in ECMASCRIPT_NEXT `
+# --language_out STABLE `
 
-Test-LastExitCode
+# Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
---js "./Js/ExternPre.js" `
---js_output_file "./Js/ExternPre_Compiled.js" `
---language_in ECMASCRIPT_NEXT `
---language_out STABLE `
+# java -jar "./Tools/closure-compiler-v20200406.jar" `
+# --js "./Js/ExternPre.js" `
+# --js_output_file "./Js/ExternPre_Compiled.js" `
+# --language_in ECMASCRIPT_NEXT `
+# --language_out STABLE `
 
-Test-LastExitCode
+# Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
---js "./Js/ExternPost.js" `
---js_output_file "./Js/ExternPost_Compiled.js" `
---language_in ECMASCRIPT_NEXT `
---language_out STABLE `
+# java -jar "./Tools/closure-compiler-v20200406.jar" `
+# --js "./Js/ExternPost.js" `
+# --js_output_file "./Js/ExternPost_Compiled.js" `
+# --language_in ECMASCRIPT_NEXT `
+# --language_out STABLE `
 
-Test-LastExitCode
+# Test-LastExitCode
 
 Write-Host "Compiling..."
 em++.bat `
@@ -81,6 +81,7 @@ Insane.bc `
 -s EXPORT_NAME=`'CreateModuleInstance`' `
 -s MODULARIZE=1 `
 -s EXPORTED_FUNCTIONS=[`'_main`'] `
+-s ALLOW_MEMORY_GROWTH=1 `
 -s EXTRA_EXPORTED_RUNTIME_METHODS=[`'ccall`',`'cwrap`',`'lengthBytesUTF8`',`'stringToUTF8`'] `
 --pre-js "Js/Pre_Compiled.js" `
 --post-js "Js/Post_Compiled.js" `

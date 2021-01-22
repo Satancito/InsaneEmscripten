@@ -96,56 +96,92 @@ void RsaManagerTests()
     USING_INSANE_EMSCRIPTEN;
     Console::Log(u8"██████ RsaManagerTests ██████"s);
     String data = u8"Hello world!!! 🐶"s;
+    String json;
     UInt32 keySize = 4096;
 
     RsaKeyPair keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Ber, false);
-    Console::Log(u8"█ BER \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    String encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ BER \nPublic: \n%s\nPrivate: \n%s"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    String encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
+    Console::Log(u8"███"s);
 
     keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Pem, false);
-    Console::Log(u8"█ PEM \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ PEM \nPublic: \n%s\nPrivate: \n%s"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
 
     keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Json, true);
-    Console::Log(u8"█ JSON INDENTED \nPublic: \n@%s@\nPrivate: \n@%s@"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ JSON INDENTED \nPublic: \n@%s@\nPrivate: \n@%s@"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
 
     keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Json, false);
-    Console::Log(u8"█ JSON UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ JSON UNINDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
 
     keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Xml, true);
-    Console::Log(u8"█ XML INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ XML INDENTED \nPublic: \n%s\nPrivate: \n%s"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
 
     keyPair = RsaManager::CreateKeyPair(keySize, RsaKeyEncoding::Xml, false);
-    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.GetPublicKey(), keyPair.GetPrivateKey());
-    encrypted = RsaManager::EncryptToBase64(data, keyPair.GetPublicKey());
+    Console::Log(u8"█ XML \nPublic: \n%s\nPrivate: \n%s"s, keyPair.PublicKey(), keyPair.PrivateKey());
+    json = keyPair.Serialize();
+    Console::Log(u8"Serialized:\n"s, json);
+    keyPair = RsaKeyPair::Deserialize(json);
+    encrypted = RsaManager::EncryptToBase64(data, keyPair.PublicKey());
     Console::Log(u8"Encrypted: %s"s, encrypted);
-    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.GetPrivateKey()));
+    Console::Log(u8"Decrypted: %s"s, RsaManager::DecryptFromBase64(encrypted, keyPair.PrivateKey()));
+}
+
+void TestScrypt()
+{
+    USING_INSANE_CRYPTO;
+    USING_INSANE_EMSCRIPTEN;
+    //Console::Log("Scrypt hash: %s"s, HashManager::ToBase64Scrypt(u8"mypassword"));//https://8gwifi.org/scrypt.jsp
 }
 
 #define INSANE_PROPERTY_NAMES_KEY u8"InsanePropertyNamesKey"s
 #define INSANE_KEY u8"InsaneKey"s
 
+
 #define JSON_RSA_PUBLIC_AND_PRIVATE_KEY_REGEX_PATTERN_STRING u8R"((\s*\{(?:\s*"Modulus"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Exponent"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"P"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Q"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"DP"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"DQ"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"InverseQ"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"D"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()){8}\s*\2\3\4\5\6\7\8\9\}\s*)|(\s*\{(?:\s*"Modulus"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()|\s*"Exponent"\s*:\s*"[a-zA-Z\d\+\/\\]+={0,2}"\s*\,()){2}\s*\11\12\}\s*))" //https://regex101.com/r/v5lUWw/1 //Add final Comma.
 int main()
 {
+
     USING_EMSCRIPTEN;
     USING_INSANE_EMSCRIPTEN;
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
     USING_INSANE_EXCEPTION;
+    //std::decay<const char[1]>::type x;
+    const char xxx[] = "hello";
+    char yyy[] = "world";
+    char *zzz = "Joma";
+    const char *www = "Satancito";
+    auto aaa = "HelloWorld!!!";
+    Console::Log("Param1 = %s Param2 = %s Param3 = %s Param4 = %s", www, xxx, yyy, zzz, aaa, 1, true, 540.00f, 640.00);
     //LoadScriptAsync(val("Libs/client.min.js"));
     // val x = JsManager::LoadScript(val("Libs/client.min.js"));
     // EMSCRIPTEN_VOID_FUNCTOR_TYPE(1) fx = [](val id){
@@ -219,18 +255,18 @@ int main()
 
     // Console::Log(u8"Browser::HasCookiesSupport"s, Browser::HasCookiesSupport());
     // Console::Log(u8"Browser::GetDoNotTrack"s, Browser::GetDoNotTrack());
-
-    HashManagerTests();
-    RsaManagerTests();
-//     String rsaKey = u8R"({
-// 	"Modulus": "sPEPEJ373N7UuKpUqPHc0CQxcH2M1JqrBaE+O2Pz6AyDeWxH1/NQxbK1MCFJYAMpWGiVTPBy2zJhta9Fu0xsXjrr+pn3QxWsqCrPjQGW62cdZrRJYid7cGEaxMNTz8GmovoP/YYhz4gRzIhKj363uHQbC7th9bWV6Kv50fAzkE6Ti1E8JxMYq728AmmE/OXLXXEvTjHp/T5g395LkVPuwnRbTyNUvX/fPEKZD9bnMPyKiNWUZRmy6xYFaICkgI+SyHWQMWNIZ1mxHDmKIlsm+qEhsnkSgyH0R19NjeAOLhMsYU4HUpDJR/WuvAdwq0C4M8s+CRR5hfWmcpmmTF347p9VuGnoGGxmEbGU9KCTj9X+MFmgGGD5bQXbl7TieXAYl1l1+knOdIeKy8FOC6jqXIirshU+dLbdWdcQuDYe9AKZFN1zfkXTS6AS77ET/qj0cnRbqXRGLHstPcZ/AFUkefy+VucSNpNNgdqfAlUa2S+gapQar5IWACMZkPFX5qiacoJcDd9PIzmKtnyUqQr6r25CBqdzxKUgTsMeetZa9awoyAyY8qh1AhR00AA5zFNa6jesB4NfCHXy69y5g7jh68Zfl81V0bKw1PCyWdn9ycb+UwcYO6Lw+m+skzlNBbmI6FDJQUvACBlyz65BlogPiw8gfyUaFlyHHRTrvl6g3n0=",
-// 	"Exponent": "AQAB"
-// })";
-//     rsaKey = Strings::ReplaceLastOf(rsaKey, u8"\"", u8"\",");
-//     if (Strings::IsMatch(rsaKey, JSON_RSA_PUBLIC_AND_PRIVATE_KEY_REGEX_PATTERN_STRING))
-//     {
-//         Console::Log("IS JSON"s);
-//     }
+    //TestScrypt();
+    //HashManagerTests();
+    //RsaManagerTests();
+    //     String rsaKey = u8R"({
+    // 	"Modulus": "sPEPEJ373N7UuKpUqPHc0CQxcH2M1JqrBaE+O2Pz6AyDeWxH1/NQxbK1MCFJYAMpWGiVTPBy2zJhta9Fu0xsXjrr+pn3QxWsqCrPjQGW62cdZrRJYid7cGEaxMNTz8GmovoP/YYhz4gRzIhKj363uHQbC7th9bWV6Kv50fAzkE6Ti1E8JxMYq728AmmE/OXLXXEvTjHp/T5g395LkVPuwnRbTyNUvX/fPEKZD9bnMPyKiNWUZRmy6xYFaICkgI+SyHWQMWNIZ1mxHDmKIlsm+qEhsnkSgyH0R19NjeAOLhMsYU4HUpDJR/WuvAdwq0C4M8s+CRR5hfWmcpmmTF347p9VuGnoGGxmEbGU9KCTj9X+MFmgGGD5bQXbl7TieXAYl1l1+knOdIeKy8FOC6jqXIirshU+dLbdWdcQuDYe9AKZFN1zfkXTS6AS77ET/qj0cnRbqXRGLHstPcZ/AFUkefy+VucSNpNNgdqfAlUa2S+gapQar5IWACMZkPFX5qiacoJcDd9PIzmKtnyUqQr6r25CBqdzxKUgTsMeetZa9awoyAyY8qh1AhR00AA5zFNa6jesB4NfCHXy69y5g7jh68Zfl81V0bKw1PCyWdn9ycb+UwcYO6Lw+m+skzlNBbmI6FDJQUvACBlyz65BlogPiw8gfyUaFlyHHRTrvl6g3n0=",
+    // 	"Exponent": "AQAB"
+    // })";
+    //     rsaKey = Strings::ReplaceLastOf(rsaKey, u8"\"", u8"\",");
+    //     if (Strings::IsMatch(rsaKey, JSON_RSA_PUBLIC_AND_PRIVATE_KEY_REGEX_PATTERN_STRING))
+    //     {
+    //         Console::Log("IS JSON"s);
+    //     }
 
     // Insane::Core::Console::Pause();
     // Insane::Core::Console::PauseAny();
@@ -299,3 +335,6 @@ EMSCRIPTEN_BINDINGS(exports)
     // register_vector<String>("VectorString");
     // function<void>(u8"RemoveVolatileValues", &Insane::Emscripten::LocalStorage::RemoveVolatileValues);
 }
+
+
+//TODO: IMPLEMENTAR OPERADOR = de Xtring
