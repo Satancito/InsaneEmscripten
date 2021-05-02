@@ -1,4 +1,4 @@
-CXX = em++
+#CXX = em++ 
 CXX_FLAGS = -c -std=c++17 --bind -s DISABLE_EXCEPTION_CATCHING=0 
 CXX_FLAGS_2 = -r -s DISABLE_EXCEPTION_CATCHING=0 
 # CXX_FLAGS = -c --bind -std=c++17 -O2 -s VERBOSE=1 -s DISABLE_EXCEPTION_CATCHING=0 
@@ -6,7 +6,7 @@ CXX_FLAGS_2 = -r -s DISABLE_EXCEPTION_CATCHING=0
 OBJ_DIR = build/obj
 DIST_DIR = dist/Insane-Emscripten-llvm-BitCode
 SOURCES_INSANE = ../InsaneCpp/src
-CRLF = @pwsh.exe -Command [System.Console]::WriteLine()
+CRLF = @pwsh -Command "[System.Console]::WriteLine()"
 
 
 INCLUDE_CPP = ../CommonCppIncludes
@@ -25,6 +25,7 @@ OBJS = $(OBJ_DIR)/InsaneEmscripten.bc $(OBJ_DIR)/InsaneException.bc $(OBJ_DIR)/I
 
 All: Insane.bc
 	@echo ██ Copying files
+	$(CRLF)
 	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "$(INCLUDE_INSANE)/Insane" "$(DIST_DIR)/include/Insane") ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
 	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "$(INCLUDE_ME)/Insane" "$(DIST_DIR)/include/Insane" *.h) ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
 	((Robocopy.exe /IS /S /NFL /NDL /NJH /NJS /nc /ns /np "Libs" "$(DIST_DIR)/js/Libs") ^& IF %ERRORLEVEL% LSS 4 exit /B 0) 
@@ -66,7 +67,7 @@ $(OBJ_DIR)/InsaneCore.bc: $(SOURCES_INSANE)/InsaneCore.cpp $(INCLUDE_INSANE)/Ins
 $(OBJS): | $(OBJ_DIR) $(DIST_DIR) $(DIST_DIR)/lib
 
 $(OBJ_DIR):
-	mkdir "$(OBJ_DIR)"
+	@pwsh -Command "New-Item $(OBJ_DIR) -Force -ItemType Container"
 
 $(DIST_DIR)/lib: 
 	mkdir "$(DIST_DIR)/lib"
