@@ -4,11 +4,13 @@
 #include <Insane/InsaneEmscripten.h>
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneCore.h>
+#include <Insane/Insane.h>
 
 void TestBrowser()
 {
     USING_EMSCRIPTEN;
     USING_INSANE_EMSCRIPTEN;
+    String xxx = u8"hello"s;
     auto x = "Non std::string literal";
     //Console::Log("Non std::string literal");
     //Console::Log("GOOOO"s);

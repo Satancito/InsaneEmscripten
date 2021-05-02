@@ -5,6 +5,9 @@ param (
     $Clean
 )
 
+$ErrorActionPreference = "Stop"
+Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
+
 function Test-LastExitCode {
     if($LASTEXITCODE -ne 0){
         Write-Host "ERROR: Check and try again. ErrorCode = $($LASTEXITCODE)." -ForegroundColor Red
