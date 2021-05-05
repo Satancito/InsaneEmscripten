@@ -1,6 +1,7 @@
 #pragma once
 #ifndef INSANE_CRYPOGRAPHY_H
 #define INSANE_CRYPOGRAPHY_H
+
 #include <Insane/InsaneString.h>
 
 #define USING_INSANE_CRYPTO using namespace Insane::Crypto

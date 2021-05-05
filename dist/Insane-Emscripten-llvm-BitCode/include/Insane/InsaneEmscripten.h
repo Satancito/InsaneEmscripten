@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 #ifndef __INSANE_EMSCRIPTEN_H__
 #define __INSANE_EMSCRIPTEN_H__
 
@@ -460,7 +460,7 @@ namespace Insane::Emscripten
         static void SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists = true);
-        static String GetProperty(const String &name, const String &key = EMPTY_STRING, const String &suffix = INSANE_PROPERTY_SUFFIX);
+        static String GetPropertyName(const String &name, const String &key = EMPTY_STRING, const String &suffix = INSANE_PROPERTY_SUFFIX);
         template <typename ReturnType,
                   typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ReturnType, void> ||

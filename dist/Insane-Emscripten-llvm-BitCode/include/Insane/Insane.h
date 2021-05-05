@@ -32,7 +32,7 @@
 #if (_WIN32)
 #include <Windows.h>
 #include <conio.h>
-#define WINDOW_PLATFORM 1
+#define WINDOWS_PLATFORM 1
 #define DLLCALL STDCALL
 #define DLLIMPORT _declspec(dllimport)
 #define DLLEXPORT _declspec(dllexport)

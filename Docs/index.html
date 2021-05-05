@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insane - Emscripten</title>
+    <link rel="icon" href="Assets/favicon/favicon.ico">
+    <script type="text/javascript" src="Insane.js"></script>
+</head>
+
+<body>
+    <h1>Emscripten - Tests</h1>
+    <button onclick="onclickEvent(0)">ShowInfo</button>
+    <p id="txtResult"></p>
+    
+    <script>
+        function GetOrientationString(orientation) {
+            switch (orientation) {
+                case 0:
+                    return "Landscape";
+                case 1:
+                    return "Portrait";
+                case 2:
+                    return "Square";
+                default:
+                    return "🚫";
+            }
+        }
+
+        async function onclickEvent(btn) {
+            const id = document.getElementById("txtResult");
+            
+            try {
+                switch (btn) {
+                    
+                    case 0:
+                        //Reference: https://amiunique.org/fp
+                        //https://webglreport.com/
+                        //https://panopticlick.eff.org/
+
+                        var innerHTML = "";
+                        var myDate = new Date();
+                        innerHTML += "<br /><b>Browser : </b>" + (await Insane.Module.BrowserGetNameAsync(null) || "🚫") + "<br />";
+                        innerHTML += "<br /><b>Fingerprint : </b>" + (await Insane.Module.BrowserGetFingerprintAsync("Salt here") || "🚫") + "<br />";
+                        innerHTML += "<b>UserAgent:</b> " + Insane.Module.BrowserGetUserAgent() + "<br />";
+                        innerHTML += "<b>Operating System : </b>" + (Insane.Module.BrowserGetOS(null) || "🚫") + "<br /><br />";
+                        innerHTML += "<b>ScreenHeight:</b> " + (Insane.Module.BrowserGetScreenHeight() ?? "🚫") + "<br />";
+                        innerHTML += "<b>ScreenWidth:</b> " + (Insane.Module.BrowserGetScreenWidth() ?? "🚫") + "<br />";
+                        innerHTML += "<b>ScreenSize:</b> " + (Insane.Module.BrowserGetScreenSize() ?? "🚫") + "<br />";
+                        innerHTML += "<b>Screen Orientation:</b> " + GetOrientationString(Insane.Module.BrowserGetScreenOrientation()) + "<br /><br />";
+
+                        innerHTML += "<b>AvailableScreenHeight:</b> " + (Insane.Module.BrowserGetAvailableScreenHeight() ?? "🚫") + "<br />";
+                        innerHTML += "<b>AvailableScreenWidth:</b> " + (Insane.Module.BrowserGetAvailableScreenWidth() ?? "🚫") + "<br />";
+                        innerHTML += "<b>AvailableScreenSize:</b> " + (Insane.Module.BrowserGetAvailableScreenSize() ?? "🚫") + "<br />";
+                        innerHTML += "<b>AvailableScreenOrientation:</b> " + GetOrientationString(Insane.Module.BrowserGetAvailableScreenOrientation()) + "<br /><br />";
+
+                        innerHTML += "<b>ViewportHeight:</b> " + (Insane.Module.BrowserGetViewportHeight() ?? "🚫") + "<br />";
+                        innerHTML += "<b>ViewportWidth:</b> " + (Insane.Module.BrowserGetViewportWidth() ?? "🚫") + "<br />";
+                        innerHTML += "<b>ViewportSize:</b> " + (Insane.Module.BrowserGetViewportSize() ?? "🚫") + "<br />";
+                        innerHTML += "<b>ViewportOrientation:</b> " + GetOrientationString(Insane.Module.BrowserGetViewportOrientation()) + "<br /><br />";
+
+                        innerHTML += "<b>WebGLRenderer : </b>" + (Insane.Module.BrowserGetWebGLRenderer() || "🚫") + "<br />";
+                        innerHTML += "<b>WebGLVendor : </b>" + (Insane.Module.BrowserGetWebGLVendor() || "🚫") + "<br /><br />";
+
+                        innerHTML += "<b>MaxTouchPoints:</b> " + (Insane.Module.BrowserGetMaxTouchPoints() ?? "🚫") + "<br />";
+                        innerHTML += "<b>DeviceMemory:</b> " + (Insane.Module.BrowserGetDeviceMemory() ?? "🚫") + "<br />";
+                        innerHTML += "<b>NavigatorHardwareConcurrency:</b> " + (Insane.Module.BrowserGetHardwareConcurrency() ?? "🚫") + "<br /><br />";
+                        innerHTML += "<b>Language:</b> " + (Insane.Module.BrowserGetLanguage() ?? "🚫") + "<br />";
+                        innerHTML += "<b>Languages:</b> <br />";
+                        innerHTML += "<ul>";
+                        var langs = Insane.Module.BrowserGetLanguages();
+                        for (let i = 0; i < langs.length; i++) {
+                            innerHTML += "<li><b>Language</b>: " + (langs[i] ?? "🚫") + " </li>";
+                        }
+                        innerHTML += "</ul>";
+
+                        innerHTML += "<b>TimezoneOffset Minutes:</b> " + (Insane.Module.BrowserGetTimezoneOffsetMinutes()) + "<br />";
+                        innerHTML += "<b>TimezoneOffset Seconds:</b> " + (Insane.Module.BrowserGetTimezoneOffsetSeconds()) + "<br />";
+                        innerHTML += "<b>TimezoneOffset Milliseconds:</b> " + (Insane.Module.BrowserGetTimezoneOffsetMilliseconds()) + "<br /><br />";
+
+                        innerHTML += "<b>NavigatorDoNotTrack:</b> " + Insane.Module.BrowserGetDoNotTrack() + "<br />";
+                        innerHTML += "<b>Cookies Supported:</b> " + Insane.Module.BrowserHasCookiesSupport()  + "<br /><br />";
+
+                        var mimeTypes = Insane.Module.BrowserGetMimeTypes();
+                        innerHTML += "<b>NavigatorMimeTypes:</b> " + (mimeTypes.length ?? "🚫") + "<br />";
+                        innerHTML += "<ul>";
+                        for (let i = 0; i < mimeTypes.length; i++) {
+                            innerHTML += "<li>MimeType { <b>Type</b>: " + (mimeTypes[i].Type || "🚫") + " | <b>Description:</b> " + (mimeTypes[i].Description || "🚫") + " | <b>Suffixes:</b> " + (mimeTypes[i].Suffixes || "🚫") + " }</li>";
+                        }
+                        innerHTML += "</ul>";
+
+                        var plugins = Insane.Module.BrowserGetPlugins();
+                        innerHTML += "<br><b>NavigatorPlugins:</b> " + (plugins.length ?? "🚫") + "<br />";
+                        innerHTML += "<ul>";
+                        for (let i = 0; i < plugins.length; i++) {
+                            innerHTML += "<li>Plugin { <b>Name</b>: " + (plugins[i].Name || "🚫");
+                            innerHTML += "<ul>";
+                            for (let j = 0; j < plugins[i].MimeTypes.length; j++) {
+                                innerHTML += "<li>MimeType{ <b>Type</b>: " + (plugins[i].MimeTypes[j].Type || "🚫") + " | <b>Description:</b> " + (plugins[i].MimeTypes[j].Description || "🚫") + " | <b>Suffixes:</b> " + (plugins[i].MimeTypes[j].Suffixes || "🚫") + " }</li>";
+                            }
+                            innerHTML += "</ul>";
+                            innerHTML += " }</li>";
+                        }
+                        innerHTML += "</ul><br />";
+                        let counter = 0;
+                        for (var value in Object.getOwnPropertyNames(Navigator.prototype)) {
+                            //console.log(value.Name);
+                            counter++;
+                        }
+                        innerHTML += "<b>Navigator TotalProperties: </b>" + (counter ?? "🚫") + "<br />";
+
+                        id.innerHTML = innerHTML;
+                        //console.log(innerHTML);
+                        break;
+                }
+            } catch (error) {
+                id.innerHTML += String(error) + "<br />";
+            }
+
+        }
+    </script>
+</body>
+
+</html>
