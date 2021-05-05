@@ -14,7 +14,7 @@
 // window.onmousedown = event =>{console.log("clicked from window")}
 // document.onmousedown = event =>{console.log("clicked from document")}
 
-namespace Insane::Emscripten::Internal
+namespace Insane::Emscripten::Internal 
 {
 
     bool TransformN(const int &base, int &result, std::string data, bool normal = true)
@@ -72,7 +72,7 @@ namespace Insane::Emscripten::Internal
 
 /* Operators */
 EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
-{
+{ 
     USING_EMSCRIPTEN;
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
@@ -905,7 +905,8 @@ EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenV
         val props = objectClass.call<val>(u8"getOwnPropertyNames", objectClass.call<val>(u8"getPrototypeOf", val::global()[u8"navigator"])).call<val>(u8"sort");
         ret += Json::Serialize<String>(props);
         ret += Converter::ToString<String>(props[u8"length"]);
-        return Operator::Add(val(u8"Insane"s), val(HashManager::ToBase64Hmac(ret, Converter::ToString<String>(key))));
+        Console::Warn(ret);
+        return Operator::Add(val(u8"Insane"s), val(HashManager::ToBase64Hmac(ret, Converter::ToString<String>(key)).Hash()));
     };
     return Browser::GetNameAsync().call<val>(u8"then", Js::Bind(callback));
 }
@@ -949,7 +950,7 @@ void Insane::Emscripten::Js::SetPropertyNull(EmscriptenVal object, const String 
     SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
-String Insane::Emscripten::Js::GetProperty(const String &name, const String &key, const String &suffix)
+String Insane::Emscripten::Js::GetPropertyName(const String &name, const String &key, const String &suffix)
 {
     USING_INSANE_CRYPTO;
     USING_INSANE_STR;
@@ -966,9 +967,9 @@ template <>
 emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
     USING_EMSCRIPTEN;
-    String id = Js::GetProperty(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
+    String id = Js::GetPropertyName(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
     Js::SetPropertyObject(val::global(), INSANE_STRING, false);
-    String loadedName = Js::GetProperty(u8"Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
+    String loadedName = Js::GetPropertyName(u8"Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
     Js::SetPropertyObject(val::global()[u8"Insane"], loadedName, false);
     val loaded = VAL_INSANE[loadedName];
     if (!Operator::IsNullOrUndefined(loaded[id]))
