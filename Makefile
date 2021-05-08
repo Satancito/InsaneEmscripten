@@ -4,7 +4,7 @@ CXX_FLAGS_LIB = -r -O2 -std=c++17 -s DISABLE_EXCEPTION_CATCHING=0 #-s VERBOSE=1
 OBJ_DIR = Build/Obj
 DIST_DIR = Dist/Insane-Emscripten-llvm-BitCode
 DIRS = $(OBJ_DIR) $(DIST_DIR)
-INSANE_SOURCE_DIR = ../InsaneCpp/src
+INSANE_SOURCE_DIR = ../InsaneCpp/Src
 CRLF = @pwsh -Command "[System.Console]::WriteLine()"
 
 
@@ -13,7 +13,7 @@ BOTAN_LIB_DIR = $(BOTAN_DIR)/lib/libbotan-2.a
 BOTAN_INCLUDE_DIR = $(BOTAN_DIR)/include/botan-2
 
 COMMON_INCLUDE_DIR = ../CommonCppIncludes
-INSANE_INCLUDE_DIR = ../InsaneCpp/include
+INSANE_INCLUDE_DIR = ../InsaneCpp/Include
 ME_INCLUDE_DIR = Include
 
 CXX_INCLUDE_ALL = -I $(COMMON_INCLUDE_DIR) -I $(BOTAN_INCLUDE_DIR) -I $(ME_INCLUDE_DIR) -I $(INSANE_INCLUDE_DIR)
