@@ -10,7 +10,7 @@ Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
 
 Clear-Host
 Write-Host
-Write-Host "████ Compiling Insane LLVM Bitcode" -ForegroundColor Blue
+Write-InfoBlue "████ Building Insane LLVM Bitcode"
 Write-Host
 
 if($Clean.IsPresent)
@@ -36,9 +36,14 @@ if(!(Test-Path "$OBJ_DIR" -PathType Container))
 { 
     New-Item "$OBJ_DIR" -Force -ItemType Container | Out-Null
 }
+& ".\X-SetEnvVars.ps1"
+Test-LastExitCode
+
+$compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
+$make = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "emmake.bat" "emmake" "emmake")"
 
 Write-Host "Compiling..."
-emmake make -j8 CXX="$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
+& "$make" make -j8 CXX="$compiler"
 
 Test-LastExitCode
 
@@ -57,7 +62,11 @@ Copy-Item -Path "$OBJ_DIR/libInsane.bc" -Destination "$LIB_DIR" -Recurse -Force
 Copy-Item -Path "Js/*" -Destination "$JS_DIR" -Force
 Copy-Item -Path "Tools/*" -Destination "$TOOLS_DIR" -Force -Recurse
 Copy-Item -Path "Docs/*" -Destination "$DIST_DIR" -Force -Recurse
+Copy-Item -Path "./X-SetEnvVars.ps1" -Destination "$DIST_DIR" -Force -Recurse
+Copy-Item -Path "./Z-CoreFxs*.ps1" -Destination "$DIST_DIR" -Force -Recurse
+Copy-Item -Path "./Z-CoreValues*.ps1" -Destination "$DIST_DIR" -Force -Recurse
 Copy-Item -Path "Assets/*" -Destination "$ASSETS_DIR" -Force -Recurse
 
-Write-Host "█ End Compiling Insane LLVM Bitcode - Finished" -ForegroundColor Blue
+
+Write-InfoBlue "█ End building Insane LLVM Bitcode - Finished"
 Write-Host

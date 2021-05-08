@@ -905,7 +905,6 @@ EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenV
         val props = objectClass.call<val>(u8"getOwnPropertyNames", objectClass.call<val>(u8"getPrototypeOf", val::global()[u8"navigator"])).call<val>(u8"sort");
         ret += Json::Serialize<String>(props);
         ret += Converter::ToString<String>(props[u8"length"]);
-        Console::Warn(ret);
         return Operator::Add(val(u8"Insane"s), val(HashManager::ToBase64Hmac(ret, Converter::ToString<String>(key)).Hash()));
     };
     return Browser::GetNameAsync().call<val>(u8"then", Js::Bind(callback));

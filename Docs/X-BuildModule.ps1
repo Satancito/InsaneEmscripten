@@ -7,13 +7,16 @@ $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
 
 
-$ErrorActionPreference = "Stop"
 
-Test-LastExitCode
-
-Write-Host "██ Compiling Insane.js" -ForegroundColor DarkGray
+Clear-Host
+Write-Host
+Write-InfoBlue "████ Compiling Insane.js"
 Write-Host
 Write-Host "Minifying js files..."
+
+& ".\X-SetEnvVars.ps1"
+$compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
+Test-LastExitCode
 
 java -jar "./Tools/closure-compiler-v20200406.jar" `
 --js "./Js/Pre.js" `
@@ -48,7 +51,7 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 Test-LastExitCode
 
 Write-Host "Compiling..."
-em++.bat `
+& "$compiler" `
 main.cpp `
 Lib/libInsane.bc `
 -I Include `
@@ -78,5 +81,5 @@ Lib/libInsane.bc `
 
 Test-LastExitCode
 
-Write-Host "█ Compiling Insane.js - Finished" -ForegroundColor DarkGray
+Write-InfoBlue "█ End compiling Insane.js - Finished"
 Write-Host
