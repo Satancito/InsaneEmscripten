@@ -904,7 +904,7 @@ function Set-PersistentEnvironmentVariable {
     )
 
     Set-LocalEnvironmentVariable -Name $Name -Value $Value
-    $pattern = "[ ]*export[ ]+a=[\w]*[ ]*>[ ]*\/dev\/null[ ]*;[ ]*"
+    $pattern = "[ ]*export[ ]+$Name=.*[ ]*>[ ]*\/dev\/null[ ]*;[ ]*"
 
     if ($IsWindows) {
         setx "$Name" "$Value" | Out-Null
@@ -918,10 +918,10 @@ function Set-PersistentEnvironmentVariable {
         return
     }
     if ($IsMacOS) {
-        $content = Get-Content "~/.bash_profile" -Raw
+        $content = Get-Content "~/.zprofile" -Raw
         $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, [String]::Empty);
         $content += [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;"
-        Set-Content "~/.bash_profile" -Value $content -Force
+        Set-Content "~/.zprofile" -Value $content -Force
         return
     }
     throw "Invalid platform."
