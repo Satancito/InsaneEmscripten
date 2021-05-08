@@ -38,7 +38,7 @@ if(!(Test-Path "$OBJ_DIR" -PathType Container))
 { 
     New-Item "$OBJ_DIR" -Force -ItemType Container | Out-Null
 }
-& ".\X-SetEnvVars.ps1"
+& "./X-SetEnvVars.ps1"
 Test-LastExitCode
 
 $compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
