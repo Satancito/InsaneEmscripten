@@ -14,7 +14,7 @@ Write-InfoBlue "████ Compiling Insane.js"
 Write-Host
 Write-Host "Minifying js files..."
 
-& ".\X-SetEnvVars.ps1"
+& "./X-SetEnvVars.ps1"
 $compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
 Test-LastExitCode
 
