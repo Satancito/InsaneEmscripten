@@ -11,7 +11,6 @@ int main()
 {
     USING_INSANE_EMSCRIPTEN;
     Console::Log("Hello World!!! from InsaneEmscripten.");
-    Console::Log(Browser::GetFingerprintAsync(u8"Salt here"s).await());
    
 }
 

@@ -6,8 +6,8 @@
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/../InsaneCpp/include",
-                "${EMSCRIPTEN_DIR}/upstream/emscripten/system/include",
-                "${EMSCRIPTEN_DIR}/upstream/emscripten/cache/sysroot/include"
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/system/include",
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -15,11 +15,10 @@
                 "_UNICODE",
                 "__EMSCRIPTEN__"
             ],
-            "compilerPath": "${EMSCRIPTEN_DIR}/upstream/emscripten/em++.bat",
+            "compilerPath": "${EMSCRIPTEN_SDK}/upstream/emscripten/em++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-clang-x64",
-            "windowsSdkVersion": "10.0.19041.0"
+            "intelliSenseMode": "linux-clang-x64"
         }
     ],
     "version": 4

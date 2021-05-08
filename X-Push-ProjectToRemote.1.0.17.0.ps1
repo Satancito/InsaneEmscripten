@@ -4,8 +4,10 @@ Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
 
 Clear-Host
     
+Clear-Host
 Write-Host
-Write-InfoMagenta "███ Commit and push "
+Write-InfoCyan "████ Commit and Push - Git"
+Write-Host
 
 Write-Host
 Write-InfoBlue "█ Commit"
@@ -23,4 +25,4 @@ git push
 
 Write-Host
 Write-Host
-Write-InfoMagenta "███ Finished all actions"
+Write-InfoCyan "█ End Commit and push - Finished"
