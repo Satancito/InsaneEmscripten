@@ -18,6 +18,8 @@ if($Clean.IsPresent)
     Write-InfoYellow "Removing obj and dist files. Please recompile again the library without the ""Clean"" parameter!!!."
     Remove-Item ./Build -Force -Recurse -ErrorAction Ignore
     Remove-Item ./Dist -Force -Recurse -ErrorAction Ignore
+    Remove-Item ./build -Force -Recurse -ErrorAction Ignore
+    Remove-Item ./dist -Force -Recurse -ErrorAction Ignore
     Write-Host "█ End Compiling Insane LLVM Bitcode - Finished" -ForegroundColor Blue
     Write-Host
     exit

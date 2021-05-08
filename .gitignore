@@ -2,3 +2,7 @@ Build
 Build/**
 Dist
 Dist/**
+build
+build/**
+dist
+dist/**
