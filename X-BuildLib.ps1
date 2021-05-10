@@ -9,7 +9,6 @@ $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-Clear-Host
 Write-Host
 Write-InfoBlue "████ Building Insane LLVM Bitcode"
 Write-Host

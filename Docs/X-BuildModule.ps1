@@ -10,9 +10,9 @@ Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 Write-Host
 Write-InfoBlue "████ Compiling Insane.js"
 Write-Host
+& "./X-SetEnvVars.ps1"
 Write-Host "Minifying js files..."
 
-& "./X-SetEnvVars.ps1"
 $compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
 Test-LastExitCode
 
