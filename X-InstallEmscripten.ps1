@@ -44,8 +44,12 @@ try {
     if($IsLinux -or $IsMacOS)
     {
         chmod +x "./$EMSDK_ENV"
+        & sh "./$EMSDK_ENV"; Test-LastExitCode
     }
-    & "sh ./$EMSDK_ENV"; Test-LastExitCode
+    else {
+        & "./$EMSDK_ENV"; Test-LastExitCode    
+    }
+    
 
     Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_SDK" -Value "$InstallDir/emsdk"
     Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_ROOT" -Value "$env:EMSCRIPTEN_SDK/upstream/emscripten"
