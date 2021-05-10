@@ -41,7 +41,11 @@ try {
 
     & "./$EMSDK_EXE" install latest; Test-LastExitCode
     & "./$EMSDK_EXE" activate latest; Test-LastExitCode
-    & "$(!$IsWindows ? "source " : [String]::Empty)./$EMSDK_ENV"; Test-LastExitCode
+    if($IsLinux -or $IsMacOS)
+    {
+        chmod +x "./$EMSDK_ENV"
+    }
+    & "sh ./$EMSDK_ENV"; Test-LastExitCode
 
     Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_SDK" -Value "$InstallDir/emsdk"
     Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_ROOT" -Value "$env:EMSCRIPTEN_SDK/upstream/emscripten"
