@@ -7,12 +7,14 @@ param (
 
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
+Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Clear-Host
 Write-Host
 Write-InfoBlue "████ Building Insane LLVM Bitcode"
 Write-Host
 
+& "./X-CloneDependencies"
 if($Clean.IsPresent)
 {
     Write-InfoYellow "Removing obj and dist files. Please recompile again the library without the ""Clean"" parameter!!!."

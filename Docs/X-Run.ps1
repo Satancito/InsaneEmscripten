@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
+Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
 Write-InfoDarkGreen "████ Run Insane.js - Test client"
