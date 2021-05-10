@@ -890,7 +890,6 @@ EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenV
         ret += Browser::GetWebGLRenderer<String>();
         ret += Browser::GetWebGLVendor<String>();
         ret += std::to_string(Browser::GetScreenSize<int>());
-        ret += std::to_string(Browser::GetViewportSize<int>());
         ret += Browser::GetLanguage<String>();
         ret += Json::Serialize<String>(Browser::GetLanguages());
         ret += std::to_string(Browser::GetMaxTouchPoints<int>());
