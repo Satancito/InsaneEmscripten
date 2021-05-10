@@ -15,7 +15,7 @@
                 "_UNICODE",
                 "__EMSCRIPTEN__"
             ],
-            "compilerPath": "${EMSCRIPTEN_SDK}/upstream/emscripten/em++",
+            "compilerPath": "${EMSCRIPTEN_COMPILER}",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64"

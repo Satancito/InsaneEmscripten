@@ -826,10 +826,6 @@ function Read-Key {
     }
 }
 
-function Get-UserHome {
-    return $IsWindows ? $env:USERPROFILE : $env:HOME
-}
-
 function Get-VariableName {
     Param(
         [Parameter()]    
@@ -866,6 +862,7 @@ function Select-ValueByPlatform {
         $MacOSValue
 
     )
+
     if ($IsWindows) {
         return $WindowsValue
     }
@@ -877,6 +874,10 @@ function Select-ValueByPlatform {
     }
     
     throw "Invalid Platform."
+}
+
+function Get-UserHome {
+    return "$(Select-ValueByPlatform "$env:USERPROFILE" "$env:HOME" "$env:HOME")";
 }
 
 function Set-LocalEnvironmentVariable {

@@ -6,15 +6,18 @@ Write-Host
 Write-InfoMagenta "████ Cloning Dependencies - Insane" 
 Write-Host
 
-$InsaneCppRepo =  "https://github.com/Satancito/InsaneCpp.git"
-$CommonCppLibsRepo =  "https://github.com/Satancito/CommonCppLibs.git"
-$CommonCppIncludesRepo =  "https://github.com/Satancito/CommonCppIncludes.git"
+$InsaneCpp =  "https://github.com/Satancito/InsaneCpp.git"
+$CommonCppLibs =  "https://github.com/Satancito/CommonCppLibs.git"
+$CommonCppIncludes =  "https://github.com/Satancito/CommonCppIncludes.git"
 
 try {
     Push-Location ..
-    Write-PrettyKeyValue "Cloning" "$InsaneCppRepo"; git clone "$InsaneCppRepo"; Test-LastExitCode
-    Write-PrettyKeyValue "Cloning" "$CommonCppLibsRepo"; git clone "$CommonCppLibsRepo"; Test-LastExitCode
-    Write-PrettyKeyValue "Cloning" "$CommonCppIncludesRepo"; git clone "$CommonCppIncludesRepo"; Test-LastExitCode
+    Remove-Item "./$(Get-VariableName $InsaneCpp)" -Force -Recurse -ErrorAction Ignore
+    Remove-Item "./$(Get-VariableName $CommonCppLibs)" -Force -Recurse -ErrorAction Ignore
+    Remove-Item "./$(Get-VariableName $CommonCppIncludes)" -Force -Recurse -ErrorAction Ignore
+    Write-PrettyKeyValue "Cloning" "$InsaneCpp"; git clone "$InsaneCpp"; Test-LastExitCode
+    Write-PrettyKeyValue "Cloning" "$CommonCppLibs"; git clone "$CommonCppLibs"; Test-LastExitCode
+    Write-PrettyKeyValue "Cloning" "$CommonCppIncludes"; git clone "$CommonCppIncludes"; Test-LastExitCode
 }
 finally {
     Pop-Location
