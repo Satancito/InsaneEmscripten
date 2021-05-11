@@ -911,7 +911,7 @@ function Set-PersistentEnvironmentVariable {
         setx "$Name" "$Value" | Out-Null
         return
     }
-    f ($IsLinux) {
+    if ($IsLinux) {
         $file = "$(Get-UserHome)/.bashrc"
         if(!(Test-Path "$file" -PathType Leaf))
         {
