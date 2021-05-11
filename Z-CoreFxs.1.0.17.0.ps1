@@ -905,7 +905,7 @@ function Set-PersistentEnvironmentVariable {
     )
 
     Set-LocalEnvironmentVariable -Name $Name -Value $Value
-    $pattern = "[ ]*export[ ]+$Name=.*[ ]*>[ ]*\/dev\/null[ ]*;[ ]*"
+    $pattern = "[ ]*export[ ]+$Name=.*[ ]*>[ ]*\/dev\/null[ ]*;\s*"
 
     if ($IsWindows) {
         setx "$Name" "$Value" | Out-Null
