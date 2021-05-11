@@ -911,18 +911,28 @@ function Set-PersistentEnvironmentVariable {
         setx "$Name" "$Value" | Out-Null
         return
     }
-    if ($IsLinux) {
-        $content = Get-Content "~/.bashrc" -Raw
+    f ($IsLinux) {
+        $file = "$(Get-UserHome)/.bashrc"
+        if(!(Test-Path "$file" -PathType Leaf))
+        {
+            New-Item "$file"
+        }
+        $content = "$(Get-Content "$file" -Raw)"
         $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, [String]::Empty);
         $content += [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;"
-        Set-Content "~/.bashrc" -Value $content -Force
+        Set-Content "$file" -Value $content -Force
         return
     }
     if ($IsMacOS) {
-        $content = Get-Content "~/.zprofile" -Raw
+        $file = "$(Get-UserHome)/.zprofile"
+        if(!(Test-Path "$file" -PathType Leaf))
+        {
+            New-Item "$file"
+        }
+        $content = "$(Get-Content "$file" -Raw)"
         $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, [String]::Empty);
         $content += [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;"
-        Set-Content "~/.zprofile" -Value $content -Force
+        Set-Content "$file" -Value $content -Force
         return
     }
     throw "Invalid platform."
