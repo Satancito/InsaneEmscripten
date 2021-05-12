@@ -4,10 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../InsaneCpp/src"
-		},
-		{
-			"path": "../InsaneCpp/include"
+			"path": "..\\InsaneCpp"
 		}
 	],
 	"settings": {
