@@ -826,6 +826,7 @@ function Read-Key {
     }
 }
 
+
 function Get-VariableName {
     Param(
         [Parameter()]    
@@ -833,12 +834,13 @@ function Get-VariableName {
         $Variable
     )
     $Line = @(Get-PSCallStack)[1].Position.Text
-    
-    if ($Line -match '(.*)(Get-VariableName)([ ]+)(-Variable[ ]+)*\$(?<varName>([\w]+:)*[\w]*)(.*)') { #https://regex101.com/r/Uc6asf/1
+        
+    if ($Line -match '(.*)(Get-VariableName)([ ]+)(-Variable[ ]+)*\$(?<varName>([\w]+:)*[\w]*)(.*)') {
+        #https://regex101.com/r/Uc6asf/1
         return $Matches['varName'] 
     }
 } 
-
+    
 function Test-LastExitCode {
     if (($LASTEXITCODE -ne 0) -or (-not $?)) {
         Get-Error
@@ -846,23 +848,22 @@ function Test-LastExitCode {
         exit
     }  
 }
-
+    
 function Select-ValueByPlatform {
     param (
         [parameter(Mandatory = $true)]
         [System.Object]
         $WindowsValue,
-
+        
         [parameter(Mandatory = $true)]
         [System.Object]
         $LinuxValue,
-
+        
         [parameter(Mandatory = $true)]
         [System.Object]
         $MacOSValue
-
+        
     )
-
     if ($IsWindows) {
         return $WindowsValue
     }
@@ -872,10 +873,10 @@ function Select-ValueByPlatform {
     if ($IsMacOS) {
         return $MacOSValue
     }
-    
+        
     throw "Invalid Platform."
 }
-
+    
 function Get-UserHome {
     return "$(Select-ValueByPlatform "$env:USERPROFILE" "$env:HOME" "$env:HOME")";
 }
@@ -888,8 +889,19 @@ function Set-LocalEnvironmentVariable {
 
         [Parameter()]
         [System.String]
-        $Value
+        $Value,
+
+        [Parameter()]
+        [Switch]
+        $Append
     )
+    if($Append.IsPresent)
+    {
+        if(Test-Path "env:$Name")
+        {
+            $Value = (Get-Item "env:$Name").Value + $Value
+        }
+    }
     Set-Item env:$Name -Value "$value" | Out-Null
 }
 
@@ -898,41 +910,38 @@ function Set-PersistentEnvironmentVariable {
         [Parameter()]
         [System.String]
         $Name,
-
+    
         [Parameter()]
         [System.String]
-        $Value
+        $Value,
+    
+        [Parameter()]
+        [Switch]
+        $Append        
     )
-
-    Set-LocalEnvironmentVariable -Name $Name -Value $Value
-    $pattern = "[ ]*export[ ]+$Name=.*[ ]*>[ ]*\/dev\/null[ ]*;\s*"
-
+    
+    Set-LocalEnvironmentVariable -Name $Name -Value $Value -Append:$Append
+    $pattern = "\s*export[ \t]+$Name=[\w]*[ \t]*>[ \t]*\/dev\/null[ \t]*;[ \t]*#[ \t]*$Name\s*"
+    if ($Append.IsPresent) {
+        $value = (Get-Item "env:$Name").Value
+    }
+    
     if ($IsWindows) {
         setx "$Name" "$Value" | Out-Null
         return
     }
     if ($IsLinux) {
-        $file = "$(Get-UserHome)/.bashrc"
-        if(!(Test-Path "$file" -PathType Leaf))
-        {
-            New-Item "$file"
-        }
-        $content = "$(Get-Content "$file" -Raw)"
+        $content = Get-Content "~/.bashrc" -Raw
         $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, [String]::Empty);
-        $content += [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;"
-        Set-Content "$file" -Value $content -Force
+        $content += [System.Environment]::NewLine + [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;  # $Name"
+        Set-Content "~/.bashrc" -Value $content -Force
         return
     }
     if ($IsMacOS) {
-        $file = "$(Get-UserHome)/.zprofile"
-        if(!(Test-Path "$file" -PathType Leaf))
-        {
-            New-Item "$file"
-        }
-        $content = "$(Get-Content "$file" -Raw)"
+        $content = Get-Content "~/.bash_profile" -Raw
         $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, [String]::Empty);
-        $content += [System.Environment]::NewLine + "export $Name=$Value > /dev/null ;"
-        Set-Content "$file" -Value $content -Force
+        $content += [System.Environment]::NewLine + [System.Environment]::NewLine + "export $Name=$Value > /dev/null ; # $Name" 
+        Set-Content "~/.bash_profile" -Value $content -Force
         return
     }
     throw "Invalid platform."
