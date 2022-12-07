@@ -1,7 +1,6 @@
 
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
-Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
+Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 
 Clear-Host
     
@@ -18,7 +17,7 @@ $message = [System.Console]::ReadLine();
 git add -A
 Test-LastExitCode
 git status 
-git commit -m "$message"
+git commit -m "$message" 
 
 Write-Host
 Write-InfoBlue "█ Push to remote"
