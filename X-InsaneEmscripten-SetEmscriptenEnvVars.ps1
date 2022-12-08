@@ -9,7 +9,7 @@ Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
-Write-InfoDarkGray "███ Setting environment variables"
+Write-InfoDarkGray "███ Setting environment variables for Emscripten SDK"
 Write-Host
 
 $path = [string]::IsNullOrWhiteSpace($InstallDir) ? 
