@@ -16,7 +16,7 @@ Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
-Write-InfoDarkGreen "████ Installing Emscripten"
+Write-InfoDarkGreen "████ Installing Emscripten SDK"
 Write-Host
 Write-Host
 

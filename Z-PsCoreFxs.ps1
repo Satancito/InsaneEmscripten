@@ -1287,6 +1287,7 @@ function Set-JsonObject {
 }
 
 function Get-ItemTree() {
+    [CmdletBinding()]
     param (
         [Parameter()]
         [System.String]
@@ -1319,20 +1320,17 @@ function Get-ItemTree() {
     return  $result
 }
 
-function Remove-ItemTree {
+function Remove-ItemTree() {
+    [CmdletBinding()]
     param (
         [Parameter()]
         [System.String]
-        $Path, 
-
-        [Parameter()]
-        [switch]
-        $ForceDebug
+        $Path
     )
     (Get-ItemTree -Path $Path -Force -IncludePath) | ForEach-Object {
         Remove-Item "$($_.PSPath)" -Force
-        if ($PSBoundParameters.Debug.IsPresent) {
-            Write-Debug -Message "Deleted: $($_.PSPath)" -Debug:$ForceDebug
+        if ($PSBoundParameters.Verbose.IsPresent) {
+            Write-InfoYellow -Information "Deleted: $($_.PSPath)"
         }
     }
 }
