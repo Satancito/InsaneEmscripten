@@ -42,6 +42,7 @@ Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_ROOT" -Value "$env:EMSCRIPTE
 Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_COMPILER" -Value "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")" -Verbose
 Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_EMRUN" -Value "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "emrun.bat" "emrun" "emrun")" -Verbose
 Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_EMMAKE" -Value "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "emmake.bat" "emmake" "emmake")" -Verbose
+Set-PersistentEnvironmentVariable -Name "EMSCRIPTEN_EMAR" -Value "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "emar.bat" "emar" "emar")" -Verbose
 
 Write-Host
 Write-InfoDarkGray "███ End setting environment variables - Finished"

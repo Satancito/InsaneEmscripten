@@ -4,19 +4,19 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "./Z-CoreFxs*.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
 Write-InfoBlue "████ Compiling Insane.js"
 Write-Host
-& "./X-SetEnvVars.ps1"
+& "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
 Write-Host "Minifying js files..."
 
-$compiler = "$env:EMSCRIPTEN_ROOT/$(Select-ValueByPlatform "em++.bat" "em++" "em++")"
 Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
+$closureCompiler = Get-Item "./Tools/closure-compiler-v*.jar"
+java -jar "$closureCompiler" `
 --js "./Js/Pre.js" `
 --js_output_file "./Js/Pre_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
@@ -24,7 +24,7 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 
 Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
+java -jar "$closureCompiler" `
 --js "./Js/Post.js" `
 --js_output_file "./Js/Post_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
@@ -32,7 +32,7 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 
 Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
+java -jar "$closureCompiler" `
 --js "./Js/ExternPre.js" `
 --js_output_file "./Js/ExternPre_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
@@ -40,7 +40,7 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 
 Test-LastExitCode
 
-java -jar "./Tools/closure-compiler-v20200406.jar" `
+java -jar "$closureCompiler" `
 --js "./Js/ExternPost.js" `
 --js_output_file "./Js/ExternPost_Compiled.js" `
 --language_in ECMASCRIPT_NEXT `
@@ -49,13 +49,13 @@ java -jar "./Tools/closure-compiler-v20200406.jar" `
 Test-LastExitCode
 
 Write-Host "Compiling..."
-& "$compiler" `
+& "$env:EMSCRIPTEN_COMPILER" `
 main.cpp `
-Lib/libInsane.bc `
+Lib/libInsane.a `
 -I Include `
 -o Insane.js `
 -std=c++17 `
---bind `
+-lembind `
 -s WASM=1 `
 -s DISABLE_EXCEPTION_CATCHING=0 `
 -s USE_WEBGPU=1 `
