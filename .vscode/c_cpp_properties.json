@@ -6,8 +6,9 @@
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/../InsaneCpp/include",
-                "${EMSCRIPTEN_SDK}/upstream/emscripten/system/include",
-                "${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include"
+                "${EMSCRIPTEN_ROOT}/upstream/emscripten/system/include",
+                "${EMSCRIPTEN_ROOT}/upstream/emscripten/cache/sysroot/include",
+                "C:/Users/Megam/emsdk/upstream/emscripten/cache/sysroot/include"
             ],
             "defines": [
                 "_DEBUG",
