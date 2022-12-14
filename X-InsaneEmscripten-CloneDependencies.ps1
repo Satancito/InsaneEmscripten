@@ -45,14 +45,20 @@ $LocationStackName = "CloneDeps"
 try {
     Push-Location .. -StackName $LocationStackName
     $repos | ForEach-Object {
-        $filesCount = (git -C "$($_.Name)" status --porcelain | Measure-Object | Select-Object -expand Count)
-        if ($_.Clean -or ($filesCount -eq 0)) {
+        if ($_.Clean -or (!(Test-Path "$($_.Name)" -PathType Container) -and !(Test-Path "$($_.Name)" -PathType Leaf)) -or ((Get-ChildItem "$($_.Name)" -Force -Recurse | Measure-Object).Count -eq 0)) {
             Remove-Item -Path "./$($_.Name)" -Force -Recurse -ErrorAction Ignore
             Write-PrettyKeyValue "Cloning" "$($_.Name) - $($_.Uri)"
             git clone "$($_.Uri)"
         }
         else {
-            Write-InfoYellow "Detected changes in repo `"$($_.Name)`", ignoring. If you need latest code, please run this script with `"-Clean$($_.Name)`" parameter.";
+            $filesCount = (git -C "$($_.Name)" status --porcelain | Measure-Object | Select-Object -expand Count)
+            if ($filesCount -gt 0) {
+                Write-InfoYellow "Detected changes in repo `"$($_.Name)`", ignoring. If you need latest code, please run this script with `"-Clean$($_.Name)`" parameter.";
+            }
+            else
+            {
+                Write-InfoWhite "Repo `"$($_.Name)`" is up to date, ignoring.";
+            }
         }
     }
 }

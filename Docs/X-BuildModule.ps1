@@ -10,7 +10,6 @@ Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 Write-Host
 Write-InfoBlue "████ Compiling Insane.js"
 Write-Host
-& "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
 Write-Host "Minifying js files..."
 
 Test-LastExitCode
@@ -51,7 +50,7 @@ Test-LastExitCode
 Write-Host "Compiling..."
 & "$env:EMSCRIPTEN_COMPILER" `
 main.cpp `
-Lib/libInsane.a `
+Lib/libInsane.bc `
 -I Include `
 -o Insane.js `
 -std=c++17 `

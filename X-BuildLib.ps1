@@ -21,9 +21,8 @@ $DEST_TOOLS_DIR = "$DEST_DIR/Tools"
 $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
 $OBJ_DIR = "Build/Obj"
 $SET_ENV_VARS_SCRIPT = "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
-$CLONE_DEPS_SCRIPT = "./X-InsaneEmscripten-CloneDependencies.ps1"
 
-& "$CLONE_DEPS_SCRIPT"
+
 if($Clean.IsPresent)
 {
     Write-InfoYellow "Removing obj and dist files."
@@ -37,8 +36,6 @@ if(!(Test-Path "$OBJ_DIR" -PathType Container))
 { 
     New-Item "$OBJ_DIR" -Force -ItemType Container | Out-Null
 }
-# & "$SET_ENV_VARS_SCRIPT"
-# Test-LastExitCode
 
 Write-Host "Compiling..."
 & "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
@@ -54,7 +51,7 @@ New-Item "$DEST_JS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_TOOLS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
 
-$LIB_NAME = "libInsane.a"
+$LIB_NAME = "libInsane.bc"
 $SOURCE_INSANE_INCLUDE_DIR_CONTENT = "Include/Insane/*" 
 $SOURCE_INSANECPP_INCLUDE_DIR_CONTENT = "../InsaneCpp/Include/Insane/*"
 $SOURCE_JS_DIR_CONTENT = "Js/*"
