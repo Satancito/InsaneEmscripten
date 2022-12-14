@@ -1499,6 +1499,9 @@ function Show-ProjectUserSecrets {
 
 }
 
+
+
+
 Set-GlobalConstant -Name "X_TEMP_DIR_NAME" -Value ".X-TEMP"
 Set-GlobalConstant -Name "X_TEMP_DIR" -Value "$(Get-UserHome)/$X_TEMP_DIR_NAME"
 
