@@ -11,7 +11,7 @@
 
 #define VAL_TYPE() emscripten::val
 
-#define EMSCRIPTEN_EXPORT_FUNCTOR(arity, returnType, name, p3, p4, p5) emscripten::class_<std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>>(STRINGIFY(name##arity)).constructor<>().function("opcall", &std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>::operator());
+#define EMSCRIPTEN_EXPORT_FUNCTOR(arity, returnType, name, p3, p4, p5) emscripten::class_<std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>>(CSTRINGIFY(name##arity)).constructor<>().function("opcall", &std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>::operator());
 #define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VOID_TYPE(), VoidFunctor, 0, 0, 0)
 #define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VAL_TYPE(), ValFunctor, 0, 0, 0)
 #define EMSCRIPTEN_EXPORT_ALL_FUNCTORS(arity) \
@@ -22,43 +22,43 @@
 #define EMSCRIPTEN_VOID_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VOID_TYPE())
 #define EMSCRIPTEN_VAL_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VAL_TYPE())
 
-#define USING_EMSCRIPTEN using namespace emscripten
-#define USING_INSANE_EMSCRIPTEN using namespace Insane::Emscripten
+#define USING_NS_EMSCRIPTEN using namespace emscripten
+#define USING_NS_INSANE_EMSCRIPTEN using namespace Insane::Emscripten
 
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneException.h>
 
-#define INSANE_PROPERTY_SUFFIX u8"Insane_"s
+#define INSANE_PROPERTY_SUFFIX ("Insane_"s)
 #define VAL_GLOBAL emscripten::val::global()
 #define VAL_INSANE VAL_GLOBAL[INSANE_STRING]
 
 static inline emscripten::val operator"" _valb(unsigned long long value)
 {
-    USING_EMSCRIPTEN;
+    USING_NS_EMSCRIPTEN;
     return val::global().call<val>("Boolean", value != 0);
 }
 
 static inline emscripten::val operator"" _val(unsigned long long value)
 {
-    USING_EMSCRIPTEN;
+    USING_NS_EMSCRIPTEN;
     return val::global().call<val>("parseInt", std::to_string(value));
 }
 
 static inline emscripten::val operator"" _val(long double value)
 {
-    USING_EMSCRIPTEN;
+    USING_NS_EMSCRIPTEN;
     return val::global().call<val>("parseFloat", std::to_string(value));
 }
 
 static inline emscripten::val operator"" _val(const char *value, size_t size)
 {
-    USING_EMSCRIPTEN;
+    USING_NS_EMSCRIPTEN;
     return val(String(value, size));
 }
 
 static inline emscripten::val operator"" _val(char value)
 {
-    USING_EMSCRIPTEN;
+    USING_NS_EMSCRIPTEN;
     return val(value);
 }
 
@@ -126,21 +126,6 @@ namespace Insane::Emscripten
         [[nodiscard]] static EmscriptenVal ToString(const EmscriptenVal &a);
     };
 
-    class Converter final
-    {
-    private:
-    public:
-        template <typename ReturnType = emscripten::val,
-                  typename ParamType = emscripten::val,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
-                                                                   std::is_same_v<ParamType, emscripten::val> ||
-                                                                   std::is_floating_point_v<ParamType> ||
-                                                                   std::is_integral_v<ParamType>>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                       std::is_same_v<ReturnType, emscripten::val>>>
-        [[nodiscard]] static ReturnType ToString(const ParamType &value);
-    };
-
     class Promise final
     {
     private:
@@ -154,8 +139,8 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, EmscriptenVal>>>>
         [[nodiscard]] static inline EmscriptenVal Resolve(const ParamType &value)
         {
-            USING_EMSCRIPTEN;
-            return val::global()[u8"Promise"].call<val>(u8"resolve", EmscriptenVal(value));
+            USING_NS_EMSCRIPTEN;
+            return val::global()["Promise"].call<val>("resolve", EmscriptenVal(value));
         }
 
         template <typename ParamType = EmscriptenVal,
@@ -165,8 +150,8 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, EmscriptenVal>>>>
         [[nodiscard]] static EmscriptenVal Reject(const ParamType &value)
         {
-            USING_EMSCRIPTEN;
-            return val::global()[u8"Promise"].call<val>(u8"reject", EmscriptenVal(value));
+            USING_NS_EMSCRIPTEN;
+            return val::global()["Promise"].call<val>("reject", EmscriptenVal(value));
         }
     };
 
@@ -187,23 +172,23 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
-        static inline void Print(ConsoleMessageType type, const ParamType &... args)
+        static inline void Print(ConsoleMessageType type, const ParamType &...args)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             String method = EMPTY_STRING;
             switch (type)
             {
             case ConsoleMessageType::INFO:
-                method = u8"info"s;
+                method = "info"s;
                 break;
             case ConsoleMessageType::WARN:
-                method = u8"warn"s;
+                method = "warn"s;
                 break;
             case ConsoleMessageType::ERROR:
-                method = u8"error"s;
+                method = "error"s;
                 break;
             default:
-                method = u8"log";
+                method = "log";
                 break;
             }
             val::global("console").call<void>(method.c_str(), EmscriptenValManager::Transform(args)...);
@@ -220,9 +205,9 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
-        static inline void Log(const ParamType &... args)
+        static inline void Log(const ParamType &...args)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             Print(ConsoleMessageType::LOG, args...);
         };
 
@@ -233,9 +218,9 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
-        static inline void Info(const ParamType &... args)
+        static inline void Info(const ParamType &...args)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             Print(ConsoleMessageType::INFO, args...);
         };
 
@@ -246,9 +231,9 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
-        static inline void Warn(const ParamType &... args)
+        static inline void Warn(const ParamType &...args)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             Print(ConsoleMessageType::WARN, args...);
         };
 
@@ -259,9 +244,9 @@ namespace Insane::Emscripten
                                                                    std::is_same_v<ParamType, emscripten::val> ||
                                                                    std::is_floating_point_v<ParamType> ||
                                                                    std::is_integral_v<ParamType>>...>>
-        static inline void Error(const ParamType &... args)
+        static inline void Error(const ParamType &...args)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             Print(ConsoleMessageType::ERROR, args...);
         };
     };
@@ -450,12 +435,12 @@ namespace Insane::Emscripten
     {
     private:
         static emscripten::val Bind(const emscripten::val &fx);
-        //static void SetVars();
-        //static void CheckSignature(const String &name, const String &sname, const String &key, const String &mae);
+        // static void SetVars();
+        // static void CheckSignature(const String &name, const String &sname, const String &key, const String &mae);
 
     public:
-        //static void FreeState();
-        //static void CheckState() noexcept(false);
+        // static void FreeState();
+        // static void CheckState() noexcept(false);
         static void SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
@@ -468,7 +453,7 @@ namespace Insane::Emscripten
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, emscripten::val>>...>>
         static inline emscripten::val Bind(const std::function<ReturnType(ParamType...)> &fx)
         {
-            USING_EMSCRIPTEN;
+            USING_NS_EMSCRIPTEN;
             return Bind(val(fx));
         }
 
