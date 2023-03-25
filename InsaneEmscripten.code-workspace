@@ -78,7 +78,13 @@
 			"set": "cpp",
 			"sstream": "cpp",
 			"stack": "cpp",
-			"any": "cpp"
-		}
+			"any": "cpp",
+			"__bits": "cpp",
+			"__verbose_abort": "cpp",
+			"cfenv": "cpp",
+			"regex": "cpp",
+			"variant": "cpp"
+		},
+		"powershell.cwd": "i:\\XProjects\\InsaneEmscripten"
 	}
 }

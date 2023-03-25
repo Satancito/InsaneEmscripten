@@ -21,7 +21,7 @@ $DEST_TOOLS_DIR = "$DEST_DIR/Tools"
 $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
 $OBJ_DIR = "Build/Obj"
 $SET_ENV_VARS_SCRIPT = "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
-
+$X_INSTALL_EMSCRIPTEN_SCRIPT = "./X-InsaneEmscripten-InstallEmscripten.ps1"
 
 if($Clean.IsPresent)
 {
@@ -37,7 +37,7 @@ if(!(Test-Path "$OBJ_DIR" -PathType Container))
     New-Item "$OBJ_DIR" -Force -ItemType Container | Out-Null
 }
 
-Write-Host "Compiling..."
+Write-Host "Building..."
 & "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
 
 Test-LastExitCode
@@ -59,7 +59,6 @@ $SOURCE_TOOLS_DIR_CONTENT = "Tools/*"
 $SOURCE_DOCS_DIR_CONTENT = "Docs/*"
 $SOURCE_ASSETS_DIR_CONTENT = "Assets/*"
 $Z_PSCORE_SCRIPT = "./Z-PsCoreFxs.ps1"
-
 Copy-Item -Path $SOURCE_INSANE_INCLUDE_DIR_CONTENT -Destination "$DEST_INCLUDE_DIR" -Force
 Copy-Item -Path $SOURCE_INSANECPP_INCLUDE_DIR_CONTENT -Destination "$DEST_INCLUDE_DIR" -Force
 Copy-Item -Path "$OBJ_DIR/$LIB_NAME" -Destination "$DEST_LIB_DIR" -Recurse -Force
@@ -69,6 +68,7 @@ Copy-Item -Path "$SOURCE_DOCS_DIR_CONTENT" -Destination "$DEST_DIR" -Force -Recu
 Copy-Item -Path "$SET_ENV_VARS_SCRIPT " -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$SOURCE_ASSETS_DIR_CONTENT" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
 Copy-Item -Path "$Z_PSCORE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
+Copy-Item -Path "$X_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 
 
 Write-InfoBlue "█ End building Insane LLVM Bitcode - Finished"

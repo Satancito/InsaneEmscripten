@@ -8,7 +8,7 @@
                 "${workspaceFolder}/../InsaneCpp/include",
                 "${EMSCRIPTEN_ROOT}/upstream/emscripten/system/include",
                 "${EMSCRIPTEN_ROOT}/upstream/emscripten/cache/sysroot/include",
-                "C:/Users/Megam/emsdk/upstream/emscripten/cache/sysroot/include"
+                "${workspaceFolder}/../CommonCppLibs/Botan-2.19.3-Emscripten-Llvm-Release/include/botan-2"
             ],
             "defines": [
                 "_DEBUG",
@@ -18,7 +18,7 @@
             ],
             "compilerPath": "${EMSCRIPTEN_COMPILER}",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "linux-clang-x64",
             "configurationProvider": "ms-vscode.makefile-tools"
         }
