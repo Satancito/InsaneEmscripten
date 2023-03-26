@@ -12,7 +12,7 @@ Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
     
 Write-Host
-Write-InfoBlue "████ Compiling Insane.js"
+Write-InfoBlue "████ Building Insane.js"
 Write-Host
     
 $exportName = "Create$($ModuleExportName)Module"
@@ -61,7 +61,7 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
 }
     
 Test-LastExitCode
-Write-Host "Compiling..."
+Write-Host "Building..."
 & "$env:EMSCRIPTEN_COMPILER" `
     main.cpp `
     Lib/libInsane.bc `
@@ -99,5 +99,5 @@ $filenames.ForEach({
     })
     
     
-Write-InfoBlue "█ End compiling Insane.js - Finished"
+Write-InfoBlue "█ End building Insane.js - Finished"
 Write-Host
