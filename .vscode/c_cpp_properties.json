@@ -1,23 +1,48 @@
 {
     "configurations": [
         {
-            "name": "InsaneEmscripten",
+            "name": "InsaneEmscripten-Debug",
             "includePath": [
                 "${workspaceFolder}",
-                "${workspaceFolder}/include",
-                "${workspaceFolder}/../InsaneCpp/include",
-                "${EMSCRIPTEN_ROOT}/upstream/emscripten/system/include",
-                "${EMSCRIPTEN_ROOT}/upstream/emscripten/cache/sysroot/include",
-                "${workspaceFolder}/../CommonCppLibs/Botan-2.19.3-Emscripten-Llvm-Release/include/botan-2"
+                "${workspaceFolder}/Include",
+                "${workspaceFolder}/modules/InsaneCpp/Include",
+                "${workspaceFolder}/modules/CommonCppIncludes",
+                "${workspaceFolder}/modules/Botan-2.19.3-Emscripten-Llvm-Release/include/botan-2",
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/system/include",
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "__EMSCRIPTEN__"
+                "INSANE_EXPORTS"
             ],
             "compilerPath": "${EMSCRIPTEN_COMPILER}",
-            "cStandard": "c11",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        },
+
+        {
+            "name": "InsaneEmscripten-Release",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/Include",
+                "${workspaceFolder}/modules/InsaneCpp/Include",
+                "${workspaceFolder}/modules/CommonCppIncludes",
+                "${workspaceFolder}/modules/Botan-2.19.3-Emscripten-Llvm-Release/include/botan-2",
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/system/include",
+                "${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include"
+            ],
+            "defines": [
+                "NDEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "INSANE_EXPORTS"
+            ],
+            "compilerPath": "${EMSCRIPTEN_COMPILER}",
+            "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-clang-x64",
             "configurationProvider": "ms-vscode.makefile-tools"

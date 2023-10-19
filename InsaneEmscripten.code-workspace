@@ -2,9 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "..\\InsaneCpp"
 		}
 	],
 	"settings": {
@@ -83,7 +80,12 @@
 			"__verbose_abort": "cpp",
 			"cfenv": "cpp",
 			"regex": "cpp",
-			"variant": "cpp"
+			"variant": "cpp",
+			"charconv": "cpp",
+			"__memory": "cpp",
+			"list": "cpp",
+			"fstream": "cpp",
+			"thread": "cpp"
 		},
 		"powershell.cwd": "i:\\XProjects\\InsaneEmscripten"
 	}

@@ -6,301 +6,278 @@
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneException.h>
 
-/* Internal API */
-#define INSANE_EMSCRIPTEN_KEY "Aqui la clave"
+USING_NS_EMSCRIPTEN;
+USING_NS_INSANE_EXCEPTION;
+USING_NS_INSANE_CRYPTO;
+USING_NS_INSANE_STR;
+USING_NS_INSANE_CORE;
+USING_NS_INSANE_EMSCRIPTEN;
 
-// window.addEventListener("mousedown", event=> console.log("clicked from window's eventlistener"))
-// document.addEventListener("mousedown", event=> console.log("clicked from document's eventlistener"))
-// window.onmousedown = event =>{console.log("clicked from window")}
-// document.onmousedown = event =>{console.log("clicked from document")}
+// namespace Internal
+// {
+//     bool TransformN(const int &base, int &result, std::string data, const String &key, bool normal = true)
+//     {
+//         data = HashExtensions::ToHmac(data, key, HashAlgorithm::Sha512);
+//     begin:
+//         if (normal)
+//         {
+//             result = (~((~base) ^ (data[0] * data[2] * data[4] * data[16] * 612)) ^ data[data.length() - 1]) ^ (base / 216);
+//             for (char value : data)
+//             {
+//                 result -= value;
+//             }
+//             return true;
+//         }
+//         else
+//         {
+//             for (char value : data)
+//             {
+//                 result += value;
+//             }
+//             result = ~((~(result ^ (base / 216))) ^ data[data.length() - 1]) ^ (data[0] * data[2] * data[4] * data[16] * 612);
+//             if (result == base)
+//             {
+//                 return true;
+//             }
+//             else
+//             {
+//                 goto begin;
+//             }
+//         }
+//         goto begin;
+//         return false;
+//     }
 
-namespace Insane::Emscripten::Internal
-{
-
-    bool TransformN(const int &base, int &result, std::string data, bool normal = true)
-    {
-    //     USING_NS_EMSCRIPTEN;
-    //     USING_NS_INSANE_CRYPTO;
-    //     data = HashManager::ToRawHmac(data, INSANE_EMSCRIPTEN_KEY, HashAlgorithm::Sha512);
-    // begin:
-    //     if (normal)
-    //     {
-    //         result = (~((~base) ^ (data[0] * data[2] * data[4] * data[16] * 612)) ^ data[data.length() - 1]) ^ (base / 216);
-    //         for (char value : data)
-    //         {
-    //             result -= value;
-    //         }
-    //         return true;
-    //     }
-    //     else
-    //     {
-    //         for (char value : data)
-    //         {
-    //             result += value;
-    //         }
-    //         result = ~((~(result ^ (base / 216))) ^ data[data.length() - 1]) ^ (data[0] * data[2] * data[4] * data[16] * 612);
-    //         if (result == base)
-    //         {
-    //             return true;
-    //         }
-    //         else
-    //         {
-    //             goto begin;
-    //         }
-    //     }
-    //     goto begin;
-    //     return false;
-      
-    }
-
-    bool AreEquals(String stra, String strb)
-    {
-        const int b = (Insane::Cryptography::RandomManager::Next() / 612) * 216; // base
-        int n = b;
-        if (TransformN(b, n, stra + strb, true) && stra == strb)
-        {
-            TransformN(b, n, stra + strb, false);
-            return true;
-        }
-        else
-        {
-            TransformN(b, ++n, stra + strb, false);
-            return false;
-        }
-        return TransformN(b, ++n, stra + strb, false);
-    }
-} // namespace Insane::Emscripten::Internal
+//     bool AreEquals(String stra, String strb, const String &key)
+//     {
+//         USING_NS_INSANE_CRYPTO;
+//         const int b = (RandomExtensions::Next() / 612) * 216; // base
+//         int n = b;
+//         if (TransformN(b, n, stra + strb, key, true) && stra == strb)
+//         {
+//             TransformN(b, n, stra + strb, key, false);
+//             return true;
+//         }
+//         else
+//         {
+//             TransformN(b, ++n, stra + strb, key, false);
+//             return false;
+//         }
+//         return TransformN(b, ++n, stra + strb, key, false);
+//     }
+// } // namespace Internal
 
 /* Operators */
-EmscriptenVal Insane::Emscripten::Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
+EmscriptenVal Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
 {
-    // USING_NS_EMSCRIPTEN;
-    // USING_NS_INSANE_CRYPTO;
-    // USING_NS_INSANE_STR;
-    // val global = val::global();
-    // if (!VAL_INSANE)
-    // {
-    //     VAL_GLOBAL.set(INSANE_STRING, val::object());
-    // }
-    // String opName = "OP"s + HashManager::ToAlphanumericBase64(HashManager::ToBase64(RandomManager::Next(16)));
-    // String script = EMPTY_STRING;
-    // switch (operatorArityType)
-    // {
-    // case OperatorArityType::Unary:
-    //     script = "Insane."s + opName + "= (a) => { return ###; };"s;
-    //     break;
-    // case OperatorArityType::Binary:
-    //     script = "Insane."s + opName + "= (a,b) => { return ###; };"s;
-    //     break;
-    // default:
-    //     break;
-    // }
+    val global = val::global();
+    if (!VAL_INSANE)
+    {
+        VAL_GLOBAL.set(INSANE_STRING, val::object());
+    }
+    String opName = "OP"s + HexEncodingExtensions::EncodeToHex(RandomExtensions::NextBytes(16));
+    String script = EMPTY_STRING;
+    switch (operatorArityType)
+    {
+    case OperatorArityType::Unary:
+        script = "Insane."s + opName + "= (a) => { return ###; };"s;
+        break;
+    case OperatorArityType::Binary:
+        script = "Insane."s + opName + "= (a,b) => { return ###; };"s;
+        break;
+    default:
+        break;
+    }
 
-    // String op = EMPTY_STRING;
-    // switch (operatorType)
-    // {
-    // case OperatorType::Addition:
-    //     op = "a + b"s;
-    //     break;
-    // case OperatorType::Subtraction:
-    //     op = "a - b"s;
-    //     break;
-    // case OperatorType::Multiplication:
-    //     op = "a * b"s;
-    //     break;
-    // case OperatorType::Division:
-    //     op = "a / b"s;
-    //     break;
-    // case OperatorType::Import:
-    //     op = "import(a)"s;
-    //     break;
-    // case OperatorType::TypeOf:
-    //     op = "typeof a";
-    //     break;
-    // case OperatorType::IsNull:
-    //     op = "a === null";
-    //     break;
-    // case OperatorType::IsUndefined:
-    //     op = "typeof a === 'undefined'";
-    //     break;
-    // case OperatorType::IsNullOrUndefined:
-    //     break;
-    // default:
-    //     break;
-    // }
+    String op = EMPTY_STRING;
+    switch (operatorType)
+    {
+    case OperatorType::Addition:
+        op = "a + b"s;
+        break;
+    case OperatorType::Subtraction:
+        op = "a - b"s;
+        break;
+    case OperatorType::Multiplication:
+        op = "a * b"s;
+        break;
+    case OperatorType::Division:
+        op = "a / b"s;
+        break;
+    case OperatorType::Import:
+        op = "import(a)"s;
+        break;
+    case OperatorType::TypeOf:
+        op = "typeof a";
+        break;
+    case OperatorType::IsNull:
+        op = "a === null";
+        break;
+    case OperatorType::IsUndefined:
+        op = "typeof a === 'undefined'";
+        break;
+    case OperatorType::IsNullOrUndefined:
+        break;
+    default:
+        break;
+    }
 
-    // global.call<val>("eval", StringExtensions::Replace(script, {{"###"s, op}}));
-    // val insane = val::global()["Insane"];
+    global.call<val>("eval", StringExtensions::Replace(script, {{"###"s, op}}));
+    val insane = val::global()["Insane"];
 
-    // val result = val::null();
-    // switch (operatorArityType)
-    // {
-    // case OperatorArityType::Unary:
-    //     result = insane.call<val>(opName.c_str(), a);
-    //     break;
-    // case OperatorArityType::Binary:
-    //     result = insane.call<val>(opName.c_str(), a, b);
-    //     break;
-    // default:
-    //     break;
-    // }
-    // insane.delete_(opName);
-    // return result;
+    val result = val::null();
+    switch (operatorArityType)
+    {
+    case OperatorArityType::Unary:
+        result = insane.call<val>(opName.c_str(), a);
+        break;
+    case OperatorArityType::Binary:
+        result = insane.call<val>(opName.c_str(), a, b);
+        break;
+    default:
+        break;
+    }
+    insane.delete_(opName);
+    return result;
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Add(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal Operator::Add(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Addition, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Subtract(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal Operator::Subtract(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Subtraction, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Multiply(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal Operator::Multiply(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Multiplication, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::Divide(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal Operator::Divide(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Division, OperatorArityType::Binary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::ImportAsync(const EmscriptenVal &a)
+EmscriptenVal Operator::ImportAsync(const EmscriptenVal &a)
 {
-    USING_NS_EMSCRIPTEN;
     return CallOperator(a, EmscriptenVal::null(), OperatorType::Import, OperatorArityType::Unary);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::TypeOf(const EmscriptenVal &a)
+EmscriptenVal Operator::TypeOf(const EmscriptenVal &a)
 {
-    USING_NS_EMSCRIPTEN;
     return CallOperator(a, EmscriptenVal::null(), OperatorType::TypeOf, OperatorArityType::Unary);
 }
 
-bool Insane::Emscripten::Operator::IsNull(const EmscriptenVal &a)
+bool Operator::IsNull(const EmscriptenVal &a)
 {
-    USING_NS_EMSCRIPTEN;
     return CallOperator(a, EmscriptenVal::null(), OperatorType::IsNull, OperatorArityType::Unary).as<bool>();
 }
 
-bool Insane::Emscripten::Operator::IsUndefined(const EmscriptenVal &a)
+bool Operator::IsUndefined(const EmscriptenVal &a)
 {
-    USING_NS_EMSCRIPTEN;
     return CallOperator(a, EmscriptenVal::null(), OperatorType::IsUndefined, OperatorArityType::Unary).as<bool>();
 }
 
-bool Insane::Emscripten::Operator::IsNullOrUndefined(const emscripten::val &a)
+bool Operator::IsNullOrUndefined(const emscripten::val &a)
 {
     return IsNull(a) || IsUndefined(a);
 }
 
-EmscriptenVal Insane::Emscripten::Operator::ToString(const emscripten::val &a)
+EmscriptenVal Operator::ToString(const emscripten::val &a)
 {
-    USING_NS_EMSCRIPTEN;
     return VAL_GLOBAL.call<val>("String", a);
 }
 
 /* Promise */
-EmscriptenVal Insane::Emscripten::Promise::New(const EMSCRIPTEN_VOID_FUNCTOR_TYPE(2) & promiseCallback)
+EmscriptenVal Promise::New(const EMSCRIPTEN_VOID_FUNCTOR_TYPE(2) & promiseCallback)
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["Promise"].new_(Js::Bind(promiseCallback));
 }
 
 /* Json */
 template <>
-emscripten::val Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+emscripten::val Json::Serialize(const emscripten::val &object)
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["JSON"].call<val>("stringify", object);
 }
 
 template <>
-String Insane::Emscripten::Json::Serialize(const emscripten::val &object)
+String Json::Serialize(const emscripten::val &object)
 {
     return Serialize(object).as<String>();
 }
 
 /* Converter */
 // template <>
-// emscripten::val Insane::Emscripten::Converter::ToString(const emscripten::val &value)
+// emscripten::val Converter::ToString(const emscripten::val &value)
 // {
 //     USING_EMSCRIPTEN;
 //     return val::global().call<val>("String", value);
 // }
 
 // template <>
-// String Insane::Emscripten::Converter::ToString(const emscripten::val &value)
+// String Converter::ToString(const emscripten::val &value)
 // {
 //     USING_EMSCRIPTEN;
 //     return ToString(value).as<String>();
 // }
 
-
-
-
 /* Browser */
 template <>
-emscripten::val Insane::Emscripten::Browser::GetUserAgent()
+emscripten::val Browser::GetUserAgent()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["navigator"]["userAgent"];
 }
 
 template <>
-String Insane::Emscripten::Browser::GetUserAgent<String>()
+String Browser::GetUserAgent<String>()
 {
     return Browser::GetUserAgent().as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetTimezoneOffsetMinutes()
+emscripten::val Browser::GetTimezoneOffsetMinutes()
 {
-    USING_NS_EMSCRIPTEN;
     return val(val::global()["Date"].new_().call<val>("getTimezoneOffset").as<int>() * -1);
 }
 
 template <>
-int Insane::Emscripten::Browser::GetTimezoneOffsetMinutes()
+int Browser::GetTimezoneOffsetMinutes()
 {
     return GetTimezoneOffsetMinutes().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetTimezoneOffsetSeconds()
+emscripten::val Browser::GetTimezoneOffsetSeconds()
 {
-    USING_NS_EMSCRIPTEN;
     return val(GetTimezoneOffsetMinutes<int>() * 60);
 }
 
 template <>
-int Insane::Emscripten::Browser::GetTimezoneOffsetSeconds()
+int Browser::GetTimezoneOffsetSeconds()
 {
     return GetTimezoneOffsetSeconds().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetTimezoneOffsetMilliseconds()
+emscripten::val Browser::GetTimezoneOffsetMilliseconds()
 {
     USING_NS_EMSCRIPTEN;
     return val(GetTimezoneOffsetSeconds<int>() * 1000);
 }
 
 template <>
-int Insane::Emscripten::Browser::GetTimezoneOffsetMilliseconds()
+int Browser::GetTimezoneOffsetMilliseconds()
 {
     return GetTimezoneOffsetMilliseconds().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetNameAsync(const emscripten::val &ua)
+emscripten::val Browser::GetNameAsync(const emscripten::val &ua)
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_STR;
-    USING_NS_INSANE_CRYPTO;
     String userAgent = !ua ? GetUserAgent<String>() : ua.as<String>();
     if (StringExtensions::Contains(userAgent, " OPR/", false) || StringExtensions::Contains(userAgent, " Opera/", false) || !!val::global()["opr"] || !!val::global()["opera"])
     {
@@ -340,42 +317,14 @@ emscripten::val Insane::Emscripten::Browser::GetNameAsync(const emscripten::val 
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetNameAsync(const String &ua)
+emscripten::val Browser::GetNameAsync(const String &ua)
 {
-    USING_NS_EMSCRIPTEN;
     return GetNameAsync(ua.empty() ? GetUserAgent() : val(ua));
 }
 
-// String edgeChromium = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.63";
-// String chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
-// String firefox = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0";
-// String vivaldi = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.119 Safari/537.36";
-// String brave = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
-// String opera = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 OPR/70.0.3728.189";
-// String operaGX = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36 OPR/71.0.3770.175";
-// String safariMacOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7";
-// String firefoxMacOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:52.0) Gecko/20100101 Firefox/52.0";
-// String safariMacOS2 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15";
-// String safariiPhone = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Mobile/15E148 Safari/604.1";
-// String chromeMacOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
-// String firefoxMacOS2 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:81.0) Gecko/20100101 Firefox/81.0";
-// String chromeAndroid = "Mozilla/5.0 (Linux; Android 6.0; HUAWEI VNS-L23) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.101 Mobile Safari/537.36";
-// String firefoxAndroid = "Mozilla/5.0 (Android 6.0; Mobile; rv:81.0) Gecko/81.0 Firefox/81.0";
-// String operaMacOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36 OPR/71.0.3770.171";
-// String firefoxUbuntu = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0";
-// String operaUbuntu = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36 OPR/71.0.3770.171";
-// String chromeUbuntu = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
-// String safariIPod = "Mozilla/5.0 (iPod; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Mobile/15E148 Safari/604.1";
-// String safariIPad = "Mozilla/5.0 (iPad; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Mobile/15E148 Safari/604.1";
-// String safariIPad ="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15";
-
 template <>
-emscripten::val Insane::Emscripten::Browser::GetOS(const emscripten::val &ua)
+emscripten::val Browser::GetOS(const emscripten::val &ua)
 {
-
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_STR;
-    USING_NS_INSANE_CRYPTO;
     String userAgent = !ua ? GetUserAgent<String>() : ua.as<String>();
     if (StringExtensions::Contains(userAgent, "Windows"s, false) || StringExtensions::Contains(userAgent, "Win"s, false))
     {
@@ -422,97 +371,122 @@ emscripten::val Insane::Emscripten::Browser::GetOS(const emscripten::val &ua)
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetOS(const String &ua)
+emscripten::val Browser::GetOS(const String &ua)
 {
-    USING_NS_EMSCRIPTEN;
     return GetOS(ua.empty() ? GetUserAgent() : val(ua));
 }
 
 template <>
-String Insane::Emscripten::Browser::GetOS(const emscripten::val &ua)
+String Browser::GetOS(const emscripten::val &ua)
 {
     return GetOS(ua).as<String>();
 }
 
 template <>
-String Insane::Emscripten::Browser::GetOS(const String &ua)
+String Browser::GetOS(const String &ua)
 {
-    USING_NS_EMSCRIPTEN;
     return GetOS(ua.empty() ? GetUserAgent() : val(ua)).as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetWebGLRenderer()
+emscripten::val Browser::GetWebGLRenderer()
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_EMSCRIPTEN;
-    val webGL = val::global()["document"].call<val>("createElement", "canvas"s).call<val>("getContext", "webgl"s);
-    if (!webGL)
+    val canvas = val::global()["document"].call<val>("createElement", "canvas"s);
+    val context = canvas.call<val>("getContext", "webgl"s);
+    if(!context)
     {
+        canvas.call<void>("remove");
         return val(EMPTY_STRING);
     }
-    val debugInfo = webGL.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
-    return !debugInfo ? val(EMPTY_STRING) : webGL.call<val>("getParameter", debugInfo["UNMASKED_RENDERER_WEBGL"]);
+    val webGlRenderInfo = context.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
+    val result = val::null();
+    if(!webGlRenderInfo)
+    {
+        result  = context.call<val>("getParameter", context.call<val>("RENDERER"));
+    }
+    else
+    {
+        result = context.call<val>("getParameter", webGlRenderInfo["UNMASKED_RENDERER_WEBGL"]);
+    }
+    val extension = context.call<val>("getExtension", "WEBGL_lose_context"s); 
+    if(!!extension)
+    {
+        extension.call<void>("loseContext");
+        context = val::null();
+    }
+    canvas.call<void>("remove");
+    return !result ? val(EMPTY_STRING): result;
 }
 
 template <>
-String Insane::Emscripten::Browser::GetWebGLRenderer<String>()
+String Browser::GetWebGLRenderer<String>()
 {
-    USING_NS_EMSCRIPTEN;
     return GetWebGLRenderer().as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetWebGLVendor()
+emscripten::val Browser::GetWebGLVendor()
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_EMSCRIPTEN;
-    val webGL = val::global()["document"].call<val>("createElement", "canvas"s).call<val>("getContext", "webgl"s);
-    if (!webGL)
+    val canvas = val::global()["document"].call<val>("createElement", "canvas"s);
+    val context = canvas.call<val>("getContext", "webgl"s);
+    if(!context)
     {
+        canvas.call<void>("remove");
         return val(EMPTY_STRING);
     }
-    val debugInfo = webGL.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
-    return !debugInfo ? val(EMPTY_STRING) : webGL.call<val>("getParameter", debugInfo["UNMASKED_VENDOR_WEBGL"]);
+    val webGlRenderInfo = context.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
+    val result = val::null();
+    if(!webGlRenderInfo)
+    {
+        result  = context.call<val>("getParameter", context.call<val>("RENDERER"));
+    }
+    else
+    {
+        result = context.call<val>("getParameter", webGlRenderInfo["UNMASKED_VENDOR_WEBGL"]);
+    }
+    val extension = context.call<val>("getExtension", "WEBGL_lose_context"s);
+    if(!!extension)
+    {
+        extension.call<void>("loseContext");
+        context = val::null();
+    }
+    canvas.call<void>("remove");
+    return !result ? val(EMPTY_STRING): result;
 }
 
 template <>
-String Insane::Emscripten::Browser::GetWebGLVendor<String>()
+String Browser::GetWebGLVendor<String>()
 {
-    USING_NS_EMSCRIPTEN;
     return GetWebGLVendor().as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetAvailableScreenHeight()
+emscripten::val Browser::GetAvailableScreenHeight()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["screen"]["availHeight"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetAvailableScreenHeight()
+int Browser::GetAvailableScreenHeight()
 {
     return GetAvailableScreenHeight().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetAvailableScreenWidth()
+emscripten::val Browser::GetAvailableScreenWidth()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["screen"]["availWidth"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetAvailableScreenWidth()
+int Browser::GetAvailableScreenWidth()
 {
     return GetAvailableScreenWidth().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetAvailableScreenOrientation()
+emscripten::val Browser::GetAvailableScreenOrientation()
 {
-    USING_NS_EMSCRIPTEN;
     if (GetAvailableScreenHeight() > GetAvailableScreenWidth())
     {
         return val(static_cast<int>(OrientationType::PORTRAIT));
@@ -527,54 +501,50 @@ emscripten::val Insane::Emscripten::Browser::GetAvailableScreenOrientation()
 }
 
 template <>
-Insane::Emscripten::OrientationType Insane::Emscripten::Browser::GetAvailableScreenOrientation()
+OrientationType Browser::GetAvailableScreenOrientation()
 {
     return static_cast<OrientationType>(GetAvailableScreenOrientation().as<int>());
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetAvailableScreenSize()
+emscripten::val Browser::GetAvailableScreenSize()
 {
-    USING_NS_EMSCRIPTEN;
     return val(GetAvailableScreenHeight<int>() * GetAvailableScreenWidth<int>());
 }
 
 template <>
-int Insane::Emscripten::Browser::GetAvailableScreenSize()
+int Browser::GetAvailableScreenSize()
 {
     return GetAvailableScreenSize().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetScreenHeight()
+emscripten::val Browser::GetScreenHeight()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["screen"]["height"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetScreenHeight()
+int Browser::GetScreenHeight()
 {
     return GetScreenHeight().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetScreenWidth()
+emscripten::val Browser::GetScreenWidth()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["screen"]["width"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetScreenWidth()
+int Browser::GetScreenWidth()
 {
     return GetScreenWidth().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetScreenOrientation()
+emscripten::val Browser::GetScreenOrientation()
 {
-    USING_NS_EMSCRIPTEN;
     if (GetScreenHeight() > GetScreenWidth())
     {
         return val(static_cast<int>(OrientationType::PORTRAIT));
@@ -589,54 +559,52 @@ emscripten::val Insane::Emscripten::Browser::GetScreenOrientation()
 }
 
 template <>
-Insane::Emscripten::OrientationType Insane::Emscripten::Browser::GetScreenOrientation()
+OrientationType Browser::GetScreenOrientation()
 {
     return static_cast<OrientationType>(GetScreenOrientation().as<int>());
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetScreenSize()
+emscripten::val Browser::GetScreenSize()
 {
     USING_NS_EMSCRIPTEN;
     return val(GetScreenHeight<int>() * GetScreenWidth<int>());
 }
 
 template <>
-int Insane::Emscripten::Browser::GetScreenSize()
+int Browser::GetScreenSize()
 {
     return GetScreenSize().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetViewportHeight()
+emscripten::val Browser::GetViewportHeight()
 {
     USING_NS_EMSCRIPTEN;
     return val::global()["innerHeight"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetViewportHeight()
+int Browser::GetViewportHeight()
 {
     return GetViewportHeight().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetViewportWidth()
+emscripten::val Browser::GetViewportWidth()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["innerWidth"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetViewportWidth()
+int Browser::GetViewportWidth()
 {
     return GetViewportWidth().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetViewportOrientation()
+emscripten::val Browser::GetViewportOrientation()
 {
-    USING_NS_EMSCRIPTEN;
     if (GetViewportHeight() > GetViewportWidth())
     {
         return val(static_cast<int>(OrientationType::PORTRAIT));
@@ -651,71 +619,63 @@ emscripten::val Insane::Emscripten::Browser::GetViewportOrientation()
 }
 
 template <>
-Insane::Emscripten::OrientationType Insane::Emscripten::Browser::GetViewportOrientation()
+OrientationType Browser::GetViewportOrientation()
 {
     return static_cast<OrientationType>(GetViewportOrientation().as<int>());
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetViewportSize()
+emscripten::val Browser::GetViewportSize()
 {
-    USING_NS_EMSCRIPTEN;
     return val(GetViewportHeight<int>() * GetViewportWidth<int>());
 }
 
 template <>
-int Insane::Emscripten::Browser::GetViewportSize()
+int Browser::GetViewportSize()
 {
     return GetViewportSize().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetLanguages()
+emscripten::val Browser::GetLanguages()
 {
-    USING_NS_EMSCRIPTEN;
     val lang = val::global()["navigator"]["languages"];
     return !!lang ? lang : val::array();
 }
 
 template <>
-std::vector<String> Insane::Emscripten::Browser::GetLanguages()
+std::vector<String> Browser::GetLanguages()
 {
-    USING_NS_EMSCRIPTEN;
     return vecFromJSArray<String>(GetLanguages());
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetLanguage()
+emscripten::val Browser::GetLanguage()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["navigator"]["language"];
 }
 
 template <>
-String Insane::Emscripten::Browser::GetLanguage()
+String Browser::GetLanguage()
 {
-    USING_NS_EMSCRIPTEN;
     return GetLanguage().as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetMaxTouchPoints()
+emscripten::val Browser::GetMaxTouchPoints()
 {
-    USING_NS_EMSCRIPTEN;
     return val::global()["navigator"]["maxTouchPoints"];
 }
 
 template <>
-int Insane::Emscripten::Browser::GetMaxTouchPoints()
+int Browser::GetMaxTouchPoints()
 {
-    USING_NS_EMSCRIPTEN;
     return GetMaxTouchPoints().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetDeviceMemory()
+emscripten::val Browser::GetDeviceMemory()
 {
-    USING_NS_EMSCRIPTEN;
     if (val::global()["isSecureContext"].as<bool>())
     {
         val memory = val::global()["navigator"]["deviceMemory"];
@@ -728,29 +688,27 @@ emscripten::val Insane::Emscripten::Browser::GetDeviceMemory()
 }
 
 template <>
-float Insane::Emscripten::Browser::GetDeviceMemory()
+float Browser::GetDeviceMemory()
 {
     return GetDeviceMemory().as<float>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetHardwareConcurrency()
+emscripten::val Browser::GetHardwareConcurrency()
 {
-    USING_NS_EMSCRIPTEN;
     val concurrency = val::global()["navigator"]["hardwareConcurrency"];
     return !!concurrency ? concurrency : val(-1);
 }
 
 template <>
-int Insane::Emscripten::Browser::GetHardwareConcurrency()
+int Browser::GetHardwareConcurrency()
 {
     return GetHardwareConcurrency().as<int>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetPlugins()
+emscripten::val Browser::GetPlugins()
 {
-    USING_NS_EMSCRIPTEN;
     val plugins = val::global()["navigator"]["plugins"];
     val result = val::array();
     if (!plugins)
@@ -781,9 +739,8 @@ emscripten::val Insane::Emscripten::Browser::GetPlugins()
 }
 
 template <>
-std::vector<Insane::Emscripten::Browser::Plugin> Insane::Emscripten::Browser::GetPlugins()
+std::vector<Browser::Plugin> Browser::GetPlugins()
 {
-    USING_NS_EMSCRIPTEN;
     std::vector<Plugin> result;
     val plugins = GetPlugins();
     for (int i = 0; i < plugins["length"].as<int>(); i++)
@@ -805,9 +762,8 @@ std::vector<Insane::Emscripten::Browser::Plugin> Insane::Emscripten::Browser::Ge
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetMimeTypes()
+emscripten::val Browser::GetMimeTypes()
 {
-    USING_NS_EMSCRIPTEN;
     val mimeTypes = val::global()["navigator"]["mimeTypes"];
     val result = val::global().array();
     if (!mimeTypes)
@@ -827,9 +783,8 @@ emscripten::val Insane::Emscripten::Browser::GetMimeTypes()
 }
 
 template <>
-std::vector<Insane::Emscripten::Browser::MimeType> Insane::Emscripten::Browser::GetMimeTypes()
+std::vector<Browser::MimeType> Browser::GetMimeTypes()
 {
-    USING_NS_EMSCRIPTEN;
     std::vector<MimeType> result;
     val mimes = GetMimeTypes();
     for (int i = 0; i < mimes["length"].as<int>(); i++)
@@ -844,50 +799,44 @@ std::vector<Insane::Emscripten::Browser::MimeType> Insane::Emscripten::Browser::
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::GetDoNotTrack()
+emscripten::val Browser::GetDoNotTrack()
 {
-    USING_NS_EMSCRIPTEN;
     val dnt = val::global()["navigator"]["doNotTrack"];
     return !!dnt ? dnt : val("unspecified"s);
 }
 
 template <>
-String Insane::Emscripten::Browser::GetDoNotTrack()
+String Browser::GetDoNotTrack()
 {
     return GetDoNotTrack().as<String>();
 }
 
 template <>
-emscripten::val Insane::Emscripten::Browser::HasCookiesSupport()
+emscripten::val Browser::HasCookiesSupport()
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_STR;
     bool result = true && !!val::global()["navigator"]["cookieEnabled"];
     if (!!result)
     {
-        val::global()["document"].set("cookie", "InsaneCookie=1"_val);
-        result = StringExtensions::Contains(val::global()["document"]["cookie"].as<String>(), "InsaneCookie=");
-        val::global()["document"].set("cookie", "InsaneCookie=1;expires="s + val::global()["Date"].new_(1970, 1, 1, 0, 0, 0, 0).call<val>("toGMTString").as<String>());
+        val::global()["document"].set("cookie", "InsaneCookie=1;SameSite=Strict"_val);
+        result = StringExtensions::Contains(val::global()["document"]["cookie"].as<String>(), "InsaneCookie=0;SameSite=Strict;");
+        val::global()["document"].set("cookie", "InsaneCookie=1;SameSite=Strict;expires="s + val::global()["Date"].new_(1970, 1, 1, 0, 0, 0, 0).call<val>("toGMTString").as<String>());
     }
     return val(result);
 }
 
 template <>
-bool Insane::Emscripten::Browser::HasCookiesSupport()
+bool Browser::HasCookiesSupport()
 {
     return HasCookiesSupport().as<bool>();
 }
 
 template <>
-EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenVal &key)
+EmscriptenVal Browser::GetFingerprintAsync(const EmscriptenVal &key)
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_CRYPTO;
     String result = Browser::GetUserAgent<String>();
     result += std::to_string(Browser::GetTimezoneOffsetMilliseconds<int>());
     result += std::to_string(Browser::GetTimezoneOffsetSeconds<int>());
     result += std::to_string(Browser::GetTimezoneOffsetMinutes<int>());
-
     EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
     callback = [result, key](emscripten::val name) -> emscripten::val
     {
@@ -909,21 +858,20 @@ EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const EmscriptenV
         val props = objectClass.call<val>("getOwnPropertyNames", objectClass.call<val>("getPrototypeOf", val::global()["navigator"])).call<val>("sort");
         ret += Json::Serialize<String>(props);
         ret += Operator::ToString(props["length"]).as<String>();
-        //return val("Insane"s + HashManager::ToBase64Hmac(ret, key.as<String>()).Hash());
+        return val("Insane"s + Base64EncodingExtensions::EncodeToBase64(HashExtensions::ComputeHmac(ConverterExtensions::StringToStdVectorUint8(ret), ConverterExtensions::StringToStdVectorUint8(key.as<String>()))));
     };
     return Browser::GetNameAsync().call<val>("then", Js::Bind(callback));
 }
 
 template <>
-EmscriptenVal Insane::Emscripten::Browser::GetFingerprintAsync(const String &key)
+EmscriptenVal Browser::GetFingerprintAsync(const String &key)
 {
-    USING_NS_EMSCRIPTEN;
     return GetFingerprintAsync(val(key));
 }
 
 /* Js */
 
-void Insane::Emscripten::Js::SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists)
+void Js::SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists)
 {
     if (Operator::IsNullOrUndefined(object[property]))
     {
@@ -938,38 +886,34 @@ void Insane::Emscripten::Js::SetProperty(EmscriptenVal object, const String &pro
     }
 }
 
-void Insane::Emscripten::Js::SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+void Js::SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists)
 {
     SetProperty(object, property, EmscriptenVal::global().object(), replaceIfExists);
 }
 
-void Insane::Emscripten::Js::SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+void Js::SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists)
 {
     SetProperty(object, property, EmscriptenVal::global().array(), replaceIfExists);
 }
 
-void Insane::Emscripten::Js::SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+void Js::SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists)
 {
     SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
-String Insane::Emscripten::Js::GetPropertyName(const String &name, const String &key, const String &suffix)
+String Js::GetPropertyName(const String &name, const String &key, const String &suffix)
 {
-    // USING_NS_INSANE_CRYPTO;
-    // USING_NS_INSANE_STR;
-    // return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HashManager::ToAlphanumericBase64(HashManager::ToRawHmac(name, INSANE_EMSCRIPTEN_KEY + key, HashAlgorithm::Sha512));
+    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HexEncodingExtensions::EncodeToHex(HashExtensions::ComputeHmac( name, key, HashAlgorithm::Sha512));
 }
 
-emscripten::val Insane::Emscripten::Js::Bind(const emscripten::val &fx)
+emscripten::val Js::Bind(const emscripten::val &fx)
 {
-    USING_NS_EMSCRIPTEN;
     return fx["opcall"].call<val>("bind", fx);
 }
 
 template <>
-emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const emscripten::val &scriptpath)
+emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
-    USING_NS_EMSCRIPTEN;
     String id = Js::GetPropertyName(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
     Js::SetPropertyObject(val::global(), INSANE_STRING, false);
     String loadedName = Js::GetPropertyName("Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
@@ -988,13 +932,13 @@ emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const emscripten::val &s
         script.set("src", scriptpath);
         script.set("type", val("text/javascript"));
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-        onloadCallback = [scriptpath, resolve, id](val a) -> void
+        onloadCallback = [scriptpath, resolve, id]([[maybe_unused]] val a) -> void
         {
             resolve(id);
         };
         script.set("onload", Js::Bind(onloadCallback));
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-        onerrorCallback = [scriptpath, id, reject, loaded](val a) -> void
+        onerrorCallback = [scriptpath, id, reject, loaded]([[maybe_unused]] val a) -> void
         {
             val::global("document").call<val>("getElementById", val(id)).call<void>("remove");
             loaded.delete_(id);
@@ -1007,122 +951,103 @@ emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const emscripten::val &s
 }
 
 template <>
-emscripten::val Insane::Emscripten::Js::LoadScriptAsync(const String &scriptpath)
+emscripten::val Js::LoadScriptAsync(const String &scriptpath)
 {
-    USING_NS_EMSCRIPTEN;
     return LoadScriptAsync(val(scriptpath));
 }
 
 /* LocalStorage */
 
 template <>
-emscripten::val Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
+emscripten::val LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_EXCEPTION;
-    USING_NS_INSANE_CRYPTO;
-    USING_NS_INSANE_STR;
-    try
-    {
-        String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
-        const val value = val::global("localStorage").call<val>("getItem", key);
-        if (passwordStr == EMPTY_STRING)
-        {
-            return !value ? val(EMPTY_STRING) : value;
-        }
-        return !value ? val(EMPTY_STRING) : val(AesManager::DecryptFromBase64(value.as<String>(), passwordStr));
-    }
-    catch (const std::exception &ex)
-    {
-        return val(EMPTY_STRING);
-    }
-    catch (...)
-    {
-        return val(EMPTY_STRING);
-    }
+    // USING_NS_EMSCRIPTEN;
+    // USING_NS_INSANE_EXCEPTION;
+    // USING_NS_INSANE_CRYPTO;
+    // USING_NS_INSANE_STR;
+    // try
+    // {
+    //     String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
+    //     const val value = val::global("localStorage").call<val>("getItem", key);
+    //     if (passwordStr == EMPTY_STRING)
+    //     {
+    //         return !value ? val(EMPTY_STRING) : value;
+    //     }
+    //     return !value ? val(EMPTY_STRING) : val(Base64EncodingExtensions::DecodeFromBase64(AesExtensions::DecryptAesCbc(value.as<String>(), passwordStr)));
+    // }
+    // catch (const std::exception &ex)
+    // {
+    //     return val(EMPTY_STRING);
+    // }
+    // catch (...)
+    // {
+    //     return val(EMPTY_STRING);
+    // }
 }
 
 template <>
-String Insane::Emscripten::LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
+String LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
 {
     return GetValue(key, password).as<String>();
 }
 
 template <>
-EmscriptenVal Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
+EmscriptenVal LocalStorage::GetValue(const String &key, const String &password) noexcept
 {
-    USING_NS_EMSCRIPTEN;
     return GetValue(val(key), val(password));
 }
 
 template <>
-String Insane::Emscripten::LocalStorage::GetValue(const String &key, const String &password) noexcept
+String LocalStorage::GetValue(const String &key, const String &password) noexcept
 {
-    USING_NS_EMSCRIPTEN;
     return GetValue(val(key), val(password)).as<String>();
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password) noexcept
+void LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password) noexcept
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_EXCEPTION;
-    USING_NS_INSANE_CRYPTO;
-    USING_NS_INSANE_STR;
-    try
-    {
-        String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
-        if (passwordStr == EMPTY_STRING)
-        {
-            val::global("localStorage").call<void>("setItem", key, value);
-            return;
-        }
-        val::global("localStorage").call<void>("setItem", key, AesManager::EncryptToBase64(Operator::ToString(value).as<String>(), passwordStr));
-    }
-    catch (const ExceptionBase &e)
-    {
-    }
+    // try
+    // {
+    //     StdVectorUint8 passwordStr = ConverterExtensions::  Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
+    //     val::global("localStorage").call<void>("setItem", key, Base64EncodingExtensions::ToBase64(AesExtensions::EncryptAesCbc(Operator::ToString(value).as<String>(), passwordStr)));
+    // }
+    // catch (const ExceptionBase &e)
+    // {
+    // }
+    //throw NotImplementedException(INSANE_FUNCTION_SIGNATURE, __FILE__, __LINE__);
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::SetValue(const String &key, const String &value, const String &password) noexcept
+void LocalStorage::SetValue(const String &key, const String &value, const String &password) noexcept
 {
-    USING_NS_EMSCRIPTEN;
     SetValue(val(key), val(value), val(password));
 }
 
-void Insane::Emscripten::Js::ThrowError(const String &message)
+void Js::ThrowError(const String &message)
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_EXCEPTION;
     val::global("Error").new_(val(message)).throw_();
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::RemoveValue(const emscripten::val &key) noexcept
+void LocalStorage::RemoveValue(const emscripten::val &key) noexcept
 {
-    USING_NS_EMSCRIPTEN;
     val::global("localStorage").call<void>("removeItem", key);
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::RemoveValue(const String &key) noexcept
+void LocalStorage::RemoveValue(const String &key) noexcept
 {
-    USING_NS_EMSCRIPTEN;
     RemoveValue(val(key));
 }
 
-void Insane::Emscripten::LocalStorage::Clear()
+void LocalStorage::Clear()
 {
-    USING_NS_EMSCRIPTEN;
     val::global("localStorage").call<void>("clear");
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const EmscriptenVal &preffix)
+void LocalStorage::RemoveValuesStartingWith(const EmscriptenVal &preffix)
 {
-    USING_NS_EMSCRIPTEN;
-    USING_NS_INSANE_STR;
     for (val value : emscripten::vecFromJSArray<val>(val::global("Object").call<val>("entries", val::global("localStorage"))))
     {
         if (StringExtensions::StartsWith(value[0].as<String>(), preffix.as<String>()))
@@ -1133,18 +1058,38 @@ void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const Emscripten
 }
 
 template <>
-void Insane::Emscripten::LocalStorage::RemoveValuesStartingWith(const String &preffix)
+void LocalStorage::RemoveValuesStartingWith(const String &preffix)
 {
-    USING_NS_EMSCRIPTEN;
     RemoveValuesStartingWith(val(preffix));
 }
 
-/* No eliminar,
-esta función debe ir en el archivo .h, se encuentra en pruebas la implementación de especializaciones,
-si no cumple las espectativas se debe borrar el código y dejar solamente esta función*/
-// template <typename ReturnType, typename... ParametersType>
-// static inline emscripten::val Bind(const std::function<ReturnType(ParametersType...)> &fx);
-// {
-//     USING_EMSCRIPTEN;
-//     return val(fx)["opcall"].call<val>("bind", val(fx));
-// }
+// ███ Interop ███
+StdVectorUint8 InteropExtensions::JsUint8ArrayToStdVectorUint8(const EmscriptenVal &uint8Array)
+{
+    size_t length = uint8Array["length"].as<size_t>();
+    std::vector<uint8_t> result;
+    for (size_t i = 0; i < length; i++)
+    {
+        result.push_back(uint8Array[i].as<uint8_t>());
+    }
+    return result;
+}
+
+StdVectorUint8 InteropExtensions::JsStringToStdVectorUint8(const EmscriptenVal &str)
+{
+    return ConverterExtensions::StringToStdVectorUint8(str.as<String>());
+}
+
+EmscriptenVal InteropExtensions::StdVectorUint8ToJsUint8Array(const StdVectorUint8 &vector)
+{
+    val array8 = val::array(vector);
+    return val::global("Uint8Array").new_(array8);
+}
+
+void InteropExtensions::PrintStdVectorUint8(StdVectorUint8 vector)
+{
+    for (size_t i = 0; i < vector.size(); i++)
+    {
+        Console::Log(vector[i]);
+    }
+}

@@ -4,7 +4,7 @@ param (
     [switch]
     $Clean
 )
-
+$Error.Clear()
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
@@ -38,8 +38,8 @@ if(!(Test-Path "$OBJ_DIR" -PathType Container))
 }
 
 Write-Host "Building..."
-& "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
 
+& "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
 Test-LastExitCode
 
 Write-Host "Copying files..."
@@ -51,9 +51,9 @@ New-Item "$DEST_JS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_TOOLS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
 
-$LIB_NAME = "libInsane.bc"
+$LIB_NAME = "libInsane.a"
 $SOURCE_INSANE_INCLUDE_DIR_CONTENT = "Include/Insane/*" 
-$SOURCE_INSANECPP_INCLUDE_DIR_CONTENT = "../InsaneCpp/Include/Insane/*"
+$SOURCE_INSANECPP_INCLUDE_DIR_CONTENT = "modules/InsaneCpp/Include/Insane/Insane*.h"
 $SOURCE_JS_DIR_CONTENT = "Js/*"
 $SOURCE_TOOLS_DIR_CONTENT = "Tools/*"
 $SOURCE_DOCS_DIR_CONTENT = "Docs/*"
