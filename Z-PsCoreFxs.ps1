@@ -1117,7 +1117,10 @@ function Test-LastExitCode {
         if ($NoThrowError.IsPresent) {
             return $false
         }
-        throw "ERROR: When execute last command. Check and try again. ExitCode = $($LASTEXITCODE)."
+        Write-Host "Error: $($Error[0])"
+        $code = $($LASTEXITCODE)
+        $Error.Clear()
+        throw "ERROR: When execute last command. Check and try again. ExitCode = $code."
     }  
     if ($NoThrowError.IsPresent) {
         return $true

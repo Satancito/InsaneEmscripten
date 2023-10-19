@@ -5,28 +5,35 @@
 #include <Insane/Insane.h>
 #include <Insane/InsaneString.h>
 #include <Insane/InsanePreprocessor.h>
+#include <Insane/InsaneCryptography.h>
+#include <Insane/InsaneException.h>
+
 #include <emscripten/bind.h>
+
 #include <type_traits>
 #include <functional>
 
-#define VAL_TYPE() emscripten::val
+#define VAL_TYPE_EXP() emscripten::val
 
-#define EMSCRIPTEN_EXPORT_FUNCTOR(arity, returnType, name, p3, p4, p5) emscripten::class_<std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>>(CSTRINGIFY(name##arity)).constructor<>().function("opcall", &std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>::operator());
-#define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VOID_TYPE(), VoidFunctor, 0, 0, 0)
-#define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity) INSANE_REPEAT_ADVANCED(EMSCRIPTEN_EXPORT_FUNCTOR, arity, VAL_TYPE(), ValFunctor, 0, 0, 0)
-#define EMSCRIPTEN_EXPORT_ALL_FUNCTORS(arity) \
-    EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity) \
-    EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity)
+#define EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP(n, nprev, c, cnext, se, sae, returnTypeExp, name, p3, p4, p5) emscripten::class_<std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>>(CSTRINGIFY_DEFER(name##c)).constructor<>().function("opcall", &std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>::operator());
 
-#define EMSCRIPTEN_FUNCTOR_TYPE(arity, returnType) std::function<returnType(INSANE_REPEAT_COMMA_##arity(VAL_TYPE(), 0))>
-#define EMSCRIPTEN_VOID_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VOID_TYPE())
-#define EMSCRIPTEN_VAL_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VAL_TYPE())
+#define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VOID_TYPE_EXP, name, 3, 4, 5)
+#define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VAL_TYPE_EXP, name, 3, 4, 5)
+#define EMSCRIPTEN_EXPORT_ALL_FUNCTORS(arity, name) EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name##ValFunctor) EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name##VoidFunctor)
+
+#define EMSCRIPTEN_FUNCTOR_TYPE(arity, returnTypeExp) std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, arity, COMMA_VALUE_EXP, 0))>
+#define EMSCRIPTEN_VOID_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VOID_TYPE_EXP)
+#define EMSCRIPTEN_VAL_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VAL_TYPE_EXP)
+
+#define EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT(enumExtensionExportName, insaneEnumType) class_<insaneEnumType ## EnumExtensions>(enumExtensionExportName) \
+        .class_function("ParseString", select_overload<insaneEnumType(const String &)>(&insaneEnumType ## EnumExtensions::Parse)) \
+        .class_function("ParseInt", select_overload<insaneEnumType(const int &)>(&insaneEnumType ## EnumExtensions::Parse)) \
+        .class_function("ToIntegral",&insaneEnumType ## EnumExtensions::ToIntegral) \
+        .class_function("ToString", &insaneEnumType ## EnumExtensions::ToString) \
+        .class_function("ToIntegralString", &insaneEnumType ## EnumExtensions::ToIntegralString)
 
 #define USING_NS_EMSCRIPTEN using namespace emscripten
-#define USING_NS_INSANE_EMSCRIPTEN using namespace Insane::Emscripten
-
-#include <Insane/InsaneCryptography.h>
-#include <Insane/InsaneException.h>
+#define USING_NS_INSANE_EMSCRIPTEN using namespace InsaneIO::Insane::Emscripten
 
 #define INSANE_PROPERTY_SUFFIX ("Insane_"s)
 #define VAL_GLOBAL emscripten::val::global()
@@ -64,7 +71,7 @@ static inline emscripten::val operator"" _val(char value)
 
 typedef emscripten::val EmscriptenVal;
 
-namespace Insane::Emscripten
+namespace InsaneIO::Insane::Emscripten
 {
     class EmscriptenValManager
     {
@@ -496,42 +503,15 @@ namespace Insane::Emscripten
         static void RemoveValuesStartingWith(const ParamType &preffix);
     };
 
+    class InteropExtensions
+    {
+    public:
+    [[nodiscard]] static StdVectorUint8 JsUint8ArrayToStdVectorUint8(const EmscriptenVal& array);
+    [[nodiscard]] static StdVectorUint8 JsStringToStdVectorUint8(const EmscriptenVal& str);
+    [[nodiscard]] static EmscriptenVal StdVectorUint8ToJsUint8Array(const StdVectorUint8& vector);
+    static void PrintStdVectorUint8(StdVectorUint8 vector);
+    };
+
 } // namespace Insane::Emscripten
 
 #endif // __INSANE_EMSCRIPTEN_H__
-
-//  template <typename Type>
-//         static inline constexpr std::string_view
-//         type_name()
-//         {
-//             std::string_view name, prefix, suffix;
-// #ifdef __clang__
-//             name = __PRETTY_FUNCTION__;
-//             prefix = "std::string_view type_name() [T = ";
-//             suffix = "]";
-// #elif defined(__GNUC__)
-//             name = __PRETTY_FUNCTION__;
-//             prefix = "constexpr std::string_view type_name() [with T = ";
-//             suffix = "; std::string_view = std::basic_string_view<char>]";
-// #elif defined(_MSC_VER)
-//             name = __FUNCSIG__;
-//             prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl type_name<";
-//             suffix = ">(void)";
-// #endif
-//             //name.remove_prefix(prefix.size()-2);
-//             //name.remove_suffix(suffix.size());
-//             return name;
-//         }
-
-//         template <typename T>
-//         static inline void Print(std::ostream &out, const T &head)
-//         {
-//             out << head << std::endl;
-//         }
-
-//         template <typename T, typename... Args>
-//         static inline void Print(std::ostream &out, const T &head, const Args &... args)
-//         {
-//             out << head << "," << std::endl;
-//             Print(out, args...);
-//         }
