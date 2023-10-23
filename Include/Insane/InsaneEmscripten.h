@@ -36,8 +36,8 @@
 #define USING_NS_INSANE_EMSCRIPTEN using namespace InsaneIO::Insane::Emscripten
 
 #define INSANE_PROPERTY_SUFFIX ("Insane_"s)
-#define VAL_GLOBAL emscripten::val::global()
-#define VAL_INSANE VAL_GLOBAL[INSANE_STRING]
+#define EMVAL_GLOBAL emscripten::val::global()
+#define EMVAL_INSANE EMVAL_GLOBAL[INSANE_STRING]
 
 static inline emscripten::val operator"" _valb(unsigned long long value)
 {
@@ -69,7 +69,7 @@ static inline emscripten::val operator"" _val(char value)
     return val(value);
 }
 
-typedef emscripten::val EmscriptenVal;
+using EmscriptenVal = emscripten::val;
 
 namespace InsaneIO::Insane::Emscripten
 {
@@ -475,32 +475,15 @@ namespace InsaneIO::Insane::Emscripten
 
     class LocalStorage final
     {
+        
     private:
     public:
-        template <typename ReturnType = EmscriptenVal,
-                  typename ParamsType = EmscriptenVal,
-                  typename = typename std::enable_if_t<std::is_same_v<ReturnType, String> ||
-                                                       std::is_same_v<ReturnType, EmscriptenVal>>,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String> ||
-                                                       std::is_same_v<ParamsType, emscripten::val>>>
-        [[nodiscard]] static ReturnType GetValue(const ParamsType &key, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
-
-        template <typename ParamsType = EmscriptenVal,
-                  typename = typename std::enable_if_t<std::is_same_v<ParamsType, String> ||
-                                                       std::is_same_v<ParamsType, emscripten::val>>>
-        static void SetValue(const ParamsType &key, const ParamsType &value, const ParamsType &password = DefaultValue<ParamsType>::value()) noexcept;
-
-        template <typename ParamType,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
-                                                                   std::is_same_v<ParamType, emscripten::val>>>>
-        static void RemoveValue(const ParamType &key) noexcept;
-
+        
+        static void SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> & encryptor = nullptr);
+        [[nodiscard]] static EmscriptenVal GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> & encryptor = nullptr);
+        static void RemoveItem(const String &key);
         static void Clear();
-
-        template <typename ParamType,
-                  typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, std::string> ||
-                                                                   std::is_same_v<ParamType, emscripten::val>>>>
-        static void RemoveValuesStartingWith(const ParamType &preffix);
+        static void RemoveItemsWithPrefix(const String &preffix);
     };
 
     class InteropExtensions

@@ -71,9 +71,9 @@ USING_NS_INSANE_EMSCRIPTEN;
 EmscriptenVal Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
 {
     val global = val::global();
-    if (!VAL_INSANE)
+    if (!EMVAL_INSANE)
     {
-        VAL_GLOBAL.set(INSANE_STRING, val::object());
+        EMVAL_GLOBAL.set(INSANE_STRING, val::object());
     }
     String opName = "OP"s + HexEncodingExtensions::EncodeToHex(RandomExtensions::NextBytes(16));
     String script = EMPTY_STRING;
@@ -188,7 +188,7 @@ bool Operator::IsNullOrUndefined(const emscripten::val &a)
 
 EmscriptenVal Operator::ToString(const emscripten::val &a)
 {
-    return VAL_GLOBAL.call<val>("String", a);
+    return EMVAL_GLOBAL.call<val>("String", a);
 }
 
 /* Promise */
@@ -393,29 +393,29 @@ emscripten::val Browser::GetWebGLRenderer()
 {
     val canvas = val::global()["document"].call<val>("createElement", "canvas"s);
     val context = canvas.call<val>("getContext", "webgl"s);
-    if(!context)
+    if (!context)
     {
         canvas.call<void>("remove");
         return val(EMPTY_STRING);
     }
     val webGlRenderInfo = context.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
     val result = val::null();
-    if(!webGlRenderInfo)
+    if (!webGlRenderInfo)
     {
-        result  = context.call<val>("getParameter", context.call<val>("RENDERER"));
+        result = context.call<val>("getParameter", context.call<val>("RENDERER"));
     }
     else
     {
         result = context.call<val>("getParameter", webGlRenderInfo["UNMASKED_RENDERER_WEBGL"]);
     }
-    val extension = context.call<val>("getExtension", "WEBGL_lose_context"s); 
-    if(!!extension)
+    val extension = context.call<val>("getExtension", "WEBGL_lose_context"s);
+    if (!!extension)
     {
         extension.call<void>("loseContext");
         context = val::null();
     }
     canvas.call<void>("remove");
-    return !result ? val(EMPTY_STRING): result;
+    return !result ? val(EMPTY_STRING) : result;
 }
 
 template <>
@@ -429,29 +429,29 @@ emscripten::val Browser::GetWebGLVendor()
 {
     val canvas = val::global()["document"].call<val>("createElement", "canvas"s);
     val context = canvas.call<val>("getContext", "webgl"s);
-    if(!context)
+    if (!context)
     {
         canvas.call<void>("remove");
         return val(EMPTY_STRING);
     }
     val webGlRenderInfo = context.call<val>("getExtension", "WEBGL_debug_renderer_info"s);
     val result = val::null();
-    if(!webGlRenderInfo)
+    if (!webGlRenderInfo)
     {
-        result  = context.call<val>("getParameter", context.call<val>("RENDERER"));
+        result = context.call<val>("getParameter", context.call<val>("RENDERER"));
     }
     else
     {
         result = context.call<val>("getParameter", webGlRenderInfo["UNMASKED_VENDOR_WEBGL"]);
     }
     val extension = context.call<val>("getExtension", "WEBGL_lose_context"s);
-    if(!!extension)
+    if (!!extension)
     {
         extension.call<void>("loseContext");
         context = val::null();
     }
     canvas.call<void>("remove");
-    return !result ? val(EMPTY_STRING): result;
+    return !result ? val(EMPTY_STRING) : result;
 }
 
 template <>
@@ -903,7 +903,7 @@ void Js::SetPropertyNull(EmscriptenVal object, const String &property, const boo
 
 String Js::GetPropertyName(const String &name, const String &key, const String &suffix)
 {
-    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HexEncodingExtensions::EncodeToHex(HashExtensions::ComputeHmac( name, key, HashAlgorithm::Sha512));
+    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HexEncodingExtensions::EncodeToHex(HashExtensions::ComputeHmac(name, key, HashAlgorithm::Sha512));
 }
 
 emscripten::val Js::Bind(const emscripten::val &fx)
@@ -918,7 +918,7 @@ emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
     Js::SetPropertyObject(val::global(), INSANE_STRING, false);
     String loadedName = Js::GetPropertyName("Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
     Js::SetPropertyObject(val::global()["Insane"], loadedName, false);
-    val loaded = VAL_INSANE[loadedName];
+    val loaded = EMVAL_INSANE[loadedName];
     if (!Operator::IsNullOrUndefined(loaded[id]))
     {
         return Promise::Resolve(id);
@@ -957,110 +957,61 @@ emscripten::val Js::LoadScriptAsync(const String &scriptpath)
 }
 
 /* LocalStorage */
-
-template <>
-emscripten::val LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
+void LocalStorage::SetItem(const String &key, const String &value, const StdUniquePtr<IEncryptor> &encryptor)
 {
-    // USING_NS_EMSCRIPTEN;
-    // USING_NS_INSANE_EXCEPTION;
-    // USING_NS_INSANE_CRYPTO;
-    // USING_NS_INSANE_STR;
-    // try
-    // {
-    //     String passwordStr = Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
-    //     const val value = val::global("localStorage").call<val>("getItem", key);
-    //     if (passwordStr == EMPTY_STRING)
-    //     {
-    //         return !value ? val(EMPTY_STRING) : value;
-    //     }
-    //     return !value ? val(EMPTY_STRING) : val(Base64EncodingExtensions::DecodeFromBase64(AesExtensions::DecryptAesCbc(value.as<String>(), passwordStr)));
-    // }
-    // catch (const std::exception &ex)
-    // {
-    //     return val(EMPTY_STRING);
-    // }
-    // catch (...)
-    // {
-    //     return val(EMPTY_STRING);
-    // }
+    try
+    {
+        EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("setItem", key, encryptor != nullptr ? encryptor->EncryptEncoded(value) : value);
+    }
+    catch (const Insane::Exception::ExceptionBase)
+    {
+        __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
+    }
 }
 
-template <>
-String LocalStorage::GetValue(const EmscriptenVal &key, const EmscriptenVal &password) noexcept
+EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<IEncryptor> &encryptor)
 {
-    return GetValue(key, password).as<String>();
+    try
+    {
+        EmscriptenVal value = EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("getItem", key);
+        if (!value)
+        {
+            return value;
+        }
+        return encryptor != nullptr ? EmscriptenVal(ConverterExtensions::StdVectorUint8ToString(encryptor->DecryptEncoded(value.as<String>()))) : value;
+    }
+    catch (...)
+    {
+        __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
+    }
 }
 
-template <>
-EmscriptenVal LocalStorage::GetValue(const String &key, const String &password) noexcept
+void LocalStorage::RemoveItem(const String &key)
 {
-    return GetValue(val(key), val(password));
-}
-
-template <>
-String LocalStorage::GetValue(const String &key, const String &password) noexcept
-{
-    return GetValue(val(key), val(password)).as<String>();
-}
-
-template <>
-void LocalStorage::SetValue(const EmscriptenVal &key, const EmscriptenVal &value, const EmscriptenVal &password) noexcept
-{
-    // try
-    // {
-    //     StdVectorUint8 passwordStr = ConverterExtensions::  Operator::IsNullOrUndefined(password) ? EMPTY_STRING : Operator::ToString(password).as<String>();
-    //     val::global("localStorage").call<void>("setItem", key, Base64EncodingExtensions::ToBase64(AesExtensions::EncryptAesCbc(Operator::ToString(value).as<String>(), passwordStr)));
-    // }
-    // catch (const ExceptionBase &e)
-    // {
-    // }
-    //throw NotImplementedException(INSANE_FUNCTION_SIGNATURE, __FILE__, __LINE__);
-}
-
-template <>
-void LocalStorage::SetValue(const String &key, const String &value, const String &password) noexcept
-{
-    SetValue(val(key), val(value), val(password));
-}
-
-void Js::ThrowError(const String &message)
-{
-    val::global("Error").new_(val(message)).throw_();
-}
-
-template <>
-void LocalStorage::RemoveValue(const emscripten::val &key) noexcept
-{
-    val::global("localStorage").call<void>("removeItem", key);
-}
-
-template <>
-void LocalStorage::RemoveValue(const String &key) noexcept
-{
-    RemoveValue(val(key));
+    EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("removeItem", key);
 }
 
 void LocalStorage::Clear()
 {
-    val::global("localStorage").call<void>("clear");
+    EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("clear");
 }
 
-template <>
-void LocalStorage::RemoveValuesStartingWith(const EmscriptenVal &preffix)
+void LocalStorage::RemoveItemsWithPrefix(const String &prefix)
 {
-    for (val value : emscripten::vecFromJSArray<val>(val::global("Object").call<val>("entries", val::global("localStorage"))))
+    std::vector<EmscriptenVal> items;
+    int localStorageSize = EMVAL_GLOBAL["localStorage"]["length"].as<int>();
+    for (int i = 0; i < localStorageSize; i++)
     {
-        if (StringExtensions::StartsWith(value[0].as<String>(), preffix.as<String>()))
+        EmscriptenVal key = EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("key", EmscriptenVal(i));
+        if (StringExtensions::StartsWith(key.as<String>(), prefix))
         {
-            LocalStorage::RemoveValue(value[0]);
+            items.push_back(key);
         }
     }
-}
-
-template <>
-void LocalStorage::RemoveValuesStartingWith(const String &preffix)
-{
-    RemoveValuesStartingWith(val(preffix));
+    for (EmscriptenVal value : items)
+    {
+        RemoveItem(value.as<String>());
+    }
 }
 
 // ███ Interop ███

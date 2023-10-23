@@ -17,24 +17,35 @@ USING_NS_EMSCRIPTEN;
 
 int main()
 {
+    DebugExtensions::Debug(true);
     using JsConsole = InsaneIO::Insane::Emscripten::Console;
     JsConsole::Log("Hello World!!! from InsaneWasm.");
-    // auto keyPair = RsaExtensions::CreateRsaKeyPair(4096, RsaKeyPairEncoding::Ber);
-    // auto enc = RsaExtensions::EncryptEncodedRsa("Hello!!! 😻", keyPair.GetPublicKey(),Base64Encoder::DefaultInstance(), RsaPadding::OaepSha512);
-    // JsConsole::Log(keyPair.GetPublicKey());
-    // JsConsole::Log(keyPair.GetPrivateKey());
-    // JsConsole::Log(enc);
-    // JsConsole::Log("Result: " + ConverterExtensions::StdVectorUint8ToString(RsaExtensions::DecryptEncodedRsa(enc, keyPair.GetPrivateKey(), Base64Encoder::DefaultInstance(), RsaPadding::OaepSha512)));
-    auto userAgent = VAL_GLOBAL["navigator"]["userAgent"];//window.navigator.userAgent
-    VAL_GLOBAL["console"].call<val>("log", userAgent);//console.log(window.navigator.userAgent)
-    VAL_GLOBAL["localStorage"].call<val>("setItem", "MiClave"s, "MiValor"s);
-    //1 Clave RSA cifradas en localstorage.
-    //2 obtener la clave publica del servidor y almacenar cifrada en localstorage.
-    //3 Iniciar sesion con usuario, hash-contraseña, clave-cifrado-cliente(AES) y esta clave almacenada en el localstorage.
-    //4 El servidor te retorna cifrado la respuesta con la clave-cifrado-cliente y esta a su vez guardada en la BD.
-    //5 Cliente y servidor cifran con la clave-cifrado-cliente.
-    
-    
+
+    // std::unique_ptr<IEncryptor> encryptor = std::make_unique<AesCbcEncryptor>();
+    // std::unique_ptr<IEncryptor> encryptor2 = std::make_unique<AesCbcEncryptor>();
+
+    EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
+    callback1 = [](const EmscriptenVal &fingerPrint) -> void
+    {
+        StdVectorUint8 fingerPrintBytes = ConverterExtensions::StringToStdVectorUint8(fingerPrint.as<String>());
+        JsConsole::Log(fingerPrint);
+        std::unique_ptr<IEncryptor> encryptor = std::make_unique<AesCbcEncryptor>(fingerPrintBytes);
+        LocalStorage::SetItem("A", "5", encryptor);
+        LocalStorage::SetItem("B", "100", encryptor);
+        LocalStorage::SetItem("C", "5", encryptor);
+        LocalStorage::SetItem("LS_11", "11", encryptor);
+        LocalStorage::SetItem("LS_25", "25", encryptor);
+        LocalStorage::SetItem("LS_89", "89", encryptor);
+
+        JsConsole::Log(LocalStorage::GetItem("B", encryptor));
+        JsConsole::Log(LocalStorage::GetItem("LS_89", encryptor));
+        JsConsole::Log(LocalStorage::GetItem("LS_8999999", encryptor));
+
+        LocalStorage::RemoveItem("B");
+        LocalStorage::RemoveItemsWithPrefix("LS_");
+    };
+
+    Browser::GetFingerprintAsync("MIAPP"s).call<EmscriptenVal>("then", Js::Bind(callback1));
 }
 
 EMSCRIPTEN_BINDINGS(exports)
@@ -42,6 +53,7 @@ EMSCRIPTEN_BINDINGS(exports)
     class_<DebugExtensions>("DebugExtensions")
         .class_function("IsDebug", &DebugExtensions::IsDebug)
         .class_function("Debug", &DebugExtensions::Debug);
+
 
     register_vector<uint8_t>("StdVectorUint8");
     register_vector<char>("StdVectorChar");
