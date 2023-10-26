@@ -87,11 +87,11 @@ Write-Host "Building..."
     --pre-js "Js/$($compiledPrefix)Pre.js" `
     --post-js "Js/$($compiledPrefix)Post.js" `
     --extern-post-js "Js/$($compiledPrefix)ExternPost.js" `
+    -s ASYNCIFY=1 `
     --extern-pre-js "Js/$($compiledPrefix)ExternPre.js" 
     #-D_DEBUG `
     #-fno-use-cxa-atexit -emit-llvm `
     #-s EXPORTED_FUNCTIONS=[`'_main`'] `
-    #-s ASYNCIFY=1 `
     #-s DISABLE_EXCEPTION_CATCHING=0 `
     # --profiling `
     # -s TOTAL_MEMORY=256MB `

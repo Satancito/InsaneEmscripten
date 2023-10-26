@@ -14,8 +14,9 @@
 #include <functional>
 
 #define VAL_TYPE_EXP() emscripten::val
+#define EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_STRING ("CallOperator"s)
 
-#define EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP(n, nprev, c, cnext, se, sae, returnTypeExp, name, p3, p4, p5) emscripten::class_<std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>>(CSTRINGIFY_DEFER(name##c)).constructor<>().function("opcall", &std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>::operator());
+#define EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP(n, nprev, c, cnext, se, sae, returnTypeExp, name, p3, p4, p5) emscripten::class_<std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>>(CSTRINGIFY_DEFER(name##c)).constructor<>().function("CallOperator", &std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>::operator());
 
 #define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VOID_TYPE_EXP, name, 3, 4, 5)
 #define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VAL_TYPE_EXP, name, 3, 4, 5)
@@ -441,13 +442,9 @@ namespace InsaneIO::Insane::Emscripten
     class Js final
     {
     private:
-        static emscripten::val Bind(const emscripten::val &fx);
-        // static void SetVars();
-        // static void CheckSignature(const String &name, const String &sname, const String &key, const String &mae);
+        //static emscripten::val Bind(const emscripten::val &fx);
 
     public:
-        // static void FreeState();
-        // static void CheckState() noexcept(false);
         static void SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
         static void SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists = true);
@@ -458,10 +455,11 @@ namespace InsaneIO::Insane::Emscripten
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ReturnType, void> ||
                                                                    std::is_same_v<ReturnType, emscripten::val>>>,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ParamType, emscripten::val>>...>>
-        static inline emscripten::val Bind(const std::function<ReturnType(ParamType...)> &fx)
+        static inline emscripten::val Bind(const std::function<ReturnType(ParamType...)> &fx, const String & callOperator = EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_STRING)
         {
             USING_NS_EMSCRIPTEN;
-            return Bind(val(fx));
+            EmscriptenVal fxJs = val(fx);
+            return fxJs[callOperator.c_str()].call<val>("bind", fxJs);
         }
 
         template <typename ParamType = EmscriptenVal,

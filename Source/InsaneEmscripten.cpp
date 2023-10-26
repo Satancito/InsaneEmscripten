@@ -906,11 +906,6 @@ String Js::GetPropertyName(const String &name, const String &key, const String &
     return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HexEncodingExtensions::EncodeToHex(HashExtensions::ComputeHmac(name, key, HashAlgorithm::Sha512));
 }
 
-emscripten::val Js::Bind(const emscripten::val &fx)
-{
-    return fx["opcall"].call<val>("bind", fx);
-}
-
 template <>
 emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
@@ -982,6 +977,7 @@ EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<IEncry
     }
     catch (...)
     {
+        
         __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
     }
 }
@@ -998,7 +994,7 @@ void LocalStorage::Clear()
 
 void LocalStorage::RemoveItemsWithPrefix(const String &prefix)
 {
-    std::vector<EmscriptenVal> items;
+    StdVector<EmscriptenVal> items;
     int localStorageSize = EMVAL_GLOBAL["localStorage"]["length"].as<int>();
     for (int i = 0; i < localStorageSize; i++)
     {

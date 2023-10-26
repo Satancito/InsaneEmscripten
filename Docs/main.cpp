@@ -1,5 +1,6 @@
 #include <iostream>
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 #include <emscripten/emscripten.h>
 #include <Insane/InsaneEmscripten.h>
 #include <Insane/InsaneCryptography.h>
@@ -14,11 +15,112 @@ USING_NS_INSANE_TEST;
 USING_NS_EMSCRIPTEN;
 #include <chrono>
 #include <thread>
+using JsConsole = InsaneIO::Insane::Emscripten::Console;
+void CallJsCpp()
+{
+    std::function<void(val)> callbackCpp = ([](val name) -> void
+                                            { std::cout << "Hello from C++. " + name.as<String>() << std::endl; });
+    EMVAL_GLOBAL["CallJs"](Js::Bind(callbackCpp));
+}
+
+static int delayAndReturn(bool sleep)
+{
+    Promise::Resolve(val(0)).await();
+    return 42;
+}
+
+emscripten::val GetBase64Sha256Normal(const String &text)
+{
+    val encoder = val::global()["TextEncoder"].new_();                                                                                                                    // 1
+    val data = encoder.call<val>("encode", val(text));                                                                                                                    // 2
+    InsaneIO::Insane::Emscripten::Console::Log("ask for digest for "s, text);                                                                                             // 3
+    val digestValue = val::global()["crypto"]["subtle"].call<val>("digest", val("SHA-256"), data).await();                                                                // 4
+    InsaneIO::Insane::Emscripten::Console::Log("got digest of length "s, digestValue["byteLength"]);                                                                      // 5
+    val base64 = val::global().call<val>("btoa", val::global()["String"]["fromCharCode"].call<val>("apply", val::null(), val::global()["Uint8Array"].new_(digestValue))); // 6
+    return base64;                                                                                                                                                        // 7
+}
+
+emscripten::val HandleException()
+{
+    EMVAL_GLOBAL["Error"].new_(val("Error de JS desde C++.")).throw_();
+}
+
+EmscriptenVal GetIpifyIPAsync()
+{
+    try
+    {
+        EmscriptenVal response = EMVAL_GLOBAL["fetch"]("https://api.ipify.org?format=json"s).await();
+        if (!response["ok"])
+        {
+            return Promise::Resolve(EMPTY_STRING);
+        }
+        EmscriptenVal json = response.call<EmscriptenVal>("json").await();
+        throw 1;
+        return json["ip"];
+    }
+    catch (...)
+    {
+        return Promise::Resolve("error"s);
+    }
+}
+//GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH, CONNECT y TRACE
+class FetchOptions{
+
+};
+
+INSANE_ENUM(HttpMethod,
+            GET,_,_,
+            POST,_,_,
+            PUT,_,_,
+            DELETE,_,_,
+            HEAD,_,_,
+            OPTIONS,_,_,
+            PATCH,_,_,
+            CONNECT,_,_,
+            TRACE,_,_);
+
+
+EmscriptenVal Fetch(const String &uri, StdUniquePtr<FetchOptions>&& parameters = nullptr)
+{
+    std::function<void(EmscriptenVal, EmscriptenVal)> promiseCallback = [&uri](EmscriptenVal resolve, EmscriptenVal reject) -> void
+    {
+        std::function<void(EmscriptenVal)> errorCallback = [resolve](EmscriptenVal error) -> void
+        {
+            resolve("FetchError"s);
+        };
+
+        std::function<void(EmscriptenVal)> dataCallback = [resolve](EmscriptenVal data) -> void
+        {
+            resolve(data["ip"]);
+        };
+
+        std::function<EmscriptenVal(EmscriptenVal)> responseCallback = [](EmscriptenVal response) -> EmscriptenVal
+        {
+            if (!response["ok"])
+            {
+                EMVAL_GLOBAL["Error"].new_("ResponseError"s).throw_();
+            }
+            return response.call<EmscriptenVal>("json");
+        };
+
+        EMVAL_GLOBAL["fetch"](uri)
+            .call<EmscriptenVal>("then", Js::Bind(responseCallback))
+            .call<EmscriptenVal>("then", Js::Bind(dataCallback))
+            .call<EmscriptenVal>("catch", Js::Bind(errorCallback));
+    };
+    return EMVAL_GLOBAL["Promise"].new_(Js::Bind(promiseCallback));
+}
+
+EmscriptenVal FetchJs(const String &uri)
+{
+    return Fetch(uri);
+}
 
 int main()
 {
+
     DebugExtensions::Debug(true);
-    using JsConsole = InsaneIO::Insane::Emscripten::Console;
+
     JsConsole::Log("Hello World!!! from InsaneWasm.");
 
     // std::unique_ptr<IEncryptor> encryptor = std::make_unique<AesCbcEncryptor>();
@@ -44,16 +146,30 @@ int main()
         LocalStorage::RemoveItem("B");
         LocalStorage::RemoveItemsWithPrefix("LS_");
     };
-
-    Browser::GetFingerprintAsync("MIAPP"s).call<EmscriptenVal>("then", Js::Bind(callback1));
+    JsConsole::Log("IP:"s, Fetch("https://api.ipify.org?format=json"s).await());
+    // Browser::GetFingerprintAsync("MIAPP"s).call<EmscriptenVal>("then", callback1);
 }
 
 EMSCRIPTEN_BINDINGS(exports)
 {
+    emscripten::function<val>("GetBase64Sha256Normal", &GetBase64Sha256Normal);
+    emscripten::function("delayAndReturn", &delayAndReturn);
+    emscripten::function("HandleException", &HandleException);
+    emscripten::function("GetIpifyIPAsync", &GetIpifyIPAsync);
+    emscripten::function("FetchJs", &FetchJs);
+    
+    class_<std::function<void(val)>>("StdFunction")
+        .function(EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_STRING.c_str(), &std::function<void(val)>::operator());
+
+    class_<std::function<val(val)>>("StdFunction2")
+        .function(EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_STRING.c_str(), &std::function<val(val)>::operator());
+    class_<std::function<void(val,val)>>("StdFunction3")
+        .function(EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_STRING.c_str(), &std::function<void(val,val)>::operator());
+
+    function("CallJsCpp", &CallJsCpp);
     class_<DebugExtensions>("DebugExtensions")
         .class_function("IsDebug", &DebugExtensions::IsDebug)
         .class_function("Debug", &DebugExtensions::Debug);
-
 
     register_vector<uint8_t>("StdVectorUint8");
     register_vector<char>("StdVectorChar");
@@ -270,7 +386,7 @@ EMSCRIPTEN_BINDINGS(exports)
     function<val>("OperatorImport", &Operator::ImportAsync);
     function<val>("JsLoadScriptAsync", &Js::LoadScriptAsync<>);
     function<>("JsGetPropertyName", &Js::GetPropertyName);
-    EMSCRIPTEN_EXPORT_ALL_FUNCTORS(10, Insane);
+    // EMSCRIPTEN_EXPORT_ALL_FUNCTORS(10, Insane);
 
     value_object<Browser::MimeType>("Mime")
         .field("Description", &Browser::MimeType::Description)
