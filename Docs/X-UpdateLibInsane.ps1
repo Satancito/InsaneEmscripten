@@ -13,10 +13,8 @@ else {
 }
 
 try {
-    Push-Location "$PSScriptRoot/InsaneEmscripten"
-    & "$PSScriptRoot/InsaneEmscripten/X-BuildLib.ps1" -Clean
-}
-catch {    
+    Push-Location "$REPO_DIR"
+    & "$REPO_DIR/X-BuildLib.ps1" -Clean
 }
 finally {
     Pop-Location

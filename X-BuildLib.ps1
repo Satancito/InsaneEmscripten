@@ -53,7 +53,7 @@ try {
     Push-Location "$PSScriptRoot"
     & "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
 }
-catch {
+finally {
     Pop-Location
 }
 
