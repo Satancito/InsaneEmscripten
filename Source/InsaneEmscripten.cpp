@@ -5,6 +5,7 @@
 #include <Insane/InsaneString.h>
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneException.h>
+#include <utility>
 
 USING_NS_EMSCRIPTEN;
 USING_NS_INSANE_EXCEPTION;
@@ -870,35 +871,36 @@ EmscriptenVal Browser::GetFingerprintAsync(const String &key)
 }
 
 /* Js */
-
-void Js::SetProperty(EmscriptenVal object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists)
+Emval Js::SetProperty(const Emval &object, const String &property, const Emval &value, const bool &replaceIfExists)
 {
-    if (Operator::IsNullOrUndefined(object[property]))
+    Emval result = object;
+    if (Operator::IsNullOrUndefined(result[property]))
     {
-        object.set(property, value);
+        result.set(property, value);
     }
     else
     {
         if (replaceIfExists)
         {
-            object.set(property, value);
+            result.set(property, value);
         }
     }
+    return result;
 }
 
-void Js::SetPropertyObject(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyEmptyObject(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
-    SetProperty(object, property, EmscriptenVal::global().object(), replaceIfExists);
+    return SetProperty(object, property, EmscriptenVal::global().object(), replaceIfExists);
 }
 
-void Js::SetPropertyArray(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyEmptyArray(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
-    SetProperty(object, property, EmscriptenVal::global().array(), replaceIfExists);
+    return SetProperty(object, property, EmscriptenVal::global().array(), replaceIfExists);
 }
 
-void Js::SetPropertyNull(EmscriptenVal object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyNull(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
-    SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
+    return SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
 String Js::GetPropertyName(const String &name, const String &key, const String &suffix)
@@ -910,9 +912,9 @@ template <>
 emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
     String id = Js::GetPropertyName(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
-    Js::SetPropertyObject(val::global(), INSANE_STRING, false);
+    Js::SetPropertyEmptyObject(val::global(), INSANE_STRING, false);
     String loadedName = Js::GetPropertyName("Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
-    Js::SetPropertyObject(val::global()["Insane"], loadedName, false);
+    Js::SetPropertyEmptyObject(val::global()["Insane"], loadedName, false);
     val loaded = EMVAL_INSANE[loadedName];
     if (!Operator::IsNullOrUndefined(loaded[id]))
     {
@@ -977,7 +979,7 @@ EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<IEncry
     }
     catch (...)
     {
-        
+
         __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
     }
 }
@@ -1039,4 +1041,207 @@ void InteropExtensions::PrintStdVectorUint8(StdVectorUint8 vector)
     {
         Console::Log(vector[i]);
     }
+}
+
+// ███ FetchOptions ███
+
+FetchOptions::FetchOptions(const FetchOptions &options)
+    : _requestMethod(options._requestMethod),
+      _responseType(options._responseType),
+      _mode(options._mode),
+      _cacheType(options._cacheType),
+      _credentialsType(options._credentialsType),
+      _redirectType(options._redirectType),
+      _referrerPolicy(options._referrerPolicy),
+      _headers(options._headers) {
+    if (options._body) {
+        _body = std::make_unique<Emval>(*options._body);
+    } else {
+        _body.reset();
+    }
+}
+
+void FetchOptions::SetRequestMethod(const FetchRequestMethod &requestMethod)
+{
+    _requestMethod = requestMethod;
+}
+
+void FetchOptions::SetResponseType(const FetchResponseType &responseType)
+{
+    _responseType = responseType;
+}
+
+void FetchOptions::SetMode(const FetchMode &mode)
+{
+    _mode = mode;
+}
+
+void FetchOptions::SetCacheType(const FetchCacheType &cacheType)
+{
+    _cacheType = cacheType;
+}
+
+void FetchOptions::SetCredentialsType(const FetchCredentialsType &credentialsType)
+{
+    _credentialsType = credentialsType;
+}
+
+void FetchOptions::SetRedirectType(const FetchRedirectType &redirectType)
+{
+    _redirectType = redirectType;
+}
+
+void FetchOptions::SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy)
+{
+    _referrerPolicy = referrerPolicy;
+}
+
+void FetchOptions::SetBody(StdUniquePtr<Emval> &&body)
+{
+    _body = std::move(body);
+}
+
+void FetchOptions::AddHeader(const String &key, const String &value)
+{
+    _headers[key] = value;
+}
+
+void FetchOptions::RemoveHeader(const String &key)
+{
+    _headers.erase(key);
+}
+
+void FetchOptions::ClearHeaders()
+{
+    _headers.clear();
+}
+
+FetchRequestMethod FetchOptions::GetRequestMethod() const
+{
+    return _requestMethod;
+}
+
+FetchResponseType FetchOptions::GetResponseType() const
+{
+    return _responseType;
+}
+
+FetchMode FetchOptions::GetMode() const
+{
+    return _mode;
+}
+
+FetchCacheType FetchOptions::GetCacheType() const
+{
+    return _cacheType;
+}
+
+FetchCredentialsType FetchOptions::GetCredentialsType() const
+{
+    return _credentialsType;
+}
+
+FetchRedirectType FetchOptions::GetRedirectType() const
+{
+    return _redirectType;
+}
+
+FetchReferrerPolicy FetchOptions::GetReferrerPolicy() const
+{
+    return _referrerPolicy;
+}
+
+Emval FetchOptions::GetBody() const
+{
+    return *_body;
+}
+
+Emval FetchOptions::Build() const
+{
+    Emval options = Emval::object();
+    if (_body)
+    {
+        options = Js::SetProperty(options, "body", *_body);
+    }
+    options = Js::SetProperty(options, "method", Emval(StringExtensions::ToUpper(FetchRequestMethodEnumExtensions::ToString(_requestMethod))));
+    options = Js::SetProperty(options, "mode", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchModeEnumExtensions::ToString(_mode), "_", "-"))));
+    options = Js::SetProperty(options, "cache", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCacheTypeEnumExtensions::ToString(_cacheType), "_", "-"))));
+    options = Js::SetProperty(options, "credentials", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCredentialsTypeEnumExtensions::ToString(_credentialsType), "_", "-"))));
+    options = Js::SetProperty(options, "redirect", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchRedirectTypeEnumExtensions::ToString(_redirectType), "_", "-"))));
+    options = Js::SetProperty(options, "referrerPolicy", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchReferrerPolicyEnumExtensions::ToString(_referrerPolicy), "_", "-"))));
+    if (_headers.size() > 0)
+    {
+        Emval headers = EMVAL_GLOBAL["Headers"].new_();
+        for (auto value : _headers)
+        {
+            headers.call<void>("append", value.first, value.second);
+        }
+        options = Js::SetProperty(options, "headers", headers);
+    }
+    return options;
+}
+
+// ███ Fetch ███
+
+Emval Fetch::SendAsync(const String &url, const FetchOptions &options){
+    static String statusErrorLabel = "ResponseError, Status: "s;
+    EMSCRIPTEN_VOID_FUNCTOR_TYPE(2)
+    promiseCallback = [url, options](Emval resolve, ATTRIB_MAYBE_UNUSED Emval reject) -> void
+    {
+        EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
+        errorCallback = [resolve](Emval error) -> void
+        {
+            Emval result = Emval::object();
+            String message = error["message"].as<String>();
+            result = Js::SetProperty(result, "Status", StringExtensions::Contains(message, statusErrorLabel)? Emval(StringExtensions::ToNumber<int>(StringExtensions::Remove(message, statusErrorLabel))) :  Emval(0));
+            result = Js::SetProperty(result, "Data", Emval::null());
+            result = Js::SetProperty(result, "Error", error);
+            resolve(result);
+        };
+
+        EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
+        responseCallback = [options, resolve](EmscriptenVal response) -> EmscriptenVal
+        {
+            Emval status = response["status"];
+            if (!response["ok"])
+            {
+                EMVAL_GLOBAL["Error"].new_(statusErrorLabel + Operator::ToString(status).as<String>()).throw_();
+            }
+            EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
+            dataCallback = [resolve, status](EmscriptenVal data) -> void
+            {
+                Emval result = Emval::object();
+                result = Js::SetProperty(result, "Status", status);
+                result = Js::SetProperty(result, "Data", data);
+                resolve(result);
+            };
+
+            return ResolveDataAsync(response, options.GetResponseType())
+                .call<Emval>("then", Js::Bind(dataCallback));
+        };
+
+        EMVAL_GLOBAL["fetch"](url, options.Build())
+            .call<EmscriptenVal>("then", Js::Bind(responseCallback))
+            .call<EmscriptenVal>("catch", Js::Bind(errorCallback));
+    };
+    return EMVAL_GLOBAL["Promise"].new_(Js::Bind(promiseCallback));
+}
+
+Emval Fetch::ResolveDataAsync(const Emval &fetchResponse, const FetchResponseType &responseType)
+{
+ switch (responseType)
+        {
+        case FetchResponseType::Json:
+            return fetchResponse.call<Emval>("json");
+        case FetchResponseType::Text:
+            return fetchResponse.call<Emval>("text");
+        case FetchResponseType::ArrayBuffer:
+            return fetchResponse.call<Emval>("arrayBuffer");
+        case FetchResponseType::Blob:
+            return fetchResponse.call<Emval>("blob");
+        case FetchResponseType::FormData:
+            return fetchResponse.call<Emval>("formData");
+        default:
+            __INSANE_THROW_EXCEPTION(NotImplementedException, "Not implemented response data type. " + FetchResponseTypeEnumExtensions::ToString(responseType), 0, nullptr, DebugType::Debug);
+        }
 }

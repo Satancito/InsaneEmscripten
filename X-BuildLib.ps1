@@ -2,7 +2,11 @@
 param (
     [Parameter()]
     [switch]
-    $Clean
+    $Clean,
+
+    [Parameter()]
+    [switch]
+    $EnableClangd
 )
 $Error.Clear()
 $ErrorActionPreference = "Stop"
@@ -13,7 +17,7 @@ Write-Host
 Write-InfoBlue "████ Building Insane LLVM Bitcode"
 Write-Host
 
-$DEST_DIR= "Dist/Insane-Emscripten-llvm-BitCode"
+$DEST_DIR = "Dist/Insane-Emscripten-llvm-BitCode"
 $DEST_INCLUDE_DIR = "$DEST_DIR/Include/Insane"
 $DEST_LIB_DIR = "$DEST_DIR/Lib"
 $DEST_JS_DIR = "$DEST_DIR/Js"
@@ -23,8 +27,7 @@ $OBJ_DIR = "Build/Obj"
 $SET_ENV_VARS_SCRIPT = "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
 $X_INSTALL_EMSCRIPTEN_SCRIPT = "./X-InsaneEmscripten-InstallEmscripten.ps1"
 
-if($Clean.IsPresent)
-{
+if ($Clean.IsPresent) {
     Write-InfoYellow "Removing obj and dist files."
     Remove-Item ./Build -Force -Recurse -ErrorAction Ignore
     Remove-Item ./Dist -Force -Recurse -ErrorAction Ignore
@@ -32,8 +35,7 @@ if($Clean.IsPresent)
     Remove-Item ./dist -Force -Recurse -ErrorAction Ignore
 }
 
-if(!(Test-Path "$OBJ_DIR" -PathType Container))
-{ 
+if (!(Test-Path "$OBJ_DIR" -PathType Container)) { 
     New-Item "$OBJ_DIR" -Force -ItemType Container | Out-Null
 }
 
@@ -41,6 +43,17 @@ Write-Host "Building..."
 
 & "$($env:EMSCRIPTEN_EMMAKE)" make -j8 CXX="$($env:EMSCRIPTEN_COMPILER)"
 Test-LastExitCode
+
+if ($EnableClangd.IsPresent) {
+    $jsonFiles = Get-ChildItem "Build/Obj/*.o.json"
+    $compileCommandsJson = "compile_commands.json"
+    $encoding = [System.Text.Encoding]::UTF8
+    [System.IO.File]::WriteAllText($compileCommandsJson, "[", $encoding);
+    $jsonFiles | ForEach-Object {
+        [System.IO.File]::AppendAllText($compileCommandsJson, [System.IO.File]::ReadAllText($_.FullName), $encoding)
+    }
+    [System.IO.File]::AppendAllText($compileCommandsJson, "]", $encoding);
+}
 
 Write-Host "Copying files..."
 Remove-Item "Dist" -Force -Recurse -ErrorAction Ignore
@@ -65,11 +78,11 @@ Copy-Item -Path "$OBJ_DIR/$LIB_NAME" -Destination "$DEST_LIB_DIR" -Recurse -Forc
 Copy-Item -Path "$SOURCE_JS_DIR_CONTENT" -Destination "$DEST_JS_DIR" -Force
 Copy-Item -Path "$SOURCE_TOOLS_DIR_CONTENT" -Destination "$DEST_TOOLS_DIR" -Force -Recurse
 Copy-Item -Path "$SOURCE_DOCS_DIR_CONTENT" -Destination "$DEST_DIR" -Force -Recurse
-Copy-Item -Path "$SET_ENV_VARS_SCRIPT " -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$SOURCE_ASSETS_DIR_CONTENT" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
+Copy-Item -Path "$SET_ENV_VARS_SCRIPT " -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$Z_PSCORE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$X_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 
 
-Write-InfoBlue "█ End building Insane LLVM Bitcode - Finished"
+Write-InfoBlue "█ End - Building Insane LLVM Bitcode"
 Write-Host

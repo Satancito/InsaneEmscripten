@@ -11,6 +11,10 @@
                 "${EMSCRIPTEN_SDK}/upstream/emscripten/system/include",
                 "${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include"
             ],
+            "compilerArgs": [
+                "-I ${EMSCRIPTEN_SDK}/upstream/emscripten/cache/sysroot/include",
+                "-I ${EMSCRIPTEN_SDK}/upstream/emscripten/system/include"
+            ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
@@ -20,7 +24,7 @@
             "compilerPath": "${EMSCRIPTEN_COMPILER}",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "linux-clang-x64",
+            "intelliSenseMode": "clang-x64",
             "configurationProvider": "ms-vscode.makefile-tools"
         },
 
@@ -44,7 +48,7 @@
             "compilerPath": "${EMSCRIPTEN_COMPILER}",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "linux-clang-x64",
+            "intelliSenseMode": "clang-x64",
             "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],

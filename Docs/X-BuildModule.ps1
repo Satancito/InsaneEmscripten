@@ -1,19 +1,24 @@
 [CmdletBinding()]
 param (
-    [string]
-    $ModuleExportName = "Insane",
+    [switch]
+    $NoMinifyJsFiles,
 
     [switch]
-    $NoMinifyJsFiles
+    $TestMode
 )
 
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
-    
+
+$json = [System.IO.File]::ReadAllText($(Get-Item "ProductInfo.json"))
+$productInfo = ConvertFrom-Json $json
+$ModuleExportName = $productInfo.Name
+$ModuleVersion = $productInfo.Version
+
 Write-Host
-Write-InfoBlue "████ Building Insane.js"
+Write-InfoBlue "████ Building Module: ""$ModuleExportName.js"", Version: $ModuleVersion"
 Write-Host
     
 $exportName = "Create$($ModuleExportName)Module"
@@ -52,8 +57,7 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
     if ($NoMinifyJsFiles.IsPresent) {
         [System.IO.File]::WriteAllText($compiledFilename, $content, [System.Text.Encoding]::UTF8)        
     }
-    else
-    {
+    else {
         Write-PrettyKeyValue "Minifying js file" "$generatedFilename"
         $closureCompiler = Get-Item "./Tools/closure-compiler-v*.jar"
         java -jar "$closureCompiler" `
@@ -66,7 +70,9 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
     
 Test-LastExitCode
 Write-Host "Building..."
+$clangdJson = "compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
+    -MJ $clangdJson `
     main.cpp `
     Lib/libInsane.a `
     -I Include `
@@ -88,23 +94,37 @@ Write-Host "Building..."
     --post-js "Js/$($compiledPrefix)Post.js" `
     --extern-post-js "Js/$($compiledPrefix)ExternPost.js" `
     -s ASYNCIFY=1 `
-    --extern-pre-js "Js/$($compiledPrefix)ExternPre.js" 
-    #-D_DEBUG `
-    #-fno-use-cxa-atexit -emit-llvm `
-    #-s EXPORTED_FUNCTIONS=[`'_main`'] `
-    #-s DISABLE_EXCEPTION_CATCHING=0 `
-    # --profiling `
-    # -s TOTAL_MEMORY=256MB `
-    # -s ASYNCIFY_IMPORTS=[] `
-#-s USE_PTHREADS=1 `
-#-s PTHREAD_POOL_SIZE=2 `
+    --extern-pre-js "Js/$($compiledPrefix)ExternPre.js" `
+    -D LIB_COMPILE_TIME `
+    -D LIB_PRODUCT_NAME="\""$($ModuleExportName)\""" `
+    -D LIB_PRODUCT_VERSION="\""$($ModuleVersion)\""" 
     
 $filenames.ForEach({
         $generatedFilename = "$($_.DirectoryName)/$generatedPrefix$($_.Name)"
         $compiledFilename = "$($_.DirectoryName)/$compiledPrefix$($_.Name)"
         Remove-Item -Path $generatedFilename -Force -ErrorAction Ignore
         Remove-Item -Path $compiledFilename -Force -ErrorAction Ignore
-    })  
-    
-Write-InfoBlue "█ End building Insane.js - Finished"
+    }) 
+
+$compileCommandsJson = [System.IO.File]::ReadAllText($(Get-Item $clangdJson))
+[System.IO.File]::WriteAllText($(Get-Item $clangdJson), "[ $compileCommandsJson ]", [System.Text.Encoding]::UTF8)
+
+$content = [System.IO.File]::ReadAllText($(Get-Item "index.html"))
+$pattern = '<script\s+src\s*=\s*"[a-zA-Z0-9_]+\.js"\s*>\s*\/\/#\*Module\*#\s*<\s*\/script\s*>\s*'
+$replacement = "<script src=""$($ModuleExportName).js"">//#*Module*#</script>"
+$content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+if ($TestMode.IsPresent) {
+    $pattern = "<title>.*?<\/title>"
+    $replacement = "<title>$ModuleExportName - Emscripten - Tests</title>"
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+}
+
+$pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
+$replacement = "/*ModuleName*/$ModuleExportName."
+$content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+[System.IO.File]::WriteAllText($(Get-Item "index.html"), $content, [System.Text.Encoding]::UTF8)
+
+Write-InfoBlue "█ End building $ModuleExportName.js - Finished"
 Write-Host

@@ -1,21 +1,21 @@
-$ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "./Z-CoreFxs.ps1")" -Force -NoClobber
+$ErrorActionPreference = "Continue"
+Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
-Write-InfoDarkGray "███ Test - Dependency Tools"
+Write-InfoDarkGray "███ Test - Dependency tools"
 Write-Host
 
-Write-InfoMagenta "git --version"
-git --version; Test-LastExitCode
+Write-InfoMagenta "Git"
+Test-Command "git --version" -WriteOutput
 Write-Host
 
-Write-InfoMagenta "make --version"
-make --version; Test-LastExitCode
+Write-InfoMagenta "Make"
+Test-Command "make --version" -WriteOutput
 Write-Host
 
-Write-InfoMagenta "java -version"
-java -version; Test-LastExitCode
+Write-InfoMagenta "Java"
+Test-Command "java --version" -WriteOutput
 Write-Host
 
 Write-InfoDarkGray "█ End - Test - Dependency Tools"

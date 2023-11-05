@@ -3,8 +3,13 @@ $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-PsCoreFxs*.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶️▶️▶️ Running: $PSCommandPath"
 
+$json = [System.IO.File]::ReadAllText($(Get-Item "ProductInfo.json"))
+$productInfo = ConvertFrom-Json $json
+$ModuleExportName = $productInfo.Name
+$ModuleVersion = $productInfo.Version
+
 Write-Host
-Write-InfoDarkGreen "████ Run - Module - Test client"
+Write-InfoDarkGreen "████ Run - Module: ""$ModuleExportName.js"", Version: $ModuleVersion"
 Write-Host
 & "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
 $browser = "chrome"

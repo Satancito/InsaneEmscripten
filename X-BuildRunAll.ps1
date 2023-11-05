@@ -1,10 +1,14 @@
 [CmdletBinding()]
 param (
-    [string]
-    $ModuleExportName = "Insane",
+    [switch]
+    $NoMinifyJsFiles ,
 
     [switch]
-    $NoMinifyJsFiles 
+    $Clean,
+
+    [switch]
+    $EnableClangd
+
 )
 $Error.Clear()
 $ErrorActionPreference = "Stop"
@@ -12,9 +16,9 @@ Import-Module -Name "$(Get-Item "./Z-PsCoreFxs*.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 try {
-    & "./X-BuildLib.ps1"
+    & "./X-BuildLib.ps1" -Clean:$Clean -EnableClangd:$EnableClangd
     Push-Location "Dist/Insane*BitCode"
-    & "./X-BuildModule.ps1" -ModuleExportName $ModuleExportName -NoMinifyJsFiles:$NoMinifyJsFiles
+    & "./X-BuildModule.ps1" -NoMinifyJsFiles:$NoMinifyJsFiles -TestMode
     & "./X-Run.ps1"
 }
 finally {
