@@ -1,9 +1,14 @@
 $ErrorActionPreference = "Continue"
-Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
+
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
 Write-InfoDarkGray "███ Test - Dependency tools"
+Write-Host
+
+Write-InfoMagenta "Python"
+Test-Command "python --version" -WriteOutput
 Write-Host
 
 Write-InfoMagenta "Git"

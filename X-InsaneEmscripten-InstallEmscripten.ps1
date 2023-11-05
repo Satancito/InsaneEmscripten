@@ -12,7 +12,7 @@ param (
     $Reset
 )
     
-Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
@@ -20,7 +20,7 @@ Write-InfoDarkGreen "████ Installing Emscripten SDK"
 Write-Host
 Write-Host
 
-& "./X-InsaneEmscripten-SetEmscriptenEnvVars.ps1" -InstallDir ($Reset.IsPresent ? "$(Get-UserHome)" : $InstallDir) 
+& "$PSScriptRoot/X-InsaneEmscripten-SetEmscriptenEnvVars.ps1" -InstallDir ($Reset.IsPresent ? "$(Get-UserHome)" : $InstallDir) 
 
 $EMSDK = "https://github.com/emscripten-core/emsdk.git"
 $InstallDir = "$($env:EMSCRIPTEN_SDK | Split-Path)"

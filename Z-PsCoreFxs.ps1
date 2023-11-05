@@ -1323,7 +1323,7 @@ function Set-JsonObject {
     Set-Content $Filename -Value $json
 }
 
-function Get-ItemTree() {
+function Get-ItemTree {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -1357,7 +1357,7 @@ function Get-ItemTree() {
     return  $result
 }
 
-function Remove-ItemTree() {
+function Remove-ItemTree {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -1383,8 +1383,7 @@ function Test-GitRepository {
     }
     try {
         Push-Location $Path
-        git rev-parse --is-inside-work-tree --quiet | Out-Null
-        $result = Test-LastExitCode -NoThrowError
+        $result = Test-Command "git rev-parse --is-inside-work-tree --quiet"
         return $result
     }
     finally {
@@ -1548,8 +1547,7 @@ function Test-Command {
 
         if ($exitCode -eq 0) {
             if ($WriteOutput.IsPresent) {
-                Write-Output "✅ Command: ""$Command"" $([Environment]::NewLine)"
-                Write-Output "Output: $([Environment]::NewLine) $output"
+                Write-Output "✅ Command: $Command $([string]::IsNullOrWhiteSpace($output) ? [string]::Empty :  "$([Environment]::NewLine)Output: $output")"
                 return
             }
             return $true
@@ -1558,7 +1556,7 @@ function Test-Command {
     }
     catch {
         if ($WriteOutput.IsPresent) {
-            Write-Output "❌ Command: ""$Command"""
+            Write-Output "❌ Command: $Command $([string]::IsNullOrWhiteSpace($output) ? [string]::Empty :  "$([Environment]::NewLine)Output: $output")"
             return
         }
         return $false
