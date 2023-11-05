@@ -586,9 +586,9 @@ namespace InsaneIO::Insane::Emscripten
     {
     public:
 
-        ATTRIB_NODISCARD static Emval SendAsync(const String &url, const FetchOptions &options);
+        NODISCARD_ATTRIB static Emval SendAsync(const String &url, const FetchOptions &options);
     private:
-        ATTRIB_NODISCARD static Emval ResolveDataAsync(const Emval &fetchResponse, const FetchResponseType &responseType);
+        NODISCARD_ATTRIB static Emval ResolveDataAsync(const Emval &fetchResponse, const FetchResponseType &responseType);
     };
 
 } // namespace Insane::Emscripten
