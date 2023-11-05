@@ -1,11 +1,11 @@
-Build
+Build/
 Build/**
-Dist
+Dist/
 Dist/**
-build
+build/
 build/**
-dist
+dist/
 dist/**
 compile_commands.json
-.cache
+.cache/
 .cache/**
