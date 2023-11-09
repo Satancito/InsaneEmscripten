@@ -82,20 +82,28 @@ New-Item "$DEST_TOOLS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
 
 $LIB_NAME = "libInsane.a"
-$SOURCE_INSANE_INCLUDE_DIR_CONTENT = "$PSScriptRoot/Include/Insane/*" 
-$SOURCE_INSANECPP_INCLUDE_DIR_CONTENT = "$PSScriptRoot/modules/InsaneCpp/Include/Insane/Insane*.h"
-$SOURCE_JS_DIR_CONTENT = "$PSScriptRoot/Js/*"
-$SOURCE_TOOLS_DIR_CONTENT = "$PSScriptRoot/Tools/*"
-$SOURCE_DOCS_DIR_CONTENT = "$PSScriptRoot/Docs/*"
-$SOURCE_ASSETS_DIR_CONTENT = "$PSScriptRoot/Assets/*"
+$SOURCE_INSANE_INCLUDE_DIR = "$PSScriptRoot/Include/Insane" 
+$SOURCE_INSANECPP_INCLUDE_DIR = "$PSScriptRoot/modules/InsaneCpp/Include/Insane"
+$SOURCE_JS_DIR = "$PSScriptRoot/Js"
+$SOURCE_TOOLS_DIR = "$PSScriptRoot/Tools"
+$SOURCE_DOCS_DIR = "$PSScriptRoot/Docs"
+$SOURCE_ASSETS_DIR = "$PSScriptRoot/Assets"
 $Z_PSCORE_SCRIPT = "$PSScriptRoot/Z-PsCoreFxs.ps1"
-Copy-Item -Path $SOURCE_INSANE_INCLUDE_DIR_CONTENT -Destination "$DEST_INCLUDE_DIR" -Force
-Copy-Item -Path $SOURCE_INSANECPP_INCLUDE_DIR_CONTENT -Destination "$DEST_INCLUDE_DIR" -Force
+
+New-Item "$SOURCE_JS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$SOURCE_TOOLS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$SOURCE_DOCS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$SOURCE_ASSETS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$SOURCE_INSANE_INCLUDE_DIR" -ItemType Container -Force | Out-Null
+New-Item "$SOURCE_INSANECPP_INCLUDE_DIR" -ItemType Container -Force | Out-Null
+
+Copy-Item -Path "$SOURCE_INSANE_INCLUDE_DIR/*Insane*.h" -Destination "$DEST_INCLUDE_DIR" -Force
+Copy-Item -Path "$SOURCE_INSANECPP_INCLUDE_DIR/*Insane*.h" -Destination "$DEST_INCLUDE_DIR" -Force
 Copy-Item -Path "$OBJ_DIR/$LIB_NAME" -Destination "$DEST_LIB_DIR" -Recurse -Force
-Copy-Item -Path "$SOURCE_JS_DIR_CONTENT" -Destination "$DEST_JS_DIR" -Force
-Copy-Item -Path "$SOURCE_TOOLS_DIR_CONTENT" -Destination "$DEST_TOOLS_DIR" -Force -Recurse
-Copy-Item -Path "$SOURCE_DOCS_DIR_CONTENT" -Destination "$DEST_DIR" -Force -Recurse
-Copy-Item -Path "$SOURCE_ASSETS_DIR_CONTENT" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
+Copy-Item -Path "$SOURCE_JS_DIR/*" -Destination "$DEST_JS_DIR" -Force
+Copy-Item -Path "$SOURCE_TOOLS_DIR/*" -Destination "$DEST_TOOLS_DIR" -Force -Recurse
+Copy-Item -Path "$SOURCE_DOCS_DIR/*" -Destination "$DEST_DIR" -Force -Recurse
+Copy-Item -Path "$SOURCE_ASSETS_DIR/*" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
 Copy-Item -Path "$SET_ENV_VARS_SCRIPT " -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$Z_PSCORE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$X_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
