@@ -8,6 +8,7 @@
 #include <Insane/InsanePreprocessor.h>
 #include <Insane/InsaneTest.h>
 #include <random>
+#include <stdlib.h>
 USING_NS_INSANE_EMSCRIPTEN;
 USING_NS_INSANE_CRYPTO;
 USING_NS_INSANE_STR;
@@ -30,62 +31,31 @@ void DoFetch(const String & idName)
 {
     FetchOptions options;
     EMSCRIPTEN_VOID_FUNCTOR_TYPE(1) dataCallback =  [](Emval result){
-        JsConsole::Log("Resultado █"s, result);
-        JsConsole::Log(result);
-        JsConsole::Log(result);
+        JsConsole::Log("Response Data █"s, result);
     };
 
     Fetch::SendAsync("https://pokeapi.co/api/v2/pokemon/" + idName + "/", options)
     .call<EmscriptenVal>("then", Js::Bind(dataCallback));
 }
 
+void ExitEmscripten()
+{
+    EMVAL_GLOBAL.call<void>("close");
+    emscripten_force_exit(99);
+}
+
 int main()
 {
-
     DebugExtensions::Debug(true);
     JsConsole::Log("Hello World!!! from . "s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + ".");
-
-    
-
-    // std::unique_ptr<IEncryptor> encryptor = std::make_unique<AesCbcEncryptor>();
-    // std::unique_ptr<IEncryptor> encryptor2 = std::make_unique<AesCbcEncryptor>();
-
-    // EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-    // fingerprintCallback = [](const EmscriptenVal &fingerPrint) -> void
-    // {
-    //     StdVectorUint8 fingerPrintBytes = ConverterExtensions::StringToStdVectorUint8(fingerPrint.as<String>());
-    //     JsConsole::Log(fingerPrint);
-    //     std::unique_ptr<IEncryptor> encryptor = std::make_unique<AesCbcEncryptor>(fingerPrintBytes);
-    //     LocalStorage::SetItem("A", "5", encryptor);
-    //     LocalStorage::SetItem("B", "100", encryptor);
-    //     LocalStorage::SetItem("C", "5", encryptor);
-    //     LocalStorage::SetItem("LS_11", "11", encryptor);
-    //     LocalStorage::SetItem("LS_25", "25", encryptor);
-    //     LocalStorage::SetItem("LS_89", "89", encryptor);
-
-    //     JsConsole::Log(LocalStorage::GetItem("B", encryptor));
-    //     JsConsole::Log(LocalStorage::GetItem("LS_89", encryptor));
-    //     JsConsole::Log(LocalStorage::GetItem("LS_8999999", encryptor));
-
-    //     LocalStorage::RemoveItem("B");
-    //     LocalStorage::RemoveItemsWithPrefix("LS_");
-    // };
-
-    // Browser::GetFingerprintAsync("MiSaltInternaDeApp"s).call<EmscriptenVal>("then", Js::Bind(fingerprintCallback));
+    emscripten_exit_with_live_runtime();
 }
 
 EMSCRIPTEN_BINDINGS(exports)
 {
     function<void>("DoFetch", &DoFetch);
+    function<void>("ExitEmscripten", &ExitEmscripten);
     EMSCRIPTEN_EXPORT_ALL_FUNCTORS(3, Insane);
-
-    // enum_<HttpResponseDataType>("HttpResponseDataType")
-    //     .value("Text", HttpResponseDataType::Text)
-    //     .value("Json", HttpResponseDataType::Json)
-    //     .value("ArrayBuffer", HttpResponseDataType::ArrayBuffer)
-    //     .value("Blob", HttpResponseDataType::Blob)
-    //     .value("FormData", HttpResponseDataType::FormData);
-    // EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT(HttpResponseDataType);
 
     class_<DebugExtensions>("DebugExtensions")
         .class_function("IsDebug", &DebugExtensions::IsDebug)
@@ -306,7 +276,6 @@ EMSCRIPTEN_BINDINGS(exports)
     function<val>("OperatorImport", &Operator::ImportAsync);
     function<val>("JsLoadScriptAsync", &Js::LoadScriptAsync<>);
     function<>("JsGetPropertyName", &Js::GetPropertyName);
-    // EMSCRIPTEN_EXPORT_ALL_FUNCTORS(10, Insane);
 
     value_object<Browser::MimeType>("Mime")
         .field("Description", &Browser::MimeType::Description)

@@ -9,10 +9,10 @@ param (
 
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-$json = [System.IO.File]::ReadAllText($(Get-Item "ProductInfo.json"))
+$json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
 $productInfo = ConvertFrom-Json $json
 $ModuleExportName = $productInfo.Name
 $ModuleVersion = $productInfo.Version
@@ -20,6 +20,27 @@ $ModuleVersion = $productInfo.Version
 Write-Host
 Write-InfoBlue "████ Building Module: ""$ModuleExportName.js"", Version: $ModuleVersion"
 Write-Host
+
+$TOOLS_DIR = "$(Get-UserHome)/.InsaneEmscripten/Tools"
+New-Item "$TOOLS_DIR" -ItemType Container -Force | Out-Null
+$closureCompilerUrl = "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20230802/closure-compiler-v20230802.jar"
+$closureCompiler = "$TOOLS_DIR/$(Split-Path "$closureCompilerUrl" -Leaf)"
+$closureCompilerHash = "F6E52E1DCDDB9160489AC1B8CF32C129"
+if (!(Test-Path -Path "$closureCompiler" -PathType Leaf)) {
+    Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
+}
+$computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
+if ($computedClosureCompilerHash -ne $closureCompilerHash) {
+    Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
+    Write-Host "Removing ""$closureCompiler"""
+    Remove-Item -Path $closureCompiler -Force -Recurse -ErrorAction Ignore
+    Write-Host "Downloading ""$closureCompilerUrl"""
+    Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
+    $computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
+    if ($computedClosureCompilerHash -ne $closureCompilerHash) {    
+        Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
+    }
+}
     
 $exportName = "Create$($ModuleExportName)Module"
 $AdditionalExternPostJsContent = @"
@@ -35,10 +56,10 @@ $AdditionalPostJsContent = ""
 
 $AdditionalPreJsContent = ""
 
-$ExternPostJsFileName = Get-Item "./Js/ExternPost.js"
-$ExternPreJsFileName = Get-Item "./Js/ExternPre.js"
-$PostJsFileName = Get-Item "./Js/Post.js"
-$PreJsFileName = Get-Item "./Js/Pre.js"
+$ExternPostJsFileName = Get-Item "$PSScriptRoot/Js/ExternPost.js"
+$ExternPreJsFileName = Get-Item "$PSScriptRoot/Js/ExternPre.js"
+$PostJsFileName = Get-Item "$PSScriptRoot/Js/Post.js"
+$PreJsFileName = Get-Item "$PSScriptRoot/Js/Pre.js"
 
 $generatedPrefix = "Generated"
 $compiledPrefix = "Minified"
@@ -47,19 +68,23 @@ $Crlf = [System.Environment]::NewLine
 $filenames = @($ExternPostJsFileName, $ExternPreJsFileName, $PostJsFileName, $PreJsFileName)
 $additionalContents = @($AdditionalExternPostJsContent, $AdditionalExternPreJsContent, $AdditionalPostJsContent, $AdditionalPreJsContent)
 
+$COMPILED_JS_DIR = "$PSScriptRoot/Build/Js/$compiledPrefix/"
+$GENERATED_JS_DIR = "$PSScriptRoot/Build/Js/$generatedPrefix/"
+New-Item "$COMPILED_JS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$GENERATED_JS_DIR" -ItemType Container -Force | Out-Null
+
 
 for ($i = 0; $i -lt $filenames.Length; $i++) {
     $content = [System.IO.File]::ReadAllText("$($filenames[$i])")
     $content += "$Crlf$Crlf$($additionalContents[$i])"
-    $generatedFilename = "$($filenames[$i].DirectoryName)/$generatedPrefix$($filenames[$i].Name)"
-    $compiledFilename = "$($filenames[$i].DirectoryName)/$compiledPrefix$($filenames[$i].Name)"
+    $generatedFilename = "$GENERATED_JS_DIR/$generatedPrefix$($filenames[$i].Name)"
+    $compiledFilename = "$COMPILED_JS_DIR/$compiledPrefix$($filenames[$i].Name)"
     [System.IO.File]::WriteAllText($generatedFilename, $content, [System.Text.Encoding]::UTF8)
     if ($NoMinifyJsFiles.IsPresent) {
         [System.IO.File]::WriteAllText($compiledFilename, $content, [System.Text.Encoding]::UTF8)        
     }
     else {
         Write-PrettyKeyValue "Minifying js file" "$generatedFilename"
-        $closureCompiler = Get-Item "./Tools/closure-compiler-v*.jar"
         java -jar "$closureCompiler" `
             --js "$generatedFilename" `
             --js_output_file "$compiledFilename" `
@@ -68,15 +93,14 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
     }
 }
     
-Test-LastExitCode
-Write-Host "Building..."
-$clangdJson = "compile_commands.json"
+Write-Host "Building ""$ModuleExportName.js""... "
+$clangdJson = "$PSScriptRoot/compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
     -MJ $clangdJson `
-    main.cpp `
-    Lib/libInsane.a `
-    -I Include `
-    -o "$ModuleExportName.js" `
+    $PSScriptRoot/main.cpp `
+    $PSScriptRoot/Lib/libInsane.a `
+    -I $PSScriptRoot/Include `
+    -o "$PSScriptRoot/$ModuleExportName.js" `
     -std=c++20 `
     -lembind `
     -fexceptions `
@@ -90,26 +114,21 @@ $clangdJson = "compile_commands.json"
     -s MODULARIZE=1 `
     -s ALLOW_MEMORY_GROWTH=1 `
     -s EXPORTED_RUNTIME_METHODS=[ccall, cwrap, lengthBytesUTF8, stringToUTF8] `
-    --pre-js "Js/$($compiledPrefix)Pre.js" `
-    --post-js "Js/$($compiledPrefix)Post.js" `
-    --extern-post-js "Js/$($compiledPrefix)ExternPost.js" `
+    --pre-js "$COMPILED_JS_DIR/$($compiledPrefix)Pre.js" `
+    --post-js "$COMPILED_JS_DIR/$($compiledPrefix)Post.js" `
+    --extern-post-js "$COMPILED_JS_DIR/$($compiledPrefix)ExternPost.js" `
+    --extern-pre-js "$COMPILED_JS_DIR/$($compiledPrefix)ExternPre.js" `
     -s ASYNCIFY=1 `
-    --extern-pre-js "Js/$($compiledPrefix)ExternPre.js" `
+    --emrun `
     -D LIB_COMPILE_TIME `
     -D LIB_PRODUCT_NAME="\""$($ModuleExportName)\""" `
     -D LIB_PRODUCT_VERSION="\""$($ModuleVersion)\""" 
-    
-$filenames.ForEach({
-        $generatedFilename = "$($_.DirectoryName)/$generatedPrefix$($_.Name)"
-        $compiledFilename = "$($_.DirectoryName)/$compiledPrefix$($_.Name)"
-        Remove-Item -Path $generatedFilename -Force -ErrorAction Ignore
-        Remove-Item -Path $compiledFilename -Force -ErrorAction Ignore
-    }) 
 
-$compileCommandsJson = [System.IO.File]::ReadAllText($(Get-Item $clangdJson))
-[System.IO.File]::WriteAllText($(Get-Item $clangdJson), "[ $compileCommandsJson ]", [System.Text.Encoding]::UTF8)
 
-$content = [System.IO.File]::ReadAllText($(Get-Item "index.html"))
+$compileCommandsJson = [System.IO.File]::ReadAllText($(Get-Item "$clangdJson"))
+[System.IO.File]::WriteAllText($(Get-Item "$clangdJson"), "[ $compileCommandsJson ]", [System.Text.Encoding]::UTF8)
+
+$content = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/index.html"))
 $pattern = '<script\s+src\s*=\s*"[a-zA-Z0-9_]+\.js"\s*>\s*\/\/#\*Module\*#\s*<\s*\/script\s*>\s*'
 $replacement = "<script src=""$($ModuleExportName).js"">//#*Module*#</script>"
 $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
@@ -124,7 +143,7 @@ $pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
 $replacement = "/*ModuleName*/$ModuleExportName."
 $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
 
-[System.IO.File]::WriteAllText($(Get-Item "index.html"), $content, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($(Get-Item "$PSScriptRoot/index.html"), $content, [System.Text.Encoding]::UTF8)
 
 Write-InfoBlue "█ End building $ModuleExportName.js - Finished"
 Write-Host
