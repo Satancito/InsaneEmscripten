@@ -16,7 +16,7 @@ Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 Write-Host
 Write-InfoBlue "████ Building Insane LLVM Bitcode"
 Write-Host
-$X_UPDATE_SUBMODULES_SCRIPT = "$PSScriptRoot/X-InsaneEmscripten-UpdateSubmodules.ps1"
+$X_UPDATE_SUBMODULES_SCRIPT = "$PSScriptRoot/X-InsaneEm-UpdateSubmodules.ps1"
 $PRODUCT_INFO_JSON = "$PSScriptRoot/Docs/ProductInfo.json"
 & "$X_UPDATE_SUBMODULES_SCRIPT"
 
@@ -34,8 +34,8 @@ $DEST_JS_DIR = "$DEST_DIR/Js"
 $DEST_TOOLS_DIR = "$DEST_DIR/Tools"
 $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
 $OBJ_DIR = "$BUILD_DIR/Obj"
-$SET_ENV_VARS_SCRIPT = "$PSScriptRoot/X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
-$X_INSTALL_EMSCRIPTEN_SCRIPT = "$PSScriptRoot/X-InsaneEmscripten-InstallEmscripten.ps1"
+$SET_ENV_VARS_SCRIPT = "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
+$X_INSTALL_EMSCRIPTEN_SCRIPT = "$PSScriptRoot/X-InsaneEm-InstallEmscripten.ps1"
 $COMPILE_COMMANDS_JSON = "$PSScriptRoot/compile_commands.json"
 
 if ($Clean.IsPresent) {

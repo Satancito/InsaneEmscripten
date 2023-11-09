@@ -14,7 +14,7 @@ else {
 
 try {
     Push-Location "$REPO_DIR"
-    & "$REPO_DIR/X-BuildLib.ps1" -Clean
+    & "$REPO_DIR/X-InsaneEm-BuildLib.ps1" -Clean
 }
 finally {
     Pop-Location
@@ -22,7 +22,6 @@ finally {
 $json = [System.IO.File]::ReadAllText($(Get-Item "$REPO_DIR/Docs/ProductInfo.json"))
 $productInfo = ConvertFrom-Json $json
 $ModuleExportName = $productInfo.Name
-$ModuleVersion = $productInfo.Version
 
 $SOURCE_LIB_CONTENT = "$REPO_DIR/Dist/$ModuleExportName/Lib/*"
 $DEST_LIB_DIR = "$PSScriptRoot/Lib"

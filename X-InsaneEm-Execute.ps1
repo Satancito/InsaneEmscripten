@@ -16,10 +16,8 @@ Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs*.ps1")" -Force -NoClo
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 try {
-    & "./X-BuildLib.ps1" -Clean:$Clean -EnableClangd:$EnableClangd
-    Push-Location "Dist/Insane*BitCode"
-    & "./X-BuildModule.ps1" -NoMinifyJsFiles:$NoMinifyJsFiles -TestMode
-    & "./X-Run.ps1"
+    & "$PSScriptRoot/X-InsaneEm-BuildModule.ps1" -NoMinifyJsFiles:$NoMinifyJsFiles -EnableClangd:$EnableClangd -Clean:$Clean
+    & "$PSScriptRoot/X-InsaneEm-RunModule.ps1"
 }
 finally {
     Pop-Location

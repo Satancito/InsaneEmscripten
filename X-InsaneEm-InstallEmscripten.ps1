@@ -20,7 +20,7 @@ Write-InfoDarkGreen "████ Installing Emscripten SDK"
 Write-Host
 Write-Host
 
-& "$PSScriptRoot/X-InsaneEmscripten-SetEmscriptenEnvVars.ps1" -InstallDir ($Reset.IsPresent ? "$(Get-UserHome)" : $InstallDir) 
+& "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1" -InstallDir ($Reset.IsPresent ? "$(Get-UserHome)" : $InstallDir) 
 
 $EMSDK = "https://github.com/emscripten-core/emsdk.git"
 $InstallDir = "$($env:EMSCRIPTEN_SDK | Split-Path)"

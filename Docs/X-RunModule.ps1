@@ -11,7 +11,7 @@ $ModuleVersion = $productInfo.Version
 Write-Host
 Write-InfoDarkGreen "████ Run - Module: ""$ModuleExportName.js"", Version: $ModuleVersion"
 Write-Host
-& "$PSScriptRoot/X-InsaneEmscripten-SetEmscriptenEnvVars.ps1"
+& "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
 $browser = "chrome"
 $edge = "$(Select-ValueByPlatform "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" "TBD" "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge")"
 if($IsWindows)

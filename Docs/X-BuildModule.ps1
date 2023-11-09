@@ -137,11 +137,11 @@ if ($TestMode.IsPresent) {
     $pattern = "<title>.*?<\/title>"
     $replacement = "<title>$ModuleExportName - Emscripten - Tests</title>"
     $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
-}
 
-$pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
-$replacement = "/*ModuleName*/$ModuleExportName."
-$content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+    $pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
+    $replacement = "/*ModuleName*/$ModuleExportName."
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+}
 
 [System.IO.File]::WriteAllText($(Get-Item "$PSScriptRoot/index.html"), $content, [System.Text.Encoding]::UTF8)
 
