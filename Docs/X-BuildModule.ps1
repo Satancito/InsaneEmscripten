@@ -68,8 +68,8 @@ $Crlf = [System.Environment]::NewLine
 $filenames = @($ExternPostJsFileName, $ExternPreJsFileName, $PostJsFileName, $PreJsFileName)
 $additionalContents = @($AdditionalExternPostJsContent, $AdditionalExternPreJsContent, $AdditionalPostJsContent, $AdditionalPreJsContent)
 
-$COMPILED_JS_DIR = "$PSScriptRoot/Build/Js/$compiledPrefix/"
-$GENERATED_JS_DIR = "$PSScriptRoot/Build/Js/$generatedPrefix/"
+$COMPILED_JS_DIR = "$PSScriptRoot/Build/Js/$compiledPrefix"
+$GENERATED_JS_DIR = "$PSScriptRoot/Build/Js/$generatedPrefix"
 New-Item "$COMPILED_JS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$GENERATED_JS_DIR" -ItemType Container -Force | Out-Null
 
