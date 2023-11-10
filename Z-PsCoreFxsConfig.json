@@ -1,5 +1,7 @@
 {
-  "Files": null,
+  "Files": [
+    "X-PsCoreFxs-PushProjectToRemote.ps1"
+  ],
   "DeprecatedFiles": [
     "X-PowerShellCoreFxs-EditProjectSecrets.ps1",
     "X-PowerShellCoreFxs-SetProjectSecrets.ps1",
@@ -11,13 +13,14 @@
     "Z-CoreFxs.ps1",
     "Z-Config.json",
     "Z-Config.Last.json",
-    "X-UPDATE.ps1"
+    "X-UPDATE.ps1",
+    "X-PsCoreUpdate.ps1"
   ],
   "CoreFiles": [
     "Z-PsCoreFxs.ps1",
     "Z-PsCoreFxsConfig.json"
   ],
-  "Build": 110,
+  "Build": 112,
   "LastSupportedFiles": [
     "X-PsCoreFxs-PublishProjectPackage.ps1",
     "X-PsCoreFxs-PushProjectToRemote.ps1",
