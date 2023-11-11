@@ -1,4 +1,5 @@
 {
     "Version": "0.0.1",
-    "Name": "Insane"
+    "Name": "Insane",
+    "IsES6Module": true
 }

@@ -16,9 +16,13 @@ $json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json
 $productInfo = ConvertFrom-Json $json
 $ModuleExportName = $productInfo.Name
 $ModuleVersion = $productInfo.Version
+$ModuleIsES6Module = $productInfo.IsES6Module
+$exportName = "Create$($ModuleExportName)Module"
+$exportExtension = $ModuleIsES6Module ? "js": "js"
+$exportEs6 = $ModuleIsES6Module ? 1 : 0
 
 Write-Host
-Write-InfoBlue "████ Building Module: ""$ModuleExportName.js"", Version: $ModuleVersion"
+Write-InfoBlue "████ Building Module: ""$ModuleExportName.$exportExtension"", Version: $ModuleVersion"
 Write-Host
 
 $TOOLS_DIR = "$(Get-UserHome)/.InsaneEmscripten/Tools"
@@ -41,14 +45,22 @@ if ($computedClosureCompilerHash -ne $closureCompilerHash) {
         Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
     }
 }
-    
-$exportName = "Create$($ModuleExportName)Module"
-$AdditionalExternPostJsContent = @"
+
+$es6ModuleCode = @"
+#1#({ noInitialRun: false })
+    .then(instance => {
+        window["#2#"]= instance ;
+    });
+"@
+
+$jsModuleCode = @"
 window["#1#"]({ noInitialRun: false })
     .then(instance => {
         window["#2#"]= instance ;
     });
-"@.Replace("#1#", "$exportName").Replace("#2#", "$ModuleExportName")
+"@
+
+$AdditionalExternPostJsContent = ($ModuleIsES6Module ? $es6ModuleCode : $jsModuleCode).Replace("#1#", "$exportName").Replace("#2#", "$ModuleExportName")
 
 $AdditionalExternPreJsContent = ""
 
@@ -92,15 +104,17 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
             --language_out STABLE
     }
 }
-    
-Write-Host "Building ""$ModuleExportName.js""... "
+
+Remove-Item -Path "$PSScriptRoot/$ModuleExportName.*js"-Force -Recurse -ErrorAction Ignore
+
+Write-Host "Building ""$ModuleExportName.$exportExtension""... "
 $clangdJson = "$PSScriptRoot/compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
     -MJ $clangdJson `
     $PSScriptRoot/main.cpp `
     $PSScriptRoot/Lib/libInsane.a `
     -I $PSScriptRoot/Include `
-    -o "$PSScriptRoot/$ModuleExportName.js" `
+    -o "$PSScriptRoot/$ModuleExportName.$exportExtension" `
     -std=c++20 `
     -lembind `
     -fexceptions `
@@ -111,6 +125,7 @@ $clangdJson = "$PSScriptRoot/compile_commands.json"
     -s VERBOSE=0 `
     -s USE_ICU=1 `
     -s EXPORT_NAME=`'$exportName`' `
+    -s EXPORT_ES6=$exportEs6 `
     -s MODULARIZE=1 `
     -s ALLOW_MEMORY_GROWTH=1 `
     -s EXPORTED_RUNTIME_METHODS=[ccall, cwrap, lengthBytesUTF8, stringToUTF8] `
@@ -129,8 +144,9 @@ $compileCommandsJson = [System.IO.File]::ReadAllText($(Get-Item "$clangdJson"))
 [System.IO.File]::WriteAllText($(Get-Item "$clangdJson"), "[ $compileCommandsJson ]", [System.Text.Encoding]::UTF8)
 
 $content = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/index.html"))
-$pattern = '<script\s+src\s*=\s*"[a-zA-Z0-9_]+\.js"\s*>\s*\/\/#\*Module\*#\s*<\s*\/script\s*>\s*'
-$replacement = "<script src=""$($ModuleExportName).js"">//#*Module*#</script>"
+$pattern = '<script\s+src\s*=\s*"[a-zA-Z0-9_]+\.(js|mjs)"\s*(type="module")?\s*>\s*\/\/#\*Module\*#\s*<\s*\/script\s*>'
+$module = $ModuleIsES6Module ? " type=`"module`"": [string]::Empty
+$replacement = "<script src=""$($ModuleExportName).$exportExtension""$module>//#*Module*#</script>"
 $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
 
 if ($TestMode.IsPresent) {
@@ -145,5 +161,5 @@ if ($TestMode.IsPresent) {
 
 [System.IO.File]::WriteAllText($(Get-Item "$PSScriptRoot/index.html"), $content, [System.Text.Encoding]::UTF8)
 
-Write-InfoBlue "█ End building $ModuleExportName.js - Finished"
+Write-InfoBlue "█ End building $ModuleExportName.$exportExtension - Finished"
 Write-Host
