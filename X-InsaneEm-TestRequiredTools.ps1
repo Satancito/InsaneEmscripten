@@ -23,5 +23,13 @@ Write-InfoMagenta "Java"
 Test-Command "java --version" -WriteOutput
 Write-Host
 
+Write-InfoMagenta "Node"
+Test-Command "node --version" -WriteOutput
+Write-Host
+
+Write-InfoMagenta "Deno"
+Test-Command "deno --version" -WriteOutput
+Write-Host
+
 Write-InfoDarkGray "█ End - Test - Dependency Tools"
 Write-Host

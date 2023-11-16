@@ -33,6 +33,7 @@ $DEST_LIB_DIR = "$DEST_DIR/Lib"
 $DEST_JS_DIR = "$DEST_DIR/Js"
 $DEST_TOOLS_DIR = "$DEST_DIR/Tools"
 $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
+$DEST_SERVER_DIR = "$DEST_DIR/Server"
 $OBJ_DIR = "$BUILD_DIR/Obj"
 $SET_ENV_VARS_SCRIPT = "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
 $X_INSTALL_EMSCRIPTEN_SCRIPT = "$PSScriptRoot/X-InsaneEm-InstallEmscripten.ps1"
@@ -80,6 +81,7 @@ New-Item "$DEST_LIB_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_JS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_TOOLS_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
+New-Item "$DEST_SERVER_DIR" -ItemType Container -Force | Out-Null
 
 $LIB_NAME = "libInsane.a"
 $SOURCE_INSANE_INCLUDE_DIR = "$PSScriptRoot/Include/Insane" 
@@ -88,6 +90,7 @@ $SOURCE_JS_DIR = "$PSScriptRoot/Js"
 $SOURCE_TOOLS_DIR = "$PSScriptRoot/Tools"
 $SOURCE_DOCS_DIR = "$PSScriptRoot/Docs"
 $SOURCE_ASSETS_DIR = "$PSScriptRoot/Assets"
+$SOURCE_SERVER_DIR = "$PSScriptRoot/Server"
 $Z_PSCORE_SCRIPT = "$PSScriptRoot/Z-PsCoreFxs.ps1"
 
 New-Item "$SOURCE_JS_DIR" -ItemType Container -Force | Out-Null
@@ -104,6 +107,7 @@ Copy-Item -Path "$SOURCE_JS_DIR/*" -Destination "$DEST_JS_DIR" -Force
 Copy-Item -Path "$SOURCE_TOOLS_DIR/*" -Destination "$DEST_TOOLS_DIR" -Force -Recurse
 Copy-Item -Path "$SOURCE_DOCS_DIR/*" -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$SOURCE_ASSETS_DIR/*" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
+Copy-Item -Path "$SOURCE_SERVER_DIR/*" -Destination "$DEST_SERVER_DIR" -Force -Recurse
 Copy-Item -Path "$SET_ENV_VARS_SCRIPT " -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$Z_PSCORE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$X_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse

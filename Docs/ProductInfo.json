@@ -1,5 +1,8 @@
 {
     "Version": "0.0.1",
     "Name": "Insane",
-    "IsES6Module": true
+    "IsES6Module": true,
+    "NodeHttpServerPort": 7374,
+    "DenoHttpServerPort": 7375,
+    "EmrunHttpServerPort": 7376
 }

@@ -18,7 +18,7 @@ $ModuleExportName = $productInfo.Name
 $ModuleVersion = $productInfo.Version
 $ModuleIsES6Module = $productInfo.IsES6Module
 $exportName = "Create$($ModuleExportName)Module"
-$exportExtension = $ModuleIsES6Module ? "js": "js"
+$exportExtension = $ModuleIsES6Module ? "mjs": "js"
 $exportEs6 = $ModuleIsES6Module ? 1 : 0
 
 Write-Host
@@ -49,14 +49,14 @@ if ($computedClosureCompilerHash -ne $closureCompilerHash) {
 $es6ModuleCode = @"
 #1#({ noInitialRun: false })
     .then(instance => {
-        window["#2#"]= instance ;
+        globalThis["#2#"]= instance ;
     });
 "@
 
 $jsModuleCode = @"
-window["#1#"]({ noInitialRun: false })
+globalThis["#1#"]({ noInitialRun: false })
     .then(instance => {
-        window["#2#"]= instance ;
+        globalThis["#2#"]= instance ;
     });
 "@
 
