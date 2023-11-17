@@ -138,10 +138,17 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
 
 Remove-Item -Path "$PSScriptRoot/$ModuleExportName.*js"-Force -Recurse -ErrorAction Ignore
 
+$INDEX_HTML_FILE = "$PSScriptRoot/index.html"
+$INDEX_MJS_FILE = "$PSScriptRoot/index.mjs"
+$INDEX_TS_FILE = "$PSScriptRoot/index.ts"
+$COMPILE_COMMANDS_JSON = "$PSScriptRoot/compile_commands.json" 
+$GENERATED_CLANGD_DIR = "$PSScriptRoot/Build/clangd"
+
 Write-Host "Building ""$ModuleExportName.$exportExtension""... "
-$clangdJson = "$PSScriptRoot/compile_commands.json"
+New-Item -Path "$GENERATED_CLANGD_DIR" -ItemType Directory -Force | Out-Null
+$clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
-    -MJ $clangdJson `
+    -MJ "$clangd_name" `
     $PSScriptRoot/main.cpp `
     $PSScriptRoot/Lib/libInsane.a `
     -I $PSScriptRoot/Include `
@@ -168,16 +175,19 @@ $clangdJson = "$PSScriptRoot/compile_commands.json"
     -D LIB_COMPILE_TIME `
     -D LIB_PRODUCT_NAME="\""$($ModuleExportName)\""" `
     -D LIB_PRODUCT_VERSION="\""$($ModuleVersion)\""" 
-    #--emrun `
 
-$INDEX_HTML_FILE = "$PSScriptRoot/index.html"
-$INDEX_MJS_FILE = "$PSScriptRoot/index.mjs"
-$INDEX_TS_FILE = "$PSScriptRoot/index.ts"
 
-#Browser
-$compileCommandsJson = [System.IO.File]::ReadAllText($(Get-Item "$clangdJson"))
-[System.IO.File]::WriteAllText($(Get-Item "$clangdJson"), "[ $compileCommandsJson ]", [System.Text.Encoding]::UTF8)
+#Clangd compile_commands.json gen.
+$jsonFiles = Get-ChildItem "$GENERATED_CLANGD_DIR/_*_compile_commands.json"
+$encoding = [System.Text.Encoding]::UTF8
+[System.IO.File]::WriteAllText($COMPILE_COMMANDS_JSON, "[", $encoding);
+$jsonFiles | ForEach-Object {
+    [System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, [System.IO.File]::ReadAllText($_.FullName), $encoding)
+}
+[System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, "]", $encoding);
+Remove-Item -Force -Recurse -Path "$GENERATED_CLANGD_DIR" -ErrorAction Continue
 
+#Browser - Code gen.
 $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_HTML_FILE"))
 $pattern = '<!-- _BEGIN_MODULE_SCRIPT_ -->[\s\S]*?<!-- _END___MODULE_SCRIPT_ -->'
 $replacement = $ModuleIsES6Module ? $es6BrowserCode : $jsBrowserCode
@@ -194,14 +204,14 @@ if ($TestMode.IsPresent) {
 }
 [System.IO.File]::WriteAllText($(Get-Item "$INDEX_HTML_FILE"), $content, [System.Text.Encoding]::UTF8)
 
-# Node
+# Node - Code gen.
 $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_MJS_FILE"))
 $pattern = '\/\*_BEGIN_MODULE_INSTANTIATION_\*[\s\S]*?\*_END___MODULE_INSTANTIATION_\*\/'
 $replacement = $nodeCode
 $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
 [System.IO.File]::WriteAllText($(Get-Item "$INDEX_MJS_FILE"), $content, [System.Text.Encoding]::UTF8)
 
-# Deno
+# Deno - - Code gen.
 $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_TS_FILE"))
 $pattern = '\/\*_BEGIN_MODULE_INSTANTIATION_\*[\s\S]*?\*_END___MODULE_INSTANTIATION_\*\/'
 $replacement = $denoCode

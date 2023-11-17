@@ -1575,6 +1575,22 @@ function Test-Command {
     }
 }
 
+function Get-HexRandomName {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $Prefix = "_",
+
+        [Parameter()]
+        [int]
+        $BytesSize = 8
+    )
+    $bytes = [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(16)
+    $hexString = -join ($bytes | ForEach-Object { $_.ToString("X2") })
+    return "$Prefix$hexString"
+}
+
 function Get-GitRepositoryRemoteUrl {
     param (
         [string]
