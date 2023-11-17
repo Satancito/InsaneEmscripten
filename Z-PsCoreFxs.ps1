@@ -1569,7 +1569,7 @@ function Test-Command {
         }
         if($ThrowOnFailure)
         {
-            Write-Error "An error occurred while executing the command."
+            throw "An error occurred while executing the command."
         }
         return $false
     }

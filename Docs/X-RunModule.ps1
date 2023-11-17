@@ -28,30 +28,30 @@ param (
     $NoLaunchBrowser
 )
 
-$Error.Clear()
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs*.ps1")" -Force -NoClobber
-Write-InfoDarkGray "▶️▶️▶️ Running: $PSCommandPath"
 
-$json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
-$productInfo = ConvertFrom-Json $json
-$ModuleExportName = $productInfo.Name
-$ModuleVersion = $productInfo.Version
-$ModuleIsES6Module = $productInfo.IsES6Module
-$ModuleExportExtension = $ModuleIsES6Module ? "mjs": "js"
-$DenoHttpServerPort = $productInfo.DenoHttpServerPort
-$NodeHttpServerPort = $productInfo.NodeHttpServerPort
-$EmrunHttpServerPort = $productInfo.EmrunHttpServerPort
-$ConsoleNodeOptions =  $productInfo.ConsoleNodeOptions
-$ConsoleDenoOptions =  $productInfo.ConsoleDenoOptions
-$NODE_SCRIPT = "$PSScriptRoot/index.mjs"
-$DENO_SCRIPT = "$PSScriptRoot/index.ts"
-
-Write-Host
-Write-InfoDarkGreen "████ Run - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
-Write-Host
 
 try {
+    Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs*.ps1")" -Force -NoClobber
+    Write-InfoDarkGray "▶️▶️▶️ Running: $PSCommandPath"
+
+    $json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
+    $productInfo = ConvertFrom-Json $json
+    $ModuleExportName = $productInfo.Name
+    $ModuleVersion = $productInfo.Version
+    $ModuleIsES6Module = $productInfo.IsES6Module
+    $ModuleExportExtension = $ModuleIsES6Module ? "mjs": "js"
+    $DenoHttpServerPort = $productInfo.DenoHttpServerPort
+    $NodeHttpServerPort = $productInfo.NodeHttpServerPort
+    $EmrunHttpServerPort = $productInfo.EmrunHttpServerPort
+    $ConsoleNodeOptions = $productInfo.ConsoleNodeOptions
+    $ConsoleDenoOptions = $productInfo.ConsoleDenoOptions
+    $NODE_SCRIPT = "$PSScriptRoot/index.mjs"
+    $DENO_SCRIPT = "$PSScriptRoot/index.ts"
+
+    Write-Host
+    Write-InfoDarkGreen "████ Run - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
+    Write-Host
     $SERVER_DIR = "$PSScriptRoot/Server"
     
     $launch = !($NoLaunchBrowser.IsPresent)
@@ -82,8 +82,7 @@ try {
         }
     }
 
-    if($ConsoleNode.IsPresent)
-    {
+    if ($ConsoleNode.IsPresent) {
         if (!$ModuleIsES6Module) {
             Write-Warning "ES6 Module(mjs) is required to run on Node."
             return
@@ -91,8 +90,7 @@ try {
         & node $ConsoleNodeOptions $NODE_SCRIPT
     }
 
-    if($ConsoleDeno.IsPresent)
-    {
+    if ($ConsoleDeno.IsPresent) {
         if (!$ModuleIsES6Module) {
             Write-Warning "ES6 Module(mjs) is required to run on Deno."
             return
