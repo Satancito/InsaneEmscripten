@@ -48,7 +48,7 @@ int main()
 {
     DebugExtensions::Debug(true);
     JsConsole::Log("Hello World!!! from . "s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + ".");
-    emscripten_exit_with_live_runtime();
+    return EXIT_SUCCESS;
 }
 
 EMSCRIPTEN_BINDINGS(exports)

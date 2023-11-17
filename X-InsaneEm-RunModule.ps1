@@ -1,18 +1,29 @@
 [CmdletBinding(DefaultParameterSetName = "None")]
 param (
-    [Parameter(ParameterSetName = "Emrun", Mandatory = $false)]
+    [Parameter(ParameterSetName = "Emrun")]
     [switch]
     $Emrun,
 
-    [Parameter(ParameterSetName = "Node", Mandatory = $false)]
+    [Parameter(ParameterSetName = "BrowserNode")]
     [switch]
-    $NodeBrowser,
+    $BrowserNodeServer,
 
-    [Parameter(ParameterSetName = "Deno", Mandatory = $false)]
+    [Parameter(ParameterSetName = "BrowserDeno")]
     [switch]
-    $DenoBrowser,
+    $BrowserDenoServer,
 
-    [Parameter()]
+    [Parameter(ParameterSetName = "ConsoleNode")]
+    [switch]
+    $ConsoleNode,
+
+    [Parameter(ParameterSetName = "ConsoleDeno")]
+    [switch]
+    $ConsoleDeno,
+
+    [Parameter(ParameterSetName = "None")]
+    [Parameter(ParameterSetName = "Emrun")]
+    [Parameter(ParameterSetName = "BrowserNode")]
+    [Parameter(ParameterSetName = "BrowserDeno")]
     [switch]
     $NoLaunchBrowser
 )
@@ -32,16 +43,25 @@ if($Emrun.IsPresent)
 {
     $params.Add($(Get-VariableName $Emrun), $true)
 }
-if($NodeBrowser.IsPresent)
+if($BrowserNodeServer.IsPresent)
 {
-    $params.Add($(Get-VariableName $NodeBrowser), $true)
+    $params.Add($(Get-VariableName $BrowserNodeServer), $true)
 }
-if($DenoBrowser.IsPresent)
+if($BrowserDenoServer.IsPresent)
 {
-    $params.Add($(Get-VariableName $DenoBrowser), $true)
+    $params.Add($(Get-VariableName $BrowserDenoServer), $true)
 }
 if($NoLaunchBrowser.IsPresent)
 {
     $params.Add($(Get-VariableName $NoLaunchBrowser), $true)
 }
+if($ConsoleNode.IsPresent)
+{
+    $params.Add($(Get-VariableName $ConsoleNode), $true)
+}
+if($ConsoleDeno.IsPresent)
+{
+    $params.Add($(Get-VariableName $ConsoleDeno), $true)
+}
+
 & "$PSScriptRoot/Dist/$ModuleExportName/X-RunModule.ps1" @params

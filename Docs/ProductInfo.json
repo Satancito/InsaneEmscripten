@@ -4,5 +4,7 @@
     "IsES6Module": true,
     "NodeHttpServerPort": 7374,
     "DenoHttpServerPort": 7375,
-    "EmrunHttpServerPort": 7376
+    "EmrunHttpServerPort": 7376,
+    "ConsoleNodeOptions": [],
+    "ConsoleDenoOptions": []
 }

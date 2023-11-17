@@ -4,8 +4,8 @@ $isRepo = Test-GitRepository $REPO_DIR
 
 if ($isRepo) {
     Push-Location "$REPO_DIR"
-    Test-Command "git fetch origin" -WriteOutput
-    Test-Command "git reset --hard origin/main" -WriteOutput
+    $null = Test-Command "git fetch origin" -ThrowOnFailure
+    $null = Test-Command "git reset --hard origin/main" -ThrowOnFailure
     Pop-Location 
 }
 else {

@@ -14,7 +14,7 @@ Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClob
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
-Write-InfoBlue "████ Building Insane LLVM Bitcode"
+Write-InfoBlue "████ Building libInsane"
 Write-Host
 $X_UPDATE_SUBMODULES_SCRIPT = "$PSScriptRoot/X-InsaneEm-UpdateSubmodules.ps1"
 $PRODUCT_INFO_JSON = "$PSScriptRoot/Docs/ProductInfo.json"
@@ -74,7 +74,7 @@ Remove-Item "$DIST_DIR" -Force -Recurse -ErrorAction Ignore
 
 New-Item "$DEST_DIR" -ItemType Container -Force | Out-Null
 Push-Location "$DEST_DIR"
-Test-Command "git init" -WriteOutput
+$null = Test-Command "git init" -ThrowOnFailure
 Pop-Location
 New-Item "$DEST_INCLUDE_DIR" -ItemType Container -Force | Out-Null
 New-Item "$DEST_LIB_DIR" -ItemType Container -Force | Out-Null
@@ -113,5 +113,5 @@ Copy-Item -Path "$Z_PSCORE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 Copy-Item -Path "$X_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 
 
-Write-InfoBlue "█ End - Building Insane LLVM Bitcode"
+Write-InfoBlue "█ End - Building libInsane"
 Write-Host

@@ -1,35 +1,40 @@
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "Stop"
 
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-Write-Host
-Write-InfoDarkGray "███ Test - Dependency tools"
-Write-Host
+try {
+    Write-Host
+    Write-InfoBlue "███ Test - Dependency tools"
+    Write-Host
 
-Write-InfoMagenta "Python"
-Test-Command "python --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Python"
+    $null = Test-Command "python --version" -ThrowOnFailure
+    Write-Host
 
-Write-InfoMagenta "Git"
-Test-Command "git --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Git"
+    $null = Test-Command "git --version" -ThrowOnFailure
+    Write-Host
 
-Write-InfoMagenta "Make"
-Test-Command "make --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Make"
+    $null = Test-Command "make --version" -ThrowOnFailure
+    Write-Host
 
-Write-InfoMagenta "Java"
-Test-Command "java --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Java"
+    $null = Test-Command "java --version" -ThrowOnFailure
+    Write-Host
 
-Write-InfoMagenta "Node"
-Test-Command "node --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Node"
+    $null = Test-Command "node --version" -ThrowOnFailure
+    Write-Host
 
-Write-InfoMagenta "Deno"
-Test-Command "deno --version" -WriteOutput
-Write-Host
+    Write-InfoMagenta "== Deno"
+    $null = Test-Command "deno --version" -ThrowOnFailure
+    Write-Host
+}
+finally {
+    Write-InfoBlue "█ End - Test - Dependency Tools"
+    Write-Host
+}
 
-Write-InfoDarkGray "█ End - Test - Dependency Tools"
-Write-Host
+

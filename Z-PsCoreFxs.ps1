@@ -1383,7 +1383,7 @@ function Test-GitRepository {
     }
     try {
         Push-Location $Path
-        $result = Test-Command "git rev-parse --is-inside-work-tree --quiet"
+        $result = $(Test-Command "git rev-parse --is-inside-work-tree --quiet")
         return $result
     }
     finally {
@@ -1539,25 +1539,37 @@ function Test-Command {
         [string]$Command,
 
         [switch]
-        $WriteOutput
+        $NoOutput, 
+
+        [switch]
+        $ThrowOnFailure 
     )
     try {
-        $output = Invoke-Expression -Command $Command 2>&1
+        if($NoOutput.IsPresent)
+        {
+            Invoke-Expression -Command $Command | Out-Null
+        }
+        else
+        {
+            Invoke-Expression -Command $Command | Out-Host
+        }
         $exitCode = $LASTEXITCODE
 
         if ($exitCode -eq 0) {
-            if ($WriteOutput.IsPresent) {
-                Write-Output "✅ Command: $Command $([string]::IsNullOrWhiteSpace($output) ? [string]::Empty :  "$([Environment]::NewLine)Output: $output")"
-                return
+            if (!($NoOutput.IsPresent)) {
+                Write-Host "✅ Command: $Command "
             }
             return $true
         }
         throw
     }
     catch {
-        if ($WriteOutput.IsPresent) {
-            Write-Output "❌ Command: $Command $([string]::IsNullOrWhiteSpace($output) ? [string]::Empty :  "$([Environment]::NewLine)Output: $output")"
-            return
+        if (!$NoOutput.IsPresent) {
+            Write-Host "❌ Command: $Command"
+        }
+        if($ThrowOnFailure)
+        {
+            Write-Error "An error occurred while executing the command."
         }
         return $false
     }
