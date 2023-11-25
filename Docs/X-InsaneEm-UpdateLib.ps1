@@ -1,15 +1,20 @@
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs*.ps1")" -Force -NoClobber
+$REPO_URL = "https://github.com/Satancito/InsaneEmscripten.git"
 $REPO_DIR = "$(Get-UserHome)/.InsaneEmscripten/InsaneEmscripten"
 $isRepo = Test-GitRepository $REPO_DIR
 
 if ($isRepo) {
-    Push-Location "$REPO_DIR"
-    $null = Test-Command "git fetch origin" -ThrowOnFailure
-    $null = Test-Command "git reset --hard origin/main" -ThrowOnFailure
-    Pop-Location 
+    try {
+        Push-Location "$REPO_DIR"
+        $null = Test-Command "git fetch origin" -ThrowOnFailure
+        $null = Test-Command "git reset --hard origin/main" -ThrowOnFailure
+    }
+    finally {
+        Pop-Location 
+    }
 }
 else {
-    git clone "https://github.com/Satancito/InsaneEmscripten.git" "$REPO_DIR"
+    git clone "$REPO_URL" "$REPO_DIR"
 }
 
 try {

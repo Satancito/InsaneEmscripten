@@ -9,7 +9,7 @@ param (
 
     [Parameter()]
     [switch]
-    $Reset
+    $Force
 )
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
@@ -20,50 +20,37 @@ Write-InfoDarkGreen "████ Installing Emscripten SDK"
 Write-Host
 Write-Host
 
-& "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1" -InstallDir ($Reset.IsPresent ? "$(Get-UserHome)" : $InstallDir) 
+if ($Reset.IsPresent) {
+    Write-InfoYellow "Setting new location ""$InstallDir"". Removing old sdk folder if exists ""$env:EMSCRIPTEN_SDK""."
+    Remove-Item "$env:EMSCRIPTEN_SDK" -Force -Recurse -ErrorAction Ignore
+}
+& "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1" -InstallDir $InstallDir -Force:$Force -Clean:$Clean
 
 $EMSDK = "https://github.com/emscripten-core/emsdk.git"
-$InstallDir = "$($env:EMSCRIPTEN_SDK | Split-Path)"
-$LocationStackName = "emsdk"
-try {
-    New-Item $InstallDir -ItemType Container -Force | Out-Null
-    Push-Location $InstallDir -StackName $LocationStackName
-    if ($Clean.IsPresent) {
-        Write-InfoYellow "Removing SDK folder!."
-        Remove-Item "./emsdk" -Force -Recurse -ErrorAction Ignore
-    }
-    if (!(Test-Path "./emsdk" -PathType Container)) {
-        if(!(Test-Path "./emsdk" -PathType Leaf))
-        {
-            git clone "$EMSDK"; Test-LastExitCode
-        }
-        else
-        {
-            throw "`"$InstallDir/emsdk`" is not a directory"
-        }
-    }
-    Push-Location "./emsdk" -StackName $LocationStackName
-    
+$EMSDK_EXE = Select-ValueByPlatform "emsdk.bat" "emsdk" "emsdk"
 
-    git pull; Test-LastExitCode
-
-    $EMSDK_EXE = Select-ValueByPlatform "emsdk.bat" "emsdk" "emsdk"
-    $EMSDK_ENV = Select-ValueByPlatform "emsdk_env.bat" "emsdk_env.sh" "emsdk_env.sh"
-
-    & "./$EMSDK_EXE" install latest; Test-LastExitCode
-    & "./$EMSDK_EXE" activate latest; Test-LastExitCode
-    if($IsLinux -or $IsMacOS)
-    {
-        chmod +x "./$EMSDK_ENV"
-        & sh "./$EMSDK_ENV"; Test-LastExitCode
-    }
-    else {
-        & "./$EMSDK_ENV"; Test-LastExitCode    
-    }
+if ($Clean.IsPresent) {
+    Write-InfoYellow "Removing SDK folder if exists! ""$env:EMSCRIPTEN_SDK""."
+    Remove-Item "$env:EMSCRIPTEN_SDK" -Force -Recurse -ErrorAction Ignore
 }
-finally {
-    Pop-LocationStack -StackName $LocationStackName
+
+if(!(Test-GitRepository $env:EMSCRIPTEN_SDK))
+{
+    Remove-Item -Force -Recurse -Path "$env:EMSCRIPTEN_SDK" -ErrorAction Ignore
+    New-Item "$env:EMSCRIPTEN_SDK" -ItemType Container -Force | Out-Null
+    git clone "$EMSDK" "$env:EMSCRIPTEN_SDK"; 
 }
+
+git -C "$env:EMSCRIPTEN_SDK" pull
+
+if ($IsLinux -or $IsMacOS) {
+    chmod +x "$env:EMSCRIPTEN_SDK/$EMSDK_EXE"
+}
+
+Write-InfoMagenta "Installing SDK..."
+& "$env:EMSCRIPTEN_SDK/$EMSDK_EXE" install latest 
+Write-InfoMagenta "Activating SDK..."
+& "$env:EMSCRIPTEN_SDK/$EMSDK_EXE" activate latest 
 
 Write-Host
-Write-InfoDarkGreen "█ End install Emscripten"
+Write-InfoDarkGreen "█ End - Installing Emscripten SDK"
