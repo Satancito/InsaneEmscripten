@@ -7,3 +7,6 @@
 [submodule "modules/CommonCppIncludes"]
 	path = modules/CommonCppIncludes
 	url = https://github.com/Satancito/CommonCppIncludes.git
+[submodule "modules/PsBotan"]
+	path = modules/PsBotan
+	url = https://github.com/Satancito/PsBotan.git
