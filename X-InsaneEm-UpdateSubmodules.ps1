@@ -4,7 +4,7 @@ Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 try {
     Push-Location "$PSScriptRoot"
     $null = Test-Command "git submodule init" -ThrowOnFailure
-    $null = Test-Command "git submodule update --remote --recursive" -ThrowOnFailure
+    $null = Test-Command "git submodule update --remote --recursive " -ThrowOnFailure
 }
 finally {
     Pop-Location

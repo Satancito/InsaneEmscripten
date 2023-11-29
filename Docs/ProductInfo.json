@@ -6,5 +6,7 @@
     "DenoHttpServerPort": 7375,
     "EmrunHttpServerPort": 7376,
     "ConsoleNodeOptions": [],
-    "ConsoleDenoOptions": []
+    "ConsoleDenoOptions": [],
+    "BotanVersion": "3.2.0",
+    "BotanMajorVersion": "3"
 }

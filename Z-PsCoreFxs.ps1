@@ -1395,11 +1395,87 @@ function Test-GitRepository {
     }
     try {
         Push-Location $Path
-        $result = $(Test-Command "git rev-parse --is-inside-work-tree --quiet")
+        $result = $(Test-Command "git rev-parse --is-inside-work-tree --quiet" -NoOutput)
         return $result
     }
     finally {
         Pop-Location
+    }
+}
+
+function Test-GitRemoteUrl {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Url,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Path
+    )
+    try {
+        Push-Location $Path
+        $remoteUrl = & git remote get-url origin
+        return ($remoteUrl -eq $Url)
+    }
+    catch
+    {
+        return $false
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Install-GitRepository {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Url,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Path,
+
+        [Parameter(Mandatory = $false)]
+        [switch]
+        $Force
+
+    )
+    $isRepo = Test-GitRepository $Path
+
+    if ($isRepo) {
+        if(Test-GitRemoteUrl -Url $Url -Path $Path)
+        {
+            try {
+                Push-Location "$Path"
+                #$null = Test-Command "git "
+                $null = Test-Command "git fetch origin main" -ThrowOnFailure
+                $null = Test-Command "git reset --hard origin/main" -ThrowOnFailure
+            }
+            finally {
+                Pop-Location 
+            }
+        }
+        else
+        {
+            if($Force.IsPresent)
+            {
+                Remove-Item -Path "$Path" -Force -Recurse -ErrorAction Ignore
+                git clone "$Url" "$Path"
+            }
+            else
+            {
+                throw "It seems there is a different Git repository. Please check and try again."
+            }
+        }   
+    }
+    else {
+        Remove-Item -Path "$Path" -Force -Recurse -ErrorAction Ignore
+        New-Item -Path "$Path" -Force -ItemType Directory | Out-Null
+        git clone "$Url" "$Path"
     }
 }
 
@@ -1420,7 +1496,6 @@ function Set-GitRepository {
     try {
         Push-Location $Path
         git clone $RepositoryUrl
-        Test-LastExitCode
     }
     finally {
         Pop-Location
