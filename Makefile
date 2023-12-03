@@ -1,10 +1,18 @@
+DEBUG_STR      = Debug
+RELEASE_STR    = Release
+
+ifeq ($(BUILD_CONFIGURATION), $(DEBUG_STR))
+    OPTIMIZATION =-O0
+else
+    OPTIMIZATION = -O3
+endif
+
 CXX = $(EMSCRIPTEN_COMPILER)
 AR = $(EMSCRIPTEN_EMAR)
 AR_OPTIONS     = cr
-
 ABI_FLAGS      =  
 LANG_FLAGS     = -std=c++20 -D_REENTRANT 
-CXXFLAGS       = -O3 -DINSANE_IS_BEING_BUILT -s USE_ICU=1 -D INSANE_EXPORTS -fexceptions
+CXXFLAGS       = $(OPTIMIZATION) -DINSANE_IS_BEING_BUILT -s USE_ICU=1 -D INSANE_EXPORTS -fexceptions
 WARN_FLAGS     = -Wall -Wextra -Wpedantic -Wshadow -Wstrict-aliasing -Wstrict-overflow=5 -Wcast-align -Wmissing-declarations -Wpointer-arith -Wcast-qual
 LIB_FLAGS      = 
 LDFLAGS        = 

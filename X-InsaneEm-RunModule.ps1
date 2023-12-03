@@ -31,6 +31,7 @@ param (
 $Error.Clear()
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "./Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 $PRODUCT_INFO_JSON = "$PSScriptRoot/Docs/ProductInfo.json"

@@ -1,40 +1,53 @@
 $ErrorActionPreference = "Stop"
 
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-try {
-    Write-Host
-    Write-InfoBlue "███ Test - Dependency tools"
-    Write-Host
+Write-Host
+Write-InfoBlue "Test - Dependency tools"
+Write-Host
 
-    Write-InfoMagenta "== Python"
-    $null = Test-Command "python --version" -ThrowOnFailure
-    Write-Host
+Write-InfoMagenta "== Python"
+$command = Get-Command "python"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
 
-    Write-InfoMagenta "== Git"
-    $null = Test-Command "git --version" -ThrowOnFailure
-    Write-Host
+Write-InfoMagenta "== Git"
+$command = Get-Command "git"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
 
-    Write-InfoMagenta "== Make"
-    $null = Test-Command "make --version" -ThrowOnFailure
-    Write-Host
+Write-InfoMagenta "== Make"
+$command = Get-Command "make"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
 
-    Write-InfoMagenta "== Java"
-    $null = Test-Command "java --version" -ThrowOnFailure
-    Write-Host
+Write-InfoMagenta "== Java"
+$command = Get-Command "java"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
 
-    Write-InfoMagenta "== Node"
-    $null = Test-Command "node --version" -ThrowOnFailure
-    Write-Host
+Write-InfoMagenta "== Node"
+$command = Get-Command "node"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
 
-    Write-InfoMagenta "== Deno"
-    $null = Test-Command "deno --version" -ThrowOnFailure
+Write-InfoMagenta "== Deno"
+$command = Get-Command "deno"
+Write-Host "$($command.Source)"
+& "$($command.Source)" --version
+Write-Host
+
+if ($IsWindows) {
+    Write-InfoMagenta "== WSL"
+    $command = Get-Command "wsl"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" --version
     Write-Host
 }
-finally {
-    Write-InfoBlue "█ End - Test - Dependency Tools"
-    Write-Host
-}
-
-
