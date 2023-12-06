@@ -13,6 +13,7 @@ param (
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 $json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
@@ -28,25 +29,27 @@ Write-Host
 Write-InfoBlue "████ Building Module: ""$ModuleExportName.$exportExtension"", Version: $ModuleVersion"
 Write-Host
 
-Write-Host "Downloading ClosureCompiler..."
 $TOOLS_DIR = "$(Get-UserHome)/.InsaneEmscripten/Tools"
-New-Item "$TOOLS_DIR" -ItemType Container -Force | Out-Null
-$closureCompilerUrl = "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20230802/closure-compiler-v20230802.jar"
-$closureCompiler = "$TOOLS_DIR/$(Split-Path "$closureCompilerUrl" -Leaf)"
-$closureCompilerHash = "F6E52E1DCDDB9160489AC1B8CF32C129"
-if (!(Test-Path -Path "$closureCompiler" -PathType Leaf)) {
-    Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
-}
-$computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
-if ($computedClosureCompilerHash -ne $closureCompilerHash) {
-    Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
-    Write-Host "Removing ""$closureCompiler"""
-    Remove-Item -Path $closureCompiler -Force -Recurse -ErrorAction Ignore
-    Write-Host "Downloading ""$closureCompilerUrl"""
-    Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
+if (!$NoMinifyJsFiles.IsPresent) {
+    Write-Host "Downloading ClosureCompiler..."
+    New-Item "$TOOLS_DIR" -ItemType Container -Force | Out-Null
+    $closureCompilerUrl = "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20230802/closure-compiler-v20230802.jar"
+    $closureCompiler = "$TOOLS_DIR/$(Split-Path "$closureCompilerUrl" -Leaf)"
+    $closureCompilerHash = "F6E52E1DCDDB9160489AC1B8CF32C129"
+    if (!(Test-Path -Path "$closureCompiler" -PathType Leaf)) {
+        Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
+    }
     $computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
-    if ($computedClosureCompilerHash -ne $closureCompilerHash) {    
+    if ($computedClosureCompilerHash -ne $closureCompilerHash) {
         Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
+        Write-Host "Removing ""$closureCompiler"""
+        Remove-Item -Path $closureCompiler -Force -Recurse -ErrorAction Ignore
+        Write-Host "Downloading ""$closureCompilerUrl"""
+        Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
+        $computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
+        if ($computedClosureCompilerHash -ne $closureCompilerHash) {    
+            Write-Host "Invalid computed Closure Compiler hash. Computed($computedClosureCompilerHash) ≠ Expected($closureCompilerHash). File ""$closureCompiler""."
+        }
     }
 }
 
@@ -151,11 +154,11 @@ $GENERATED_CLANGD_DIR = "$PSScriptRoot/Build/clangd"
 
 Write-Host "Building ""$ModuleExportName.$exportExtension""... "
 New-Item -Path "$GENERATED_CLANGD_DIR" -ItemType Directory -Force | Out-Null
-$clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_compile_commands.json"
+$clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_.compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
     -MJ "$clangd_name" `
     "$PSScriptRoot/Source/main.cpp" `
-    "$(Get-InsaneLibraryDir -DirType "Lib" -ReleaseMode:$ReleaseMode)/$INSANE_LIB_NAME" `
+    "$(Get-InsaneLibraryDir -DirType "Lib" -ReleaseMode:$true)/$INSANE_LIB_NAME" `
     -I $PSScriptRoot/Include `
     -I  "$(Get-InsaneLibraryDir -DirType "Include" -ReleaseMode:$ReleaseMode)" `
     -o "$PSScriptRoot/$ModuleExportName.$exportExtension" `
@@ -184,14 +187,8 @@ $clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_compile_commands.json
 
 
 #Clangd compile_commands.json gen.
-$jsonFiles = Get-ChildItem "$GENERATED_CLANGD_DIR/_*_compile_commands.json"
-$encoding = [System.Text.Encoding]::UTF8
-[System.IO.File]::WriteAllText($COMPILE_COMMANDS_JSON, "[", $encoding);
-$jsonFiles | ForEach-Object {
-    [System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, [System.IO.File]::ReadAllText($_.FullName), $encoding)
-}
-[System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, "]", $encoding);
-Remove-Item -Force -Recurse -Path "$GENERATED_CLANGD_DIR" -ErrorAction Continue
+Join-CompileCommandsJson -SourceDir "$GENERATED_CLANGD_DIR" -DestinationDir "$PSScriptRoot"
+Remove-Item -Force -Recurse -Path "$GENERATED_CLANGD_DIR" -ErrorAction Ignore
 
 #Browser - Code gen.
 $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_HTML_FILE"))

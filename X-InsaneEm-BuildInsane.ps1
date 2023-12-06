@@ -10,26 +10,6 @@ Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClob
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-function Join-CompileCommandsJson {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]
-        $SourceDir,
-        
-        [Parameter(Mandatory = $true)]
-        [string]
-        $DestinationDir
-    )
-    $jsonFiles = Get-ChildItem "$SourceDir/*.compile_commands.json"  
-    $encoding = [System.Text.Encoding]::UTF8 
-    $COMPILE_COMMANDS_JSON = "$DestinationDir/compile_commands.json"
-    [System.IO.File]::WriteAllText($COMPILE_COMMANDS_JSON, "[", $encoding);
-    $jsonFiles | ForEach-Object {
-        [System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, [System.IO.File]::ReadAllText($_.FullName), $encoding)
-    }
-    [System.IO.File]::AppendAllText($COMPILE_COMMANDS_JSON, "]", $encoding)
-}
-
 try {
     Write-Host
     Write-InfoBlue "████ Building libInsane"
