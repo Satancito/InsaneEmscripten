@@ -1742,13 +1742,14 @@ function Join-CompileCommandsJson {
     $jsonFiles = Get-ChildItem "$SourceDir/*.compile_commands.json"  
     $encoding = [System.Text.Encoding]::UTF8 
     $CompilationDatabase = "$DestinationDir/compile_commands.json"
-    $jsonContent = "["
+    [System.Text.StringBuilder]$jsonContent = [System.Text.StringBuilder]::new()
+    $jsonContent.Append("[") | Out-Null
     $jsonFiles | ForEach-Object {
-        $jsonContent += [System.IO.File]::ReadAllText($_.FullName)
+        $jsonContent.Append([System.IO.File]::ReadAllText($_.FullName)) | Out-Null
     }
-    $jsonContent = $jsonContent.ToString().TrimEnd().TrimEnd(',') + "]" 
-    $jsonContent = (ConvertFrom-Json $jsonContent) | ConvertTo-Json -Depth 100
-    [System.IO.File]::AppendAllText($CompilationDatabase, $jsonContent, $encoding)
+    $jsonContent.Append("]") | Out-Null
+    $json = (ConvertFrom-Json $jsonContent.ToString()) | ConvertTo-Json -Depth 100
+    [System.IO.File]::WriteAllText($CompilationDatabase, $json, $encoding)
 }
 
 Set-GlobalConstant -Name "X_TEMP_DIR_NAME" -Value ".PsCoreFxsTemp"
