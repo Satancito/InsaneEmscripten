@@ -65,4 +65,4 @@ if($ConsoleDeno.IsPresent)
     $params.Add($(Get-VariableName $ConsoleDeno), $true)
 }
 
-& "$PSScriptRoot/Dist/$ModuleExportName/X-RunModule.ps1" @params
+& "$PSScriptRoot/Dist/$ModuleExportName/ThisRun.ps1" @params

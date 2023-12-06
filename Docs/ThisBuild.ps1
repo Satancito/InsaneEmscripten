@@ -4,7 +4,10 @@ param (
     $NoMinifyJsFiles,
 
     [switch]
-    $TestMode
+    $TestMode,
+
+    [switch]
+    $ReleaseMode
 )
 
 $Error.Clear()  
@@ -25,6 +28,7 @@ Write-Host
 Write-InfoBlue "████ Building Module: ""$ModuleExportName.$exportExtension"", Version: $ModuleVersion"
 Write-Host
 
+Write-Host "Downloading ClosureCompiler..."
 $TOOLS_DIR = "$(Get-UserHome)/.InsaneEmscripten/Tools"
 New-Item "$TOOLS_DIR" -ItemType Container -Force | Out-Null
 $closureCompilerUrl = "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20230802/closure-compiler-v20230802.jar"
@@ -137,6 +141,7 @@ for ($i = 0; $i -lt $filenames.Length; $i++) {
 }
 
 Remove-Item -Path "$PSScriptRoot/$ModuleExportName.*js"-Force -Recurse -ErrorAction Ignore
+Remove-Item -Path "$PSScriptRoot/$ModuleExportName.*wasm"-Force -Recurse -ErrorAction Ignore
 
 $INDEX_HTML_FILE = "$PSScriptRoot/index.html"
 $INDEX_MJS_FILE = "$PSScriptRoot/index.mjs"
@@ -149,14 +154,15 @@ New-Item -Path "$GENERATED_CLANGD_DIR" -ItemType Directory -Force | Out-Null
 $clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_compile_commands.json"
 & "$env:EMSCRIPTEN_COMPILER" `
     -MJ "$clangd_name" `
-    $PSScriptRoot/main.cpp `
-    $PSScriptRoot/Lib/libInsane.a `
+    "$PSScriptRoot/Source/main.cpp" `
+    "$(Get-InsaneLibraryDir -DirType "Lib" -ReleaseMode:$ReleaseMode)/$INSANE_LIB_NAME" `
     -I $PSScriptRoot/Include `
+    -I  "$(Get-InsaneLibraryDir -DirType "Include" -ReleaseMode:$ReleaseMode)" `
     -o "$PSScriptRoot/$ModuleExportName.$exportExtension" `
     -std=c++20 `
     -lembind `
     -fexceptions `
-    -O0 `
+    -O"$($ReleaseMode.IsPresent ? 3 : 0)" `
     -s USE_WEBGPU=1 `
     -s SINGLE_FILE=1 `
     -s WASM=1 `

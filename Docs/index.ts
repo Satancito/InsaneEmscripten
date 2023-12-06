@@ -1,3 +1,4 @@
+// Deno Code
 /* This value is used in instantiation. You can modify, but don't delete. */
 const moduleInstantiationParameters = {
   noInitialRun: false

@@ -1452,12 +1452,12 @@ function Install-GitRepository {
         $Force
 
     )
+    $isRepo = Test-GitRepository $Path
 
-    if (Test-GitRepository $Path) {
+    if ($isRepo) {
         if(Test-GitRemoteUrl -Url $Url -Path $Path)
         {
             try {
-                Write-Host "RESET █"
                 Push-Location "$Path"
                 $null = Test-Command "git fetch origin" -ThrowOnFailure
                 $null = Test-Command "git reset --hard origin/main" -ThrowOnFailure
@@ -1470,7 +1470,6 @@ function Install-GitRepository {
         {
             if($Force.IsPresent)
             {
-                Write-Host "CLONE FORCE█"
                 Remove-Item -Path "$Path" -Force -Recurse -ErrorAction Ignore
                 git clone "$Url" "$Path"
             }
@@ -1481,7 +1480,6 @@ function Install-GitRepository {
         }   
     }
     else {
-        Write-Host "CLONE NEW █"
         Remove-Item -Path "$Path" -Force -Recurse -ErrorAction Ignore
         New-Item -Path "$Path" -Force -ItemType Directory | Out-Null
         git clone "$Url" "$Path"

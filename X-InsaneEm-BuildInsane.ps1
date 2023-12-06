@@ -36,16 +36,14 @@ try {
     Write-Host
 
     & "$X_INSANE_EM_TEST_REQUIRED_TOOLS_SCRIPT"
-    $PRODUCT_INFO_JSON = "$PSScriptRoot/Docs/ProductInfo.json"
     & "$X_INSANE_EM_UPDATE_SUBMODULES_SCRIPT"
 
-    $json = [System.IO.File]::ReadAllText($(Get-Item "$PRODUCT_INFO_JSON"))
+    $json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
     $productInfo = ConvertFrom-Json $json
-    $ModuleExportName = $productInfo.Name
     $BotanVersion = $productInfo.BotanVersion
     $BotanMajorVersion = $productInfo.BotanMajorVersion
 
-    $BOTAN_LIB_DIR = "$(Get-UserHome)/.InsaneEmscripten/PsBotan/Dist"
+    $BOTAN_LIB_DIR = "$(Get-UserHome)/.CppLibs"
 
     $BUILD_DIR = "$PSScriptRoot/Build"
     $DIST_DIR = "$PSScriptRoot/Dist"
@@ -57,7 +55,6 @@ try {
     if ($Clean.IsPresent) {
         Write-InfoYellow "Removing obj and dist files."
         Remove-Item "$BUILD_DIR" -Force -Recurse -ErrorAction Ignore
-        Remove-Item "$DIST_DIR" -Force -Recurse -ErrorAction Ignore
     }
 
     New-Item "$OBJ_DIR_DEBUG" -Force -ItemType Container | Out-Null
@@ -78,90 +75,34 @@ try {
     Join-CompileCommandsJson -SourceDir "$OBJ_DIR_RELEASE" -DestinationDir "$PSScriptRoot"
 
     Write-Host "Copying files..."
+    Remove-Item "$INSANE_EM_INSTALL_DEBUG_DIR" -Force -Recurse -ErrorAction Ignore
+    Remove-Item "$INSANE_EM_INSTALL_RELEASE_DIR" -Force -Recurse -ErrorAction Ignore
+    $DEST_INSANE_DEBUG_INCLUDE_DIR = "$INSANE_EM_INCLUDE_DEBUG_DIR/Insane"
+    $DEST_INSANE_RELEASE_INCLUDE_DIR = "$INSANE_EM_INCLUDE_RELEASE_DIR/Insane"
+    $DEST_INSANE_DEBUG_LIB_DIR = "$INSANE_EM_LIB_DEBUG_DIR"
+    $DEST_INSANE_RELEASE_LIB_DIR = "$INSANE_EM_LIB_RELEASE_DIR"
+    
 
-    $DEST_DIR = "$DIST_DIR/$ModuleExportName"
-    $DEST_INCLUDE_DIR = "$DEST_DIR/Include"
-    $DEST_INSANE_INCLUDE_DIR = "$DEST_DIR/Include/Insane"
-    $DEST_LIB_DIR = "$DEST_DIR/Lib"
-    $DEST_INSANE_LIB_DIR = "$DEST_DIR/Lib/Insane"
-    $DEST_INSANE_DEBUG_LIB_DIR = "$DEST_DIR/Lib/Insane/Debug"
-    $DEST_INSANE_RELEASE_LIB_DIR = "$DEST_DIR/Lib/Insane/Release"
-    $DEST_JS_DIR = "$DEST_DIR/Js"
-    $DEST_TOOLS_DIR = "$DEST_DIR/Tools"
-    $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
-    $DEST_SERVER_DIR = "$DEST_DIR/Server"
-
-    Remove-Item "$DIST_DIR" -Force -Recurse -ErrorAction Ignore
-    New-Item "$DEST_DIR" -ItemType Container -Force | Out-Null
-
-    try {
-        Push-Location "$DEST_DIR"
-        $null = Test-Command "git init" -ThrowOnFailure
-    }
-    finally {
-        Pop-Location
-    }
-
-    New-Item "$DEST_INCLUDE_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_INSANE_INCLUDE_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_LIB_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_INSANE_LIB_DIR" -ItemType Container -Force | Out-Null
     New-Item "$DEST_INSANE_DEBUG_LIB_DIR" -ItemType Container -Force | Out-Null
     New-Item "$DEST_INSANE_RELEASE_LIB_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_JS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_TOOLS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_SERVER_DIR" -ItemType Container -Force | Out-Null
+    New-Item "$DEST_INSANE_DEBUG_INCLUDE_DIR" -ItemType Container -Force | Out-Null
+    New-Item "$DEST_INSANE_RELEASE_INCLUDE_DIR" -ItemType Container -Force | Out-Null
 
-    $INSANE_LIB_NAME = "libInsane.a"
     $SOURCE_INSANE_INCLUDE_DIR = "$PSScriptRoot/Include/Insane" 
     $SOURCE_INSANECPP_INCLUDE_DIR = "$PSScriptRoot/modules/InsaneCpp/Include/Insane"
-    $SOURCE_JS_DIR = "$PSScriptRoot/Js"
-    $SOURCE_TOOLS_DIR = "$PSScriptRoot/Tools"
-    $SOURCE_DOCS_DIR = "$PSScriptRoot/Docs"
-    $SOURCE_ASSETS_DIR = "$PSScriptRoot/Assets"
-    $SOURCE_SERVER_DIR = "$PSScriptRoot/Server"
     $SOURCE_INSANE_DEBUG_LIB = "$PSScriptRoot/Build/Obj/Debug/$INSANE_LIB_NAME"
     $SOURCE_INSANE_RELEASE_LIB = "$PSScriptRoot/Build/Obj/Release/$INSANE_LIB_NAME"
 
-
-    New-Item "$SOURCE_INSANE_INCLUDE_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_INSANECPP_INCLUDE_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_JS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_TOOLS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_DOCS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_ASSETS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_SERVER_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_INSANE_DEBUG_LIB" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_INSANE_RELEASE_LIB" -ItemType Container -Force | Out-Null
-
+    #Copy
     Copy-Item -Path "$SOURCE_INSANE_DEBUG_LIB" -Destination "$DEST_INSANE_DEBUG_LIB_DIR" -Force
     Copy-Item -Path "$SOURCE_INSANE_RELEASE_LIB" -Destination "$DEST_INSANE_RELEASE_LIB_DIR" -Force
-    Copy-Item -Path "$SOURCE_INSANE_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_INCLUDE_DIR" -Force
-    Copy-Item -Path "$SOURCE_INSANECPP_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_INCLUDE_DIR" -Force
-    Copy-Item -Path "$SOURCE_JS_DIR/*" -Destination "$DEST_JS_DIR" -Force
-    Copy-Item -Path "$SOURCE_TOOLS_DIR/*" -Destination "$DEST_TOOLS_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_DOCS_DIR/*" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_ASSETS_DIR/*" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_SERVER_DIR/*" -Destination "$DEST_SERVER_DIR" -Force -Recurse
-
-    Copy-Item -Path "$X_INSANE_EM_SET_EMSCRIPTEN_ENV_VARS_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$X_INSANE_EM_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$Z_INSANE_EM_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-
-    Copy-Item -Path "$X_PSCORE_FXS_UPDATE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$Z_PSCORE_FXS_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
+    
+    Copy-Item -Path "$SOURCE_INSANE_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_DEBUG_INCLUDE_DIR" -Force
+    Copy-Item -Path "$SOURCE_INSANECPP_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_DEBUG_INCLUDE_DIR" -Force
+    Copy-Item -Path "$SOURCE_INSANE_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_RELEASE_INCLUDE_DIR" -Force
+    Copy-Item -Path "$SOURCE_INSANECPP_INCLUDE_DIR/Insane*.h" -Destination "$DEST_INSANE_RELEASE_INCLUDE_DIR" -Force
 }
 finally {
     Write-InfoBlue "█ End - Building libInsane"
     Write-Host
 }
-
-
-$X_INSANE_EM_TEST_REQUIRED_TOOLS_SCRIPT = "$PSScriptRoot/X-InsaneEm-TestRequiredTools.ps1"
-$X_INSANE_EM_UPDATE_SUBMODULES_SCRIPT = "$PSScriptRoot/X-InsaneEm-UpdateSubmodules.ps1"
-$X_INSANE_EM_INSTALL_EMSCRIPTEN_SCRIPT = "$PSScriptRoot/X-InsaneEm-InstallEmscripten.ps1"
-$X_INSANE_EM_SET_EMSCRIPTEN_ENV_VARS_SCRIPT = "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
-$X_PSCORE_FXS_UPDATE_SCRIPT = "$PSScriptRoot/X-PsCoreFxs-Update.ps1"
-$Z_INSANE_EM_SCRIPT = "$PSScriptRoot/Z-InsaneEm.ps1"
-$Z_PSCORE_FXS_SCRIPT = "$PSScriptRoot/Z-PsCoreFxs.ps1"

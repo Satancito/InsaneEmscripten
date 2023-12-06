@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param (
     [switch]
-    $NoMinifyJsFiles
+    $NoMinifyJsFiles,
+
+    [switch]
+    $ReleaseMode
 )
 
 $Error.Clear()
@@ -15,4 +18,4 @@ $json = [System.IO.File]::ReadAllText($(Get-Item "$PRODUCT_INFO_JSON"))
 $productInfo = ConvertFrom-Json $json
 $ModuleExportName = $productInfo.Name
 
-& "$PSScriptRoot/Dist/$ModuleExportName/X-BuildModule.ps1" -NoMinifyJsFiles:$NoMinifyJsFiles -TestMode
+& "$PSScriptRoot/Dist/$ModuleExportName/ThisBuild.ps1" -NoMinifyJsFiles:$NoMinifyJsFiles -TestMode -ReleaseMode:$ReleaseMode
