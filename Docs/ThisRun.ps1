@@ -45,25 +45,25 @@ function Test-Requirements {
     Write-InfoMagenta "== Emrun"
     $command = Get-Command "$env:EMSCRIPTEN_EMRUN"
     Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
+    & "$($command.Source)" --list_browsers
     Write-Host
 
     Write-InfoMagenta "== Node"
     $command = Get-Command "node"
     Write-Host "$($command.Source)"
-    & "$($command.Source)" -version
+    & "$($command.Source)" --version
     Write-Host
 
     Write-InfoMagenta "== Npm"
     $command = Get-Command "npm"
     Write-Host "$($command.Source)"
-    & "$($command.Source)" -version
+    & "$($command.Source)" --version
     Write-Host
 
     Write-InfoMagenta "== Deno"
     $command = Get-Command "deno"
     Write-Host "$($command.Source)"
-    & "$($command.Source)" -version
+    & "$($command.Source)" --version
     Write-Host
 }
 
@@ -147,7 +147,7 @@ try {
         & "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
         Write-InfoYellow "Press Ctrl+C to exit!"
         $browser = $launch ?  [string]::Empty : "--no_browser"
-        & $env:EMSCRIPTEN_EMRUN "$PSScriptRoot/index.html" $browser --port $EmrunHttpServerPort
+        & $env:EMSCRIPTEN_EMRUN "$PSScriptRoot/index.html" $browser --port $EmrunHttpServerPort --private_browsing
     }
 }
 finally {
