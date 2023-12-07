@@ -5,7 +5,7 @@ Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobb
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 Write-Host
-Write-InfoBlue "Test - Dependency tools"
+Write-InfoBlue "Test - InsaneEm - Dependency tools"
 Write-Host
 
 Write-InfoMagenta "== Python"

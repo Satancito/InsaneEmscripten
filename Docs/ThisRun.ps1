@@ -27,13 +27,49 @@ param (
     [switch]
     $NoLaunchBrowser
 )
-
+    
+$Error.Clear()  
 $ErrorActionPreference = "Stop"
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
+Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
+
+function Test-Requirements {
+    param (
+        
+    )
+    Write-Host
+    Write-InfoBlue "Test - Run - Dependency tools"
+    Write-Host
+
+    Write-InfoMagenta "== Emrun"
+    $command = Get-Command "$env:EMSCRIPTEN_EMRUN"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" --version
+    Write-Host
+
+    Write-InfoMagenta "== Node"
+    $command = Get-Command "node"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" -version
+    Write-Host
+
+    Write-InfoMagenta "== Npm"
+    $command = Get-Command "npm"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" -version
+    Write-Host
+
+    Write-InfoMagenta "== Deno"
+    $command = Get-Command "deno"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" -version
+    Write-Host
+}
+
 
 
 try {
-    Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs*.ps1")" -Force -NoClobber
-    Write-InfoDarkGray "▶️▶️▶️ Running: $PSCommandPath"
 
     $json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
     $productInfo = ConvertFrom-Json $json
@@ -50,8 +86,11 @@ try {
     $DENO_SCRIPT = "$PSScriptRoot/index.ts"
 
     Write-Host
-    Write-InfoDarkGreen "████ Run - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
+    Write-InfoDarkGreen "████ Running - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
     Write-Host
+
+    Test-Requirements
+
     $SERVER_DIR = "$PSScriptRoot/Server"
     
     $launch = !($NoLaunchBrowser.IsPresent)
@@ -112,5 +151,5 @@ try {
     }
 }
 finally {
-    Write-InfoDarkGreen "█ End run - Module - Test client"
+    Write-InfoDarkGreen "█ End running - Module - Test client"
 }
