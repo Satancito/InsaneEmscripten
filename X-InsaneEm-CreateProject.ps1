@@ -75,6 +75,19 @@ try {
     Copy-Item -Path "$X_PSCORE_FXS_UPDATE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
     Copy-Item -Path "$Z_PSCORE_FXS_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
     Copy-Item -Path "$Z_PSCORE_FXS_CONFIG_JSON" -Destination "$DEST_DIR" -Force -Recurse
+
+    $INDEX_HTML_FILE = "$DEST_DIR/index.html"
+    $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_HTML_FILE"))
+
+    $pattern = "<!-- _BEGIN_APP_TITLE_ -->[\s\S]*?<!-- _END___APP_TITLE_ -->"
+    $replacement = "<title>$ModuleExportName - Emscripten - Tests</title>"
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+    $pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
+    $replacement = "/*ModuleName*/$ModuleExportName."
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+    [System.IO.File]::WriteAllText($(Get-Item "$INDEX_HTML_FILE"), $content, [System.Text.Encoding]::UTF8)
 }
 finally {
     Write-InfoBlue "█ End creating Insane Emscripten - New Project"

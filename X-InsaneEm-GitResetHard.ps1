@@ -7,8 +7,7 @@ Write-Host
 Write-InfoDarkGray "███ Reset this repository to latest code - git reset"
 Write-Host
 
-git fetch origin
-git reset --hard origin/main
+Reset-GitRepository -Path "$PSScriptRoot"
 
 Write-InfoDarkGray "█ End - git reset"
 Write-Host
