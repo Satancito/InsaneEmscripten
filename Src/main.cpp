@@ -29,7 +29,7 @@ using Terminal = InsaneIO::Insane::Core::Console;
 int main()
 {
     DebugExtensions::Debug(true);
-    JsConsole::Log("Hello World!!! from . \""s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + "\".");
+    JsConsole::Log("Hello World!!! from WebAssembly with \""s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + "\".");
     return EXIT_SUCCESS;
 }
 

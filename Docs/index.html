@@ -137,6 +137,9 @@
                         }
                         innerHTML += "</ul><br />";
                         let counter = 0;
+                        for (var value in Object.getOwnPropertyNames(Navigator.prototype)) {
+                            counter++;
+                        }
                         innerHTML += formatText("globalThis.navigator Object TotalProperties", counter ==0 ? "0" : counter, 0, 1);
 
                         id.innerHTML = innerHTML;

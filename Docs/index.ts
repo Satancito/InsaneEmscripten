@@ -1,5 +1,5 @@
 // Deno Code
-/* This value is used in instantiation. You can modify, but don't delete. */
+/* Warning!. This value is used in instantiation. You can modify, but don't delete. */
 const moduleInstantiationParameters = {
   noInitialRun: false
 };
@@ -9,4 +9,4 @@ const moduleInstantiationParameters = {
 /*_END___MODULE_INSTANTIATION_*/
 
 /* Your code here/below */
-console.log("HelloWorld!!!");
+console.log("Finished!");

@@ -85,10 +85,17 @@ try {
     $NODE_SCRIPT = "$PSScriptRoot/index.mjs"
     $DENO_SCRIPT = "$PSScriptRoot/index.ts"
 
+    $COMPILED_MODULE_DIR = "$PSScriptRoot/Build/Module"
+
     Write-Host
     Write-InfoDarkGreen "████ Running - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
     Write-Host
 
+    if (!(Test-Path -Path "$COMPILED_MODULE_DIR/$ModuleExportName.$ModuleExportExtension" -PathType Leaf)) {
+        Write-Warning """$ModuleExportName.$ModuleExportExtension"" is required. Build this project and run again."
+        return
+    }
+    
     Test-Requirements
 
     $SERVER_DIR = "$PSScriptRoot/Server"
