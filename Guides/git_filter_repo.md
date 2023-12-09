@@ -1,6 +1,7 @@
 **Installing git_filter_repo**   
 
-Python and Pip are required.
+Python and Pip are previously required.
+
 
 ```powershell
 pip install --user git-filter-repo
@@ -18,3 +19,8 @@ git commit -m "Removing heavy files."
 git push --force
 
 ```
+
+**References**
+
+- [How do you install git-filter-repo?](https://superuser.com/questions/1563034/how-do-you-install-git-filter-repo)   
+- [newren/git-filter-repo](https://github.com/newren/git-filter-repo)
