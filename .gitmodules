@@ -1,9 +1,6 @@
-[submodule "modules/InsaneCpp"]
-	path = modules/InsaneCpp
+[submodule "submodules/InsaneCpp"]
+	path = submodules/InsaneCpp
 	url = https://github.com/Satancito/InsaneCpp.git
-[submodule "modules/Botan-2.19.3-Emscripten-Llvm-Release"]
-	path = modules/Botan-2.19.3-Emscripten-Llvm-Release
-	url = https://github.com/CommonCppLibs/Botan-2.19.3-Emscripten-Llvm-Release.git
-[submodule "modules/CommonCppIncludes"]
-	path = modules/CommonCppIncludes
+[submodule "submodules/CommonCppIncludes"]
+	path = submodules/CommonCppIncludes
 	url = https://github.com/Satancito/CommonCppIncludes.git
