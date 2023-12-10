@@ -13,7 +13,7 @@ AR_OPTIONS     = cr
 ABI_FLAGS      =  
 LANG_FLAGS     = -std=c++20 -D_REENTRANT 
 CXXFLAGS       = $(OPTIMIZATION) -DINSANE_IS_BEING_BUILT -s USE_ICU=1 -D INSANE_EXPORTS -fexceptions
-WARN_FLAGS     = -Wall -Wextra -Wpedantic -Wshadow -Wstrict-aliasing -Wstrict-overflow=5 -Wcast-align -Wmissing-declarations -Wpointer-arith -Wcast-qual
+WARN_FLAGS     = -Wall -Wextra -Wpedantic -Wshadow -Wstrict-aliasing -Wstrict-overflow=5 -Wcast-align -Wmissing-declarations -Wpointer-arith -Wcast-qual -Wshorten-64-to-32
 LIB_FLAGS      = 
 LDFLAGS        = 
 
@@ -21,15 +21,15 @@ BUILD_FLAGS    = $(ABI_FLAGS) $(LANG_FLAGS) $(CXXFLAGS) $(WARN_FLAGS)
 
 OBJ_DIR = Build/Obj/$(BUILD_CONFIGURATION)
 DIST_DIR = Dist/Insane-Emscripten-$(BUILD_CONFIGURATION)
-INSANE_SOURCE_DIR = modules/InsaneCpp/Src
+INSANE_SOURCE_DIR = submodules/InsaneCpp/Src
 CRLF = @pwsh -Command "[System.Console]::WriteLine()"
 
 BOTAN_DIR = $(BOTAN_LIB_DIR)/Botan-$(BOTAN_VERSION)-$(BUILD_CONFIGURATION)-Emscripten
 BOTAN_LIB = $(BOTAN_DIR)/lib/libbotan-$(BOTAN_MAJOR_VERSION).a
 BOTAN_INCLUDE_DIR = $(BOTAN_DIR)/include/botan-$(BOTAN_MAJOR_VERSION)
 
-COMMON_CPP_INCLUDES_DIR = modules/CommonCppIncludes
-INSANE_CPP_INCLUDE_DIR = modules/InsaneCpp/Include
+COMMON_CPP_INCLUDES_DIR = submodules/CommonCppIncludes
+INSANE_CPP_INCLUDE_DIR = submodules/InsaneCpp/Include
 ME_INCLUDE_DIR = Include
 
 CXX_INCLUDE_ALL = -I$(COMMON_CPP_INCLUDES_DIR) -I$(BOTAN_INCLUDE_DIR) -I$(ME_INCLUDE_DIR) -I$(INSANE_CPP_INCLUDE_DIR)

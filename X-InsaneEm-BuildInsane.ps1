@@ -26,7 +26,6 @@ try {
     $BOTAN_LIB_DIR = "$(Get-UserHome)/.CppLibs"
 
     $BUILD_DIR = "$PSScriptRoot/Build"
-    $DIST_DIR = "$PSScriptRoot/Dist"
     $OBJ_DIR = "$BUILD_DIR/Obj"
     $OBJ_DIR_DEBUG = "$OBJ_DIR/Debug"
     $OBJ_DIR_RELEASE = "$OBJ_DIR/Release"
@@ -69,7 +68,7 @@ try {
     New-Item "$DEST_INSANE_RELEASE_INCLUDE_DIR" -ItemType Container -Force | Out-Null
 
     $SOURCE_INSANE_INCLUDE_DIR = "$PSScriptRoot/Include/Insane" 
-    $SOURCE_INSANECPP_INCLUDE_DIR = "$PSScriptRoot/modules/InsaneCpp/Include/Insane"
+    $SOURCE_INSANECPP_INCLUDE_DIR = "$PSScriptRoot/submodules/InsaneCpp/Include/Insane"
     $SOURCE_INSANE_DEBUG_LIB = "$PSScriptRoot/Build/Obj/Debug/$INSANE_LIB_NAME"
     $SOURCE_INSANE_RELEASE_LIB = "$PSScriptRoot/Build/Obj/Release/$INSANE_LIB_NAME"
 

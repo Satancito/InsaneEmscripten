@@ -65,7 +65,7 @@ try {
             Invoke-WebRequest -Uri "$closureCompilerUrl" -OutFile "$closureCompiler"
         }
         else {
-            Write-Host "Skip download of closureCompiler..." 
+            Write-Host "Skipping download of closureCompiler..." 
         }
         $computedClosureCompilerHash = (Get-FileHash -Path "$closureCompiler" -Algorithm MD5).Hash
         if ($computedClosureCompilerHash -ne $closureCompilerHash) {
@@ -174,7 +174,8 @@ const instance = await factory(moduleInstantiationParameters);
     }
 
     Remove-Item -Path "$COMPILED_MODULE_DIR/*.*"-Force -Recurse -ErrorAction Ignore
-
+    $RELEASE_OPTIMIZATION = 3
+    $DEBUG_OPTIMIZATION = 0
     $INDEX_HTML_FILE = "$PSScriptRoot/index.html"
     $INDEX_MJS_FILE = "$PSScriptRoot/index.mjs"
     $INDEX_TS_FILE = "$PSScriptRoot/index.ts"
@@ -189,18 +190,18 @@ const instance = await factory(moduleInstantiationParameters);
         -I $PSScriptRoot/Include `
         -I  "$(Get-InsaneLibraryDir -DirType "Include" -ReleaseMode:$ReleaseMode)" `
         -o "$COMPILED_MODULE_DIR/$ModuleExportName.$exportExtension" `
+        -O"$($ReleaseMode.IsPresent ? $RELEASE_OPTIMIZATION : $DEBUG_OPTIMIZATION)" `
         -std=c++20 `
         -lembind `
         -fexceptions `
-        -O"$($ReleaseMode.IsPresent ? 3 : 0)" `
-        -s USE_WEBGPU=1 `
         -s SINGLE_FILE=1 `
         -s WASM=1 `
         -s VERBOSE=0 `
+        -s USE_WEBGPU=1 `
         -s USE_ICU=1 `
-        -s EXPORT_NAME=`'$fxExportName`' `
         -s EXPORT_ES6=$exportEs6 `
         -s MODULARIZE=1 `
+        -s EXPORT_NAME=`'$fxExportName`' `
         -s ALLOW_MEMORY_GROWTH=1 `
         -s EXPORTED_RUNTIME_METHODS=[ccall, cwrap, lengthBytesUTF8, stringToUTF8] `
         --pre-js "$COMPILED_JS_DIR/$($compiledPrefix)Pre.js" `
