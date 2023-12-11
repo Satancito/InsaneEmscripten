@@ -4,9 +4,6 @@ param (
     $NoMinifyJsFiles,
     
     [switch]
-    $TestMode,
-    
-    [switch]
     $ReleaseMode
 )
     
