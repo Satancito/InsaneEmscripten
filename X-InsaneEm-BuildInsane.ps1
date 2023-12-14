@@ -15,7 +15,7 @@ try {
     Write-InfoBlue "████ Building libInsane"
     Write-Host
     Test-RequiredTools
-    Update-GitSubmodules -Path $PSScriptRoot
+    Update-GitSubmodules -Path $PSScriptRoot -Force
 
     $json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
     $productInfo = ConvertFrom-Json $json
