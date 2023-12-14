@@ -56,7 +56,7 @@ try {
 
     try {
         Push-Location "$DEST_DIR"
-        $null = Test-Command "git init" -ThrowOnFailure
+        $null = Test-ExternalCommand "git init" -ThrowOnFailure
     }
     finally {
         Pop-Location

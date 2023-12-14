@@ -4,8 +4,8 @@ Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobb
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 try {
     Push-Location "$PSScriptRoot"
-    $null = Test-Command "git submodule init" -ThrowOnFailure
-    $null = Test-Command "git submodule update --remote --recursive " -ThrowOnFailure
+    $null = Test-ExternalCommand "git submodule init" -ThrowOnFailure
+    $null = Test-ExternalCommand "git submodule update --remote --recursive " -ThrowOnFailure
 }
 finally {
     Pop-Location

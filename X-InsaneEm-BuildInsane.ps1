@@ -43,8 +43,8 @@ try {
     try {
         Push-Location "$PSScriptRoot"
         Write-Host $env:EMSCRIPTEN_EMMAKE
-        & "$env:EMSCRIPTEN_EMMAKE" make All -j8 BOTAN_MAJOR_VERSION="$BotanMajorVersion" BOTAN_VERSION="$BotanVersion" BUILD_CONFIGURATION="Debug" BOTAN_LIB_DIR="$BOTAN_LIB_DIR"
-        & "$env:EMSCRIPTEN_EMMAKE" make All -j8 BOTAN_MAJOR_VERSION="$BotanMajorVersion" BOTAN_VERSION="$BotanVersion" BUILD_CONFIGURATION="Release" BOTAN_LIB_DIR="$BOTAN_LIB_DIR"
+        & "$env:EMSCRIPTEN_EMMAKE" make All -j8 BOTAN_MAJOR_VERSION="$BotanMajorVersion" BOTAN_VERSION="$BotanVersion" BUILD_CONFIGURATION="Debug" BOTAN_LIB_DIR="$BOTAN_LIB_DIR" BOTAN_SUFFIX="$INSANE_EM_BOTAN_SUFFIX"
+        & "$env:EMSCRIPTEN_EMMAKE" make All -j8 BOTAN_MAJOR_VERSION="$BotanMajorVersion" BOTAN_VERSION="$BotanVersion" BUILD_CONFIGURATION="Release" BOTAN_LIB_DIR="$BOTAN_LIB_DIR" BOTAN_SUFFIX="$INSANE_EM_BOTAN_SUFFIX"
     }
     finally {
         Pop-Location

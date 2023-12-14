@@ -8,5 +8,6 @@
     "ConsoleNodeOptions": [],
     "ConsoleDenoOptions": [],
     "BotanVersion": "3.2.0",
-    "BotanMajorVersion": "3"
+    "BotanMajorVersion": "3",
+    "InsaneVersion": "0.1.0"
 }

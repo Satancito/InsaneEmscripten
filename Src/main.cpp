@@ -1,14 +1,16 @@
-#include <iostream>
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
-#include <emscripten/emscripten.h>
-#include <Insane/InsaneEmscripten.h>
 #include <Insane/InsaneCryptography.h>
-#include <Insane/InsaneString.h>
+#include <Insane/InsaneEmscripten.h>
 #include <Insane/InsanePreprocessor.h>
+#include <Insane/InsaneString.h>
 #include <Insane/InsaneTest.h>
-#include <random>
+#include <emscripten/bind.h>
+#include <emscripten/emscripten.h>
+#include <emscripten/val.h>
 #include <stdlib.h>
+
+#include <iostream>
+#include <random>
+
 USING_NS_INSANE_EMSCRIPTEN;
 USING_NS_INSANE_CRYPTO;
 USING_NS_INSANE_STR;
@@ -29,7 +31,7 @@ using Terminal = InsaneIO::Insane::Core::Console;
 int main()
 {
     DebugExtensions::Debug(true);
-    JsConsole::Log("Hello World!!! from WebAssembly with \""s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + "\".");
+    JsConsole::Log("Hello World!!! from WebAssembly with Emscripten \""s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + "\".");
     return EXIT_SUCCESS;
 }
 

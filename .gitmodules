@@ -4,3 +4,9 @@
 [submodule "submodules/CommonCppIncludes"]
 	path = submodules/CommonCppIncludes
 	url = https://github.com/Satancito/CommonCppIncludes.git
+[submodule "submodules/PsBotan"]
+	path = submodules/PsBotan
+	url = https://github.com/Satancito/PsBotan.git
+[submodule "submodules/PsEmscripten"]
+	path = submodules/PsEmscripten
+	url = https://github.com/Satancito/PsEmscripten.git

@@ -24,7 +24,7 @@ DIST_DIR = Dist/Insane-Emscripten-$(BUILD_CONFIGURATION)
 INSANE_SOURCE_DIR = submodules/InsaneCpp/Src
 CRLF = @pwsh -Command "[System.Console]::WriteLine()"
 
-BOTAN_DIR = $(BOTAN_LIB_DIR)/Botan-$(BOTAN_VERSION)-$(BUILD_CONFIGURATION)-Emscripten
+BOTAN_DIR = $(BOTAN_LIB_DIR)/Botan-$(BOTAN_VERSION)-$(BUILD_CONFIGURATION)-Emscripten-$(BOTAN_SUFFIX)
 BOTAN_LIB = $(BOTAN_DIR)/lib/libbotan-$(BOTAN_MAJOR_VERSION).a
 BOTAN_INCLUDE_DIR = $(BOTAN_DIR)/include/botan-$(BOTAN_MAJOR_VERSION)
 
