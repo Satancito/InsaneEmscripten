@@ -4,7 +4,7 @@ param (
 )
 $Error.Clear()
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
@@ -13,8 +13,8 @@ try {
     Write-InfoBlue "████ Creating Insane Emscripten - New Project"
     Write-Host
 
-    & "$X_INSANE_EM_TEST_REQUIRED_TOOLS_SCRIPT"
-    & "$X_INSANE_EM_UPDATE_SUBMODULES_SCRIPT"
+    Test-RequiredTools
+    Update-GitSubmodules -Path $PSScriptRoot
 
     $json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
     $productInfo = ConvertFrom-Json $json
@@ -68,8 +68,6 @@ try {
     Copy-Item -Path "$SOURCE_SERVER_DIR/*" -Destination "$DEST_SERVER_DIR" -Force -Recurse
     Copy-Item -Path "$SOURCE_SRC_DIR/*" -Destination "$DEST_SRC_DIR" -Force -Recurse
 
-    Copy-Item -Path "$X_INSANE_EM_SET_EMSCRIPTEN_ENV_VARS_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$X_INSANE_EM_INSTALL_EMSCRIPTEN_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
     Copy-Item -Path "$Z_INSANE_EM_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
 
     Copy-Item -Path "$X_PSCORE_FXS_UPDATE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
