@@ -87,8 +87,8 @@
                         innerHTML += formatText("WebGLRenderer", /*ModuleName*/Insane.BrowserGetWebGLRenderer(), 0, 1);
                         innerHTML += formatText("WebGLVendor", /*ModuleName*/Insane.BrowserGetWebGLVendor(), 0, 2);
 
-                        innerHTML += formatText("MaxTouchPoints", /*ModuleName*/Insane.BrowserGetMaxTouchPoints(), 0, 1);
-                        innerHTML += formatText("DeviceMemory", /*ModuleName*/Insane.BrowserGetDeviceMemory(), 0, 1);
+                        innerHTML += formatText("MaxTouchPoints", /*ModuleName*/Insane.BrowserGetMaxTouchPoints().toString(), 0, 1);
+                        innerHTML += formatText("DeviceMemory", /*ModuleName*/Insane.BrowserGetDeviceMemory().toString(), 0, 1);
                         innerHTML += formatText("NavigatorHardwareConcurrency", /*ModuleName*/Insane.BrowserGetHardwareConcurrency(), 0, 2);
                         innerHTML += formatText("Language", /*ModuleName*/Insane.BrowserGetLanguage(), 0, 1);
                         innerHTML += formatText("Languages", " ", 0, 2);
@@ -103,8 +103,8 @@
                         innerHTML += formatText("TimezoneOffset Seconds",/*ModuleName*/Insane.BrowserGetTimezoneOffsetSeconds(), 0, 1);
                         innerHTML += formatText("TimezoneOffset Milliseconds",/*ModuleName*/Insane.BrowserGetTimezoneOffsetMilliseconds(), 0, 2);
 
-                        innerHTML += formatText("NavigatorDoNotTrack",  /*ModuleName*/Insane.BrowserGetDoNotTrack(), 0, 1);
-                        innerHTML += formatText("Cookies Supported", /*ModuleName*/Insane.BrowserHasCookiesSupport(), 0, 1);
+                        innerHTML += formatText("NavigatorDoNotTrack",  /*ModuleName*/Insane.BrowserGetDoNotTrack().toString(), 0, 1);
+                        innerHTML += formatText("Cookies Supported", /*ModuleName*/Insane.BrowserHasCookiesSupport().toString(), 0, 1);
 
                         var mimeTypes = /*ModuleName*/Insane.BrowserGetMimeTypes();
                         innerHTML += formatText("NavigatorMimeTypes", mimeTypes.length, 1, 1) ;
@@ -140,7 +140,7 @@
                         for (var value in Object.getOwnPropertyNames(Navigator.prototype)) {
                             counter++;
                         }
-                        innerHTML += formatText("globalThis.navigator Object TotalProperties", counter ==0 ? "0" : counter, 0, 1);
+                        innerHTML += formatText("globalThis.navigator Object TotalProperties", counter.toString(), 0, 1);
 
                         id.innerHTML = innerHTML;
                         break;

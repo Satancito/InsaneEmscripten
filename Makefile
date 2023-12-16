@@ -13,7 +13,7 @@ AR_OPTIONS     = cr
 ABI_FLAGS      =  
 LANG_FLAGS     = -std=c++20 -D_REENTRANT 
 CXXFLAGS       = $(OPTIMIZATION) -DINSANE_IS_BEING_BUILT -s USE_ICU=1 -D INSANE_EXPORTS -fexceptions
-WARN_FLAGS     = -Wall -Wextra -Wpedantic -Wshadow -Wstrict-aliasing -Wstrict-overflow=5 -Wcast-align -Wmissing-declarations -Wpointer-arith -Wcast-qual -Wshorten-64-to-32
+WARN_FLAGS     = -Wall -Wextra -Wpedantic -Wshadow -Wstrict-aliasing -Wstrict-overflow=5 -Wcast-align -Wmissing-declarations -Wpointer-arith -Wcast-qual -Wshorten-64-to-32 -Wtautological-compare
 LIB_FLAGS      = 
 LDFLAGS        = 
 

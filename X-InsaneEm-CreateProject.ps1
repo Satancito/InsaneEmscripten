@@ -4,8 +4,8 @@ param (
 )
 $Error.Clear()
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 try {
@@ -13,7 +13,7 @@ try {
     Write-InfoBlue "████ Creating Insane Emscripten - New Project"
     Write-Host
 
-    Test-RequiredTools
+    Test-InsaneEmRequiredTools
     Update-GitSubmodules -Path $PSScriptRoot
 
     $json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
@@ -57,11 +57,13 @@ try {
     try {
         Push-Location "$DEST_DIR"
         $null = Test-ExternalCommand "git init" -ThrowOnFailure
+        Update-GitSubmodules -Path $(Get-Location) -Force
+        $null = Test-ExternalCommand "git submodule add ""$PS_CORE_FXS_REPO_URL"" ""submodules/PsCoreFxs""" -ThrowOnFailure
     }
     finally {
         Pop-Location
     }
- 
+    Write-Host "Copying files..."
     Copy-Item -Path "$SOURCE_ASSETS_DIR/*" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
     Copy-Item -Path "$SOURCE_DOCS_DIR/*" -Destination "$DEST_DIR" -Force -Recurse
     Copy-Item -Path "$SOURCE_JS_DIR/*" -Destination "$DEST_JS_DIR" -Force
@@ -69,11 +71,9 @@ try {
     Copy-Item -Path "$SOURCE_SRC_DIR/*" -Destination "$DEST_SRC_DIR" -Force -Recurse
 
     Copy-Item -Path "$Z_INSANE_EM_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
+    Copy-Item -Path "$DOCS_PRODUCT_INFO_JSON" -Destination "$DEST_DIR" -Force -Recurse
 
-    Copy-Item -Path "$X_PSCORE_FXS_UPDATE_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$Z_PSCORE_FXS_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$Z_PSCORE_FXS_CONFIG_JSON" -Destination "$DEST_DIR" -Force -Recurse
-
+    Write-Host "Generating code..."
     $INDEX_HTML_FILE = "$DEST_DIR/index.html"
     $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_HTML_FILE"))
 

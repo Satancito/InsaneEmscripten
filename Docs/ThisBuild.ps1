@@ -9,7 +9,8 @@ param (
     
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
     
 function Test-Requirements {
@@ -182,9 +183,9 @@ const instance = await factory(moduleInstantiationParameters);
     & "$env:EMSCRIPTEN_COMPILER" `
         -MJ "$clangd_name" `
         "$PSScriptRoot/Source/main.cpp" `
-        "$(Get-InsaneLibraryDir -DirType "Lib" -ReleaseMode:$true)/$INSANE_LIB_NAME" `
+        "$(Get-InsaneDir -Lib -ReleaseMode:$true)/$INSANE_LIB_NAME" `
         -I $PSScriptRoot/Include `
-        -I  "$(Get-InsaneLibraryDir -DirType "Include" -ReleaseMode:$ReleaseMode)" `
+        -I  "$(Get-InsaneDir -Include -ReleaseMode:$true)" `
         -o "$COMPILED_MODULE_DIR/$ModuleExportName.$exportExtension" `
         -O"$($ReleaseMode.IsPresent ? $RELEASE_OPTIMIZATION : $DEBUG_OPTIMIZATION)" `
         -std=c++20 `

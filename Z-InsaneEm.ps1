@@ -11,68 +11,65 @@ function Test-Unused {
 
 $Error.Clear()
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1")" -Force -NoClobber
+$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT = "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1"
+Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
+$json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
+$productInfo = ConvertFrom-Json $json
+$INSANE_EM_BOTAN_VERSION = $productInfo.BotanVersion
+$INSANE_EM_INSANE_VERSION = $productInfo.InsaneVersion
+$INSANE_EM_BOTAN_MAJOR_VERSION = "$("$INSANE_EM_BOTAN_VERSION".Split(".") | Select-Object -First 1)"; Test-Unused $INSANE_EM_BOTAN_MAJOR_VERSION
+$INSANE_EM_BOTAN_SUFFIX = "Insane"; Test-Unused $INSANE_EM_BOTAN_SUFFIX;
+$Z_INSANE_EM_SCRIPT = "$PSScriptRoot/Z-InsaneEm.ps1";Test-Unused $Z_INSANE_EM_SCRIPT;
 
-$X_PSCORE_FXS_UPDATE_SCRIPT = "$PSScriptRoot/X-PsCoreFxs-Update.ps1"; Test-Unused $X_PSCORE_FXS_UPDATE_SCRIPT
-$Z_PSCORE_FXS_SCRIPT = "$PSScriptRoot/Z-PsCoreFxs.ps1"; Test-Unused $Z_PSCORE_FXS_SCRIPT;
-$Z_PSCORE_FXS_CONFIG_JSON = "$PSScriptRoot/Z-PsCoreFxsConfig.json";
-$Z_INSANE_EM_SCRIPT = "$PSScriptRoot/Z-InsaneEm.ps1";
-$X_INSANE_EM_BUILD_BOTAN_SCRIPT = "$PSScriptRoot/X-InsaneEm-BuildBotan.ps1";
-$X_INSANE_EM_BUILD_INSANE_SCRIPT = "$PSScriptRoot/X-InsaneEm-BuildInsane.ps1";
-$X_INSANE_EM_CREATE_PROJECT_SCRIPT = "$PSScriptRoot/X-InsaneEm-CreateProject.ps1";
-$X_INSANE_EM_BUILD_MODULE_SCRIPT = "$PSScriptRoot/X-InsaneEm-BuildProject.ps1";
-$X_INSANE_EM_RUN_MODULE_SCRIPT = "$PSScriptRoot/X-InsaneEm-RunProject.ps1";
-$X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT = "$PSScriptRoot/submodules/PsBotan/X-PsBotan.ps1";
+$INSANE_EM_DEFAULT_TEMP_DIR = "$(Get-UserHome)/.InsaneEmscripten"; Test-Unused $INSANE_EM_DEFAULT_TEMP_DIR;
 
+$X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT = "$PSScriptRoot/submodules/PsBotan/X-PsBotan.ps1"; Test-Unused $X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT;
+$INSANE_EM_BUILD_CONFIGURATION_DEBUG = "Debug"
+$INSANE_EM_BUILD_CONFIGURATION_RELEASE = "Release"
+$DOCS_PRODUCT_INFO_JSON = "$PSScriptRoot/ProductInfo.json"; Test-Unused $DOCS_PRODUCT_INFO_JSON;
+$INSANE_EM_INSANE_DIST_DEBUG_DIR =  "$(Get-UserHome)/.CppLibs/Insane-$INSANE_EM_INSANE_VERSION-$INSANE_EM_BUILD_CONFIGURATION_DEBUG-Emscripten"; Test-Unused $INSANE_EM_INSANE_DIST_DEBUG_DIR;
+$INSANE_EM_INSANE_DIST_RELEASE_DIR =  "$(Get-UserHome)/.CppLibs/Insane-$INSANE_EM_INSANE_VERSION-$INSANE_EM_BUILD_CONFIGURATION_RELEASE-Emscripten"; Test-Unused $INSANE_EM_INSANE_DIST_RELEASE_DIR;
+$INSANE_LIB_NAME = "libInsane.a"; Test-Unused $INSANE_LIB_NAME;
 
-
-$INSANE_EM_DEFAULT_TEMP_DIR = "$(Get-UserHome)/.InsaneEmscripten"
-$INSANE_LIB_NAME = "libInsane.a"
-
-$DOCS_PRODUCT_INFO_JSON = "$PSScriptRoot/Docs/ProductInfo.json"
-
-$DENO_EXECUTABLE = "$(Get-UserHome)/.deno/bin/deno"
-
-
-$INSANE_EM_INSTALL_DEBUG_DIR = "$(Get-UserHome)/.CppLibs/Insane-Debug-Emscripten"
-$INSANE_EM_INSTALL_RELEASE_DIR = "$(Get-UserHome)/.CppLibs/Insane-Release-Emscripten"
-
-$INSANE_EM_LIB_DEBUG_DIR = "$INSANE_EM_INSTALL_DEBUG_DIR/Lib"
-$INSANE_EM_LIB_RELEASE_DIR = "$INSANE_EM_INSTALL_RELEASE_DIR/Lib"
-$INSANE_EM_BOTAN_SUFFIX = "Insane"
-
-$INSANE_EM_INCLUDE_DEBUG_DIR = "$INSANE_EM_INSTALL_DEBUG_DIR/Include"
-$INSANE_EM_INCLUDE_RELEASE_DIR = "$INSANE_EM_INSTALL_RELEASE_DIR/Include"
-
-function Get-InsaneLibraryDir {
+function Get-InsaneDir {
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("Lib", "Include", "Install")]
-        [string]
-        $DirType,
+        [Parameter(Mandatory = $true, ParameterSetName = "Install")]
+        [switch]
+        $Install,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "Lib")]
+        [switch]
+        $Lib,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "Include")]
+        [switch]
+        $Include,
 
         [Parameter()]
         [switch]
         $ReleaseMode
     )
-    $result = ($ReleaseMode.IsPresent ? $INSANE_EM_INSTALL_RELEASE_DIR : $INSANE_EM_INSTALL_DEBUG_DIR)
-    switch ($DirType) {
-        "Install" { 
-            return $result
-        }
-        "Lib" { 
-            return "$result/Lib"
-        }
-        "Include" {  
-            return "$result/Include"
-        }
-        Default {
-            throw "Not implemented DirType: $DirType"
-        }
+    $result = ($ReleaseMode.IsPresent ? $INSANE_EM_INSANE_DIST_RELEASE_DIR : $INSANE_EM_INSANE_DIST_DEBUG_DIR)
+    if($Install.IsPresent)
+    {
+        return $result
     }
+
+    if($Lib.IsPresent)
+    {
+        return "$result/Lib"
+    }
+
+    if($Include.IsPresent)
+    {
+        return "$result/Include"
+    }
+    
+    throw "Get-InsaneDir. Not implemented DirType."
+    
 }
 
-function Test-RequiredTools {
+function Test-InsaneEmRequiredTools {
     Write-Host
     Write-InfoBlue "Test - InsaneEm - Dependency tools"
     Write-Host

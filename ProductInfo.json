@@ -1,5 +1,5 @@
 {
-    "Version": "0.0.1",
+    "Version": "0.1.0",
     "Name": "Insane",
     "IsES6Module": true,
     "NodeHttpServerPort": 7374,
@@ -8,6 +8,6 @@
     "ConsoleNodeOptions": [],
     "ConsoleDenoOptions": [],
     "BotanVersion": "3.2.0",
-    "BotanMajorVersion": "3",
-    "InsaneVersion": "0.1.0"
+    "InsaneVersion": "0.1.0",
+    "InsaneBuild": 0
 }

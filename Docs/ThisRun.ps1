@@ -30,7 +30,8 @@ param (
     
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-PsCoreFxs.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
 function Test-Requirements {
@@ -106,7 +107,8 @@ try {
         Write-PrettyKeyValue "Mode" (Get-VariableName $BrowserNodeServer)    
         try {
             Push-Location $SERVER_DIR
-            npm update 
+            npm update
+            Write-InfoYellow "Press Ctrl+C to exit!"
             node "$SERVER_DIR/NodeHttpServer.mjs" "$NodeHttpServerPort" "$launch" "$PSScriptRoot"
         }
         finally {
@@ -119,6 +121,7 @@ try {
         Write-PrettyKeyValue "Mode" (Get-VariableName $BrowserDenoServer)
         try {
             Push-Location $SERVER_DIR
+            Write-InfoYellow "Press Ctrl+C to exit!"
             deno run --allow-run --allow-net --allow-read "$SERVER_DIR/DenoHttpServer.ts" "$DenoHttpServerPort" "$launch" "$PSScriptRoot"
             return
         }
