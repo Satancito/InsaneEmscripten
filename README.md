@@ -34,7 +34,7 @@ Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:
 For Windows `$env:USERPROFILE/.CppLibs/`   
 For Linux `$env:HOME/.CppLibs/`
 
-> Warning!!! Running `./X-InsaneEm-BuildBotan.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Debug-Emscripten` and `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Release-Emscripten` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `Docs/ProductInfo.json`.
+> Warning!!! Running `./X-InsaneEm-BuildBotan.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Debug-Emscripten-Insane` and `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Release-Emscripten-Insane` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `ProductInfo.json`.
 
 ### 2. Build Insane (libInsane.a)
 Run ```./X-InsaneEm-BuildInsane.ps1```
@@ -43,7 +43,7 @@ Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:
 For Windows `$env:USERPROFILE/.CppLibs/`   
 For Linux `$env:HOME/.CppLibs/`
 
-> Warning!!! Running `./X-InsaneEm-BuildInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Insane-Debug-Emscripten` and `<USER_DIRECTORY>/.CppLibs/Insane-Release-Emscripten` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `Docs/ProductInfo.json`.
+> Warning!!! Running `./X-InsaneEm-BuildInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Debug-Emscripten` and `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Release-Emscripten` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `ProductInfo.json`.
 
 **Parameters**
 
@@ -57,9 +57,9 @@ For Linux `$env:HOME/.CppLibs/`
 Run `./X-InsaneEm-CreateProject.ps1`
 
 The created project is located by default on `Dist/$Name`,
-`$Name` is the name of the project. This name can be configured in `Docs/ProductInfo.json` on the property `Name`. This name can be configured later on the created project.
+`$Name` is the name of the project. This name can be configured in `ProductInfo.json` on the property `Name`. This name can be configured later on the created project.
 
-For example if `Name` is "MyProject" in `Docs/ProductInfo.json`, the project is created on ```Dist/MyProject```
+For example if `Name` is "MyProject" in `ProductInfo.json`, the project is created on ```Dist/MyProject```
 
 
 > Warning!!! Running `./X-InsaneEm-CreateProject.ps1` removes the `Dist/MyProject` folder everytime that it is executed. Copy your unsaved changes to another location.
@@ -72,7 +72,7 @@ For example if `Name` is "MyProject" in `Docs/ProductInfo.json`, the project is 
 *-NoMinifyJsFiles*: Don´t minify js files located in `Dist/MyProject/Js`. Those are used in build step.   
 *-ReleaseMode*: Apply -O3 compiler optimization in the code. You can change this value in the script `Dist\MyProject\ThisBuild.ps1` on `$RELEASE_OPTIMIZATION` variable. Optionally, you can change the value for debug with the `$DEBUG_OPTIMIZATION` variable."
 
-You can change module type(normal script or ES6 module) in `Docs/ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
+You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
 
 ### 5. Run created project.
 1. Run `cd Dist/MyProject` 
