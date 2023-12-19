@@ -15,8 +15,7 @@ try {
 
     Test-InsaneEmRequiredTools
     Update-GitSubmodules -Path $PSScriptRoot
-
-    $json = [System.IO.File]::ReadAllText($(Get-Item "$DOCS_PRODUCT_INFO_JSON"))
+    $json = [System.IO.File]::ReadAllText($(Get-Item "$PRODUCT_INFO_JSON_FILE"))
     $productInfo = ConvertFrom-Json $json
     $ModuleExportName = $productInfo.Name
 
@@ -71,7 +70,8 @@ try {
     Copy-Item -Path "$SOURCE_SRC_DIR/*" -Destination "$DEST_SRC_DIR" -Force -Recurse
 
     Copy-Item -Path "$Z_INSANE_EM_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$DOCS_PRODUCT_INFO_JSON" -Destination "$DEST_DIR" -Force -Recurse
+    Copy-Item -Path "$PRODUCT_INFO_JSON_FILE" -Destination "$DEST_DIR" -Force -Recurse
+    Copy-Item -Path "$INSANE_EM_CLANG_FORMAT_FILE" -Destination "$DEST_DIR" -Force -Recurse
 
     Write-Host "Generating code..."
     $INDEX_HTML_FILE = "$DEST_DIR/index.html"
