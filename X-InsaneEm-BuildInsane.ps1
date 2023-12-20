@@ -14,7 +14,7 @@ try {
     Write-Host
     Write-InfoBlue "████ Building libInsane"
     Write-Host
-    Test-InsaneEmRequiredTools
+    Test-InsaneRequiredTools
     Update-GitSubmodules -Path $PSScriptRoot -Force
 
     $BOTAN_LIB_DIR = "$(Get-UserHome)/.CppLibs"

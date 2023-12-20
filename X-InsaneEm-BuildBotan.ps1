@@ -7,7 +7,8 @@ try {
         Write-Host
         Write-InfoBlue "████ Building libBotan"
         Write-Host
-        Test-InsaneEmRequiredTools
+        Test-BotanRequiredTools
+
         Update-GitSubmodules -Path $PSScriptRoot -Force
 
         & "$X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT" -Build -EmscriptenCompiler -DestinationSuffix "$INSANE_EM_BOTAN_SUFFIX" -Version $INSANE_EM_BOTAN_VERSION -BotanModules @() -BotanOptions @()

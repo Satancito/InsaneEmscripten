@@ -14,6 +14,7 @@
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
     <script>
+        // Warning!. This value is used in instantiation. You can modify, but don't delete.
         const moduleInstantiationParameters = {
             noInitialRun: false,
         };
@@ -107,7 +108,7 @@
                         innerHTML += formatText("Cookies Supported", /*ModuleName*/Insane.BrowserHasCookiesSupport().toString(), 0, 1);
 
                         var mimeTypes = /*ModuleName*/Insane.BrowserGetMimeTypes();
-                        innerHTML += formatText("NavigatorMimeTypes", mimeTypes.length, 1, 1) ;
+                        innerHTML += formatText("NavigatorMimeTypes", mimeTypes.length, 1, 1);
                         innerHTML += "<ul>";
                         for (let i = 0; i < mimeTypes.length; i++) {
                             innerHTML += "<li> <b>MimeType { </b>" +
@@ -119,18 +120,18 @@
                         innerHTML += "</ul>";
 
                         var plugins = /*ModuleName*/Insane.BrowserGetPlugins();
-                        innerHTML += formatText("NavigatorPlugins", plugins.length ,1,1);
+                        innerHTML += formatText("NavigatorPlugins", plugins.length, 1, 1);
                         innerHTML += "<ul>";
                         for (let i = 0; i < plugins.length; i++) {
                             innerHTML += "<li> <b>Plugin { </b>" +
-                                formatText("Name", plugins[i].Name) ;
+                                formatText("Name", plugins[i].Name);
                             innerHTML += "<ul>";
                             for (let j = 0; j < plugins[i].MimeTypes.length; j++) {
                                 innerHTML += "<li> <b>MimeType { </b>" +
-                                (formatText("Type", plugins[i].MimeTypes[j].Type) + " | " +
-                                    formatText("Description", plugins[i].MimeTypes[j].Description) + " | " +
-                                    formatText("Suffixes", plugins[i].MimeTypes[j].Suffixes)) +
-                                "<b> } </b> </li>";
+                                    (formatText("Type", plugins[i].MimeTypes[j].Type) + " | " +
+                                        formatText("Description", plugins[i].MimeTypes[j].Description) + " | " +
+                                        formatText("Suffixes", plugins[i].MimeTypes[j].Suffixes)) +
+                                    "<b> } </b> </li>";
                             }
                             innerHTML += "</ul>";
                             innerHTML += "<b> }</b></li>";

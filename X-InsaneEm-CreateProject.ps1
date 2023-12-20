@@ -13,7 +13,6 @@ try {
     Write-InfoBlue "████ Creating Insane Emscripten - New Project"
     Write-Host
 
-    Test-InsaneEmRequiredTools
     Update-GitSubmodules -Path $PSScriptRoot
     $json = [System.IO.File]::ReadAllText($(Get-Item "$PRODUCT_INFO_JSON_FILE"))
     $productInfo = ConvertFrom-Json $json

@@ -31,15 +31,12 @@ param (
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
 Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
-Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
+Import-Module -Name "$(Get-Item "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1")" -Force -NoClobber
 Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 
-function Test-Requirements {
-    param (
-        
-    )
+function Test-RequirementsEmrun {
     Write-Host
-    Write-InfoBlue "Test - Run - Dependency tools"
+    Write-InfoBlue "Test - Dependency tools"
     Write-Host
 
     Write-InfoMagenta "== Emrun"
@@ -47,17 +44,23 @@ function Test-Requirements {
     Write-Host "$($command.Source)"
     & "$($command.Source)" --list_browsers
     Write-Host
+}
+
+function Test-RequirementsNode {
+    Write-Host
+    Write-InfoBlue "Test - Dependency tools"
+    Write-Host
 
     Write-InfoMagenta "== Node"
     $command = Get-Command "node"
     Write-Host "$($command.Source)"
     & "$($command.Source)" --version
     Write-Host
+}
 
-    Write-InfoMagenta "== Npm"
-    $command = Get-Command "npm"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
+function Test-RequirementsDeno {
+    Write-Host
+    Write-InfoBlue "Test - Dependency tools"
     Write-Host
 
     Write-InfoMagenta "== Deno"
@@ -66,8 +69,6 @@ function Test-Requirements {
     & "$($command.Source)" --version
     Write-Host
 }
-
-
 
 try {
 
@@ -84,27 +85,26 @@ try {
     $ConsoleDenoOptions = $productInfo.ConsoleDenoOptions
     $NODE_SCRIPT = "$PSScriptRoot/index.mjs"
     $DENO_SCRIPT = "$PSScriptRoot/index.ts"
+    $ModuleFileName = "$ModuleExportName-*-$ModuleVersion-*.$ModuleExportExtension"
 
     $COMPILED_MODULE_DIR = "$PSScriptRoot/Build/Module"
+    $COMPILED_MODULE_FILE = Get-Item "$COMPILED_MODULE_DIR/$ModuleFileName" -ErrorAction SilentlyContinue
 
     Write-Host
-    Write-InfoDarkGreen "████ Running - Module: ""$ModuleExportName.$ModuleExportExtension"", Version: $ModuleVersion"
+    Write-InfoDarkGreen "████ Running - Module: ""$COMPILED_MODULE_FILE"""
     Write-Host
 
-    if (!(Test-Path -Path "$COMPILED_MODULE_DIR/$ModuleExportName.$ModuleExportExtension" -PathType Leaf)) {
-        Write-Warning """$ModuleExportName.$ModuleExportExtension"" is required. Build this project and run again."
+    if ($null -eq $COMPILED_MODULE_FILE) {
+        Write-Warning """$ModuleExportExtension"" file is required. Build this project and run again."
         return
     }
-    
-    Test-Requirements
 
     $SERVER_DIR = "$PSScriptRoot/Server"
     
     $launch = !($NoLaunchBrowser.IsPresent)
     
     if ($BrowserNodeServer.IsPresent) {
-        Write-PrettyKeyValue "LaunchBrowser" $launch
-        Write-PrettyKeyValue "Mode" (Get-VariableName $BrowserNodeServer)    
+        Test-RequirementsNode 
         try {
             Push-Location $SERVER_DIR
             npm update
@@ -117,8 +117,7 @@ try {
     }
 
     if ($BrowserDenoServer.IsPresent) {
-        Write-PrettyKeyValue "LaunchBrowser" $launch
-        Write-PrettyKeyValue "Mode" (Get-VariableName $BrowserDenoServer)
+        Test-RequirementsDeno
         try {
             Push-Location $SERVER_DIR
             Write-InfoYellow "Press Ctrl+C to exit!"
@@ -131,6 +130,7 @@ try {
     }
 
     if ($ConsoleNode.IsPresent) {
+        Test-RequirementsNode
         if (!$ModuleIsES6Module) {
             Write-Warning "ES6 Module(mjs) is required to run on Node."
             return
@@ -139,6 +139,7 @@ try {
     }
 
     if ($ConsoleDeno.IsPresent) {
+        Test-RequirementsDeno
         if (!$ModuleIsES6Module) {
             Write-Warning "ES6 Module(mjs) is required to run on Deno."
             return
@@ -147,6 +148,7 @@ try {
     }
     
     if ($Emrun.IsPresent -or ($PSCmdlet.ParameterSetName -eq "None")) {
+        Test-RequirementsEmrun
         if ($ModuleIsES6Module) {
             Write-Warning "Emscripten Emrun is not compatible with ES6 Module($ModuleExportName.$ModuleExportExtension)."
             return
@@ -160,5 +162,5 @@ try {
     }
 }
 finally {
-    Write-InfoDarkGreen "█ End running - Module - Test client"
+    Write-InfoDarkGreen "█ End running - Module ""$COMPILED_MODULE_FILE"""
 }

@@ -29,6 +29,7 @@ $Z_INSANE_EM_SCRIPT = "$PSScriptRoot/Z-InsaneEm.ps1";Test-Unused $Z_INSANE_EM_SC
 $INSANE_EM_DEFAULT_TEMP_DIR = "$(Get-UserHome)/.InsaneEmscripten"; Test-Unused $INSANE_EM_DEFAULT_TEMP_DIR;
 
 $X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT = "$PSScriptRoot/submodules/PsBotan/X-PsBotan.ps1"; Test-Unused $X_INSANE_EM_PS_BOTAN_INTERNAL_SCRIPT;
+$X_PS_EMSCRIPTEN_INTERNAL_SCRIPT = "$PSScriptRoot/submodules/PsEmscripten/X-PsEmscripten-SDK.ps1"; Test-Unused $X_PS_EMSCRIPTEN_INTERNAL_SCRIPT;
 $INSANE_EM_BUILD_CONFIGURATION_DEBUG = "Debug"
 $INSANE_EM_BUILD_CONFIGURATION_RELEASE = "Release"
 $INSANE_EM_INSANE_DIST_DEBUG_DIR =  "$(Get-UserHome)/.CppLibs/Insane-$INSANE_EM_INSANE_VERSION-$INSANE_EM_BUILD_CONFIGURATION_DEBUG-Emscripten"; Test-Unused $INSANE_EM_INSANE_DIST_DEBUG_DIR;
@@ -74,9 +75,29 @@ function Get-InsaneDir {
     
 }
 
-function Test-InsaneEmRequiredTools {
+
+function Test-InsaneRequiredTools {
     Write-Host
     Write-InfoBlue "Test - InsaneEm - Dependency tools"
+    Write-Host
+
+    Write-InfoMagenta "== Git"
+    $command = Get-Command "git"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" --version
+    Write-Host
+
+    Write-InfoMagenta "== Make"
+    $command = Get-Command "make"
+    Write-Host "$($command.Source)"
+    & "$($command.Source)" --version
+    Write-Host
+    
+}
+
+function Test-BotanRequiredTools {
+    Write-Host
+    Write-InfoBlue "Test - InsaneEm - Botan - Dependency tools"
     Write-Host
 
     Write-InfoMagenta "== Python"
@@ -96,32 +117,6 @@ function Test-InsaneEmRequiredTools {
     Write-Host "$($command.Source)"
     & "$($command.Source)" --version
     Write-Host
-
-    Write-InfoMagenta "== Java"
-    $command = Get-Command "java"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
-
-    Write-InfoMagenta "== Node"
-    $command = Get-Command "node"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
-
-    Write-InfoMagenta "== Deno"
-    $command = Get-Command "deno"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
-
-    if ($IsWindows) {
-        Write-InfoMagenta "== WSL"
-        $command = Get-Command "wsl"
-        Write-Host "$($command.Source)"
-        & "$($command.Source)" --version
-        Write-Host
-    }
     
 }
 
