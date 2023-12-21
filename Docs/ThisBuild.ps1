@@ -44,7 +44,7 @@ try {
     $ModuleExportExtension = $ModuleIsES6Module ? "mjs": "js"
     $exportEs6 = $ModuleIsES6Module ? 1 : 0
     $exportConfiguration = "$($ReleaseMode.IsPresent ? "Release" : "Debug")"
-    $ModuleFileName = "$ModuleExportName-$exportConfiguration-$ModuleVersion-$([System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()).$ModuleExportExtension"
+    $ModuleFileName = "$ModuleExportName-$ModuleVersion-$exportConfiguration-$([System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()).$ModuleExportExtension"
     Write-Host
     Write-InfoBlue "████ Building Module: ""$ModuleFileName"""
     Write-Host
@@ -179,7 +179,8 @@ const instance = await factory(moduleInstantiationParameters);
     $INDEX_MJS_FILE = "$PSScriptRoot/index.mjs"
     $INDEX_TS_FILE = "$PSScriptRoot/index.ts"
     $GENERATED_CLANGD_DIR = "$PSScriptRoot/Build/clangd"
-    Write-InfoBlue "Building js file..."
+    Write-Host
+    Write-InfoBlue "Building module js file..."
     New-Item -Path "$GENERATED_CLANGD_DIR" -ItemType Directory -Force | Out-Null
     $clangd_name = "$GENERATED_CLANGD_DIR/$(Get-HexRandomName)_.compile_commands.json"
     & "$env:EMSCRIPTEN_COMPILER" `

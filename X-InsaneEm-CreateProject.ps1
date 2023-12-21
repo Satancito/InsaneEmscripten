@@ -37,20 +37,20 @@ try {
     $SOURCE_SRC_DIR = "$PSScriptRoot/Src"
 
     Remove-Item "$DIST_DIR" -Force -Recurse -ErrorAction Ignore
-    New-Item "$DEST_DIR" -ItemType Container -Force | Out-Null
+    New-Item "$DEST_DIR" -ItemType Directory -Force | Out-Null
 
-    New-Item "$DEST_INCLUDE_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_SRC_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_LIB_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_JS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_ASSETS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$DEST_SERVER_DIR" -ItemType Container -Force | Out-Null
+    New-Item "$DEST_INCLUDE_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$DEST_SRC_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$DEST_LIB_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$DEST_JS_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$DEST_ASSETS_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$DEST_SERVER_DIR" -ItemType Directory -Force | Out-Null
 
-    New-Item "$SOURCE_ASSETS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_DOCS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_JS_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_SERVER_DIR" -ItemType Container -Force | Out-Null
-    New-Item "$SOURCE_SRC_DIR" -ItemType Container -Force | Out-Null
+    New-Item "$SOURCE_ASSETS_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$SOURCE_DOCS_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$SOURCE_JS_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$SOURCE_SERVER_DIR" -ItemType Directory -Force | Out-Null
+    New-Item "$SOURCE_SRC_DIR" -ItemType Directory -Force | Out-Null
 
     try {
         Push-Location "$DEST_DIR"
