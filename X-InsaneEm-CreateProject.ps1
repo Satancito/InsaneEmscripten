@@ -1,90 +1,80 @@
 [CmdletBinding()]
 param (
-    
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ProductName
 )
 $Error.Clear()
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
-Import-Module -Name "$(Get-Item "$X_INSANE_EM_Z_PS_CORE_FXS_INTERNAL_SCRIPT")" -Force -NoClobber
-Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
+Import-Module -Name "$PSScriptRoot/Z-InsaneEm.ps1" -Force -NoClobber
 
 try {
     Write-Host
-    Write-InfoBlue "████ Creating Insane Emscripten - New Project"
+    Write-InfoBlue "████ Creating Insane Emscripten - New Project: " -NoNewLine
+    Write-Host $ProductName
     Write-Host
 
-    Update-GitSubmodules -Path $PSScriptRoot
-    $json = [System.IO.File]::ReadAllText($(Get-Item "$PRODUCT_INFO_JSON_FILE"))
-    $productInfo = ConvertFrom-Json $json
-    $ModuleExportName = $productInfo.Name
-
-    $DIST_DIR = "$PSScriptRoot/Dist"
+    $projectName = $ProductName
+    $distDir = "$PSScriptRoot/Dist"
+    
 
     Write-Host "Copying files..."
 
-    $DEST_DIR = "$DIST_DIR/$ModuleExportName"
-    $DEST_INCLUDE_DIR = "$DEST_DIR/Include"
-    $DEST_LIB_DIR = "$DEST_DIR/Lib"
-    $DEST_JS_DIR = "$DEST_DIR/Js"
-    $DEST_ASSETS_DIR = "$DEST_DIR/Assets"
-    $DEST_SERVER_DIR = "$DEST_DIR/Server"
-    $DEST_SRC_DIR = "$DEST_DIR/Source"
+    $destinationDir = "$distDir/$projectName"
+    Remove-Item -Path "$destinationDir" -Force -Recurse -ErrorAction Ignore
 
-    $SOURCE_ASSETS_DIR = "$PSScriptRoot/Assets"
-    $SOURCE_DOCS_DIR = "$PSScriptRoot/Docs"
-    $SOURCE_JS_DIR = "$PSScriptRoot/Js"
-    $SOURCE_SERVER_DIR = "$PSScriptRoot/Server"
-    $SOURCE_SRC_DIR = "$PSScriptRoot/Src"
+    $filesToCopy = @(
+        @{  Source = "$PSScriptRoot/Docs/*"; Destination = "$destinationDir"; DestinationItemType ="Directory"},
+        @{  Source = "$PSScriptRoot/Server/*"; Destination = "$destinationDir/Server"; DestinationItemType ="Directory"},
+        @{  Source = "$PSScriptRoot/Assets/*"; Destination = "$destinationDir/Assets"; DestinationItemType ="Directory"},
+        @{  Source = "$PSScriptRoot/Src/*"; Destination = "$destinationDir/Source"; DestinationItemType ="Directory"},
+        @{  Source = "$PSScriptRoot/Js/*"; Destination = "$destinationDir/Js"; DestinationItemType ="Directory"},
+        @{  Source = "$PSScriptRoot/.clang-format"; Destination = "$destinationDir"; DestinationItemType ="Directory"}
+        @{  Source = "$PSScriptRoot/T-UpdateSubmodules.ps1"; Destination = "$destinationDir"; DestinationItemType ="Directory"}
+    )
 
-    Remove-Item "$DIST_DIR" -Force -Recurse -ErrorAction Ignore
-    New-Item "$DEST_DIR" -ItemType Directory -Force | Out-Null
+    $filesToCopy | ForEach-Object {
+        New-Item -Path $_.Destination -ItemType $_.DestinationItemType -Force | Out-Null
+        Copy-Item -Path $_.Source -Destination $_.Destination -Force -Recurse    
+    }
+ 
+    Write-Host "Configuring product info..."
+    $productInfoFilename = "$destinationDir/ProductInfo.json"
+    $json = [System.IO.File]::ReadAllText($productInfoFilename)
+    $productInfo = ConvertFrom-Json -InputObject $json
+    $productInfo.Name = $ProductName
+    $productInfo.Version = "0.0.0"
+    $productInfo.InsaneVersion = $__INSANEEM_INSANE_VERSION
+    [System.IO.File]::WriteAllText("$productInfoFilename", "$(ConvertTo-Json -InputObject $productInfo)", [System.Text.Encoding]::UTF8)
 
-    New-Item "$DEST_INCLUDE_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$DEST_SRC_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$DEST_LIB_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$DEST_JS_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$DEST_ASSETS_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$DEST_SERVER_DIR" -ItemType Directory -Force | Out-Null
+    Write-Host "Generating code..." 
+    $indexHtmlFilename = "$destinationDir/index.html"
+    $content = [System.IO.File]::ReadAllText("$indexHtmlFilename")
 
-    New-Item "$SOURCE_ASSETS_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$SOURCE_DOCS_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$SOURCE_JS_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$SOURCE_SERVER_DIR" -ItemType Directory -Force | Out-Null
-    New-Item "$SOURCE_SRC_DIR" -ItemType Directory -Force | Out-Null
+    $pattern = "<!-- _BEGIN_APP_TITLE_ -->[\s\S]*?<!-- _END___APP_TITLE_ -->"
+    $replacement = "<title>$projectName - Emscripten - Tests</title>"
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
 
+    $pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
+    $replacement = "/*ModuleName*/$projectName."
+    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+    [System.IO.File]::WriteAllText("$indexHtmlFilename", $content, [System.Text.Encoding]::UTF8)
+    Write-Host "Configuring git repo..."
     try {
-        Push-Location "$DEST_DIR"
-        $null = Test-ExternalCommand "git init" -ThrowOnFailure
-        Update-GitSubmodules -Path $(Get-Location) -Force
-        $null = Test-ExternalCommand "git submodule add ""$PS_CORE_FXS_REPO_URL"" ""submodules/PsCoreFxs""" -ThrowOnFailure
+        Push-Location -Path "$destinationDir"
+        $null = Test-ExternalCommand "git init" -ThrowOnFailure -NoAssertion
+        $null = Test-ExternalCommand "git submodule add --force --name `"$__PSCOREFXS_REPO_NAME`"  `"$__PSCOREFXS_REPO_URL`" `"submodules/PsCoreFxs`"" -ThrowOnFailure -NoAssertion
+        $null = Test-ExternalCommand "git submodule update --init --recursive --force" -ThrowOnFailure -NoAssertion
+        $null = Test-ExternalCommand "git submodule update --remote --recursive --force" -ThrowOnFailure -NoAssertion   
+    }
+    catch {
+        throw
     }
     finally {
         Pop-Location
     }
-    Write-Host "Copying files..."
-    Copy-Item -Path "$SOURCE_ASSETS_DIR/*" -Destination "$DEST_ASSETS_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_DOCS_DIR/*" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_JS_DIR/*" -Destination "$DEST_JS_DIR" -Force
-    Copy-Item -Path "$SOURCE_SERVER_DIR/*" -Destination "$DEST_SERVER_DIR" -Force -Recurse
-    Copy-Item -Path "$SOURCE_SRC_DIR/*" -Destination "$DEST_SRC_DIR" -Force -Recurse
-
-    Copy-Item -Path "$Z_INSANE_EM_SCRIPT" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$PRODUCT_INFO_JSON_FILE" -Destination "$DEST_DIR" -Force -Recurse
-    Copy-Item -Path "$INSANE_EM_CLANG_FORMAT_FILE" -Destination "$DEST_DIR" -Force -Recurse
-
-    Write-Host "Generating code..."
-    $INDEX_HTML_FILE = "$DEST_DIR/index.html"
-    $content = [System.IO.File]::ReadAllText($(Get-Item "$INDEX_HTML_FILE"))
-
-    $pattern = "<!-- _BEGIN_APP_TITLE_ -->[\s\S]*?<!-- _END___APP_TITLE_ -->"
-    $replacement = "<title>$ModuleExportName - Emscripten - Tests</title>"
-    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
-
-    $pattern = "\/\*ModuleName\*\/[a-zA-Z_][a-zA-Z0-9_]*\."
-    $replacement = "/*ModuleName*/$ModuleExportName."
-    $content = [System.Text.RegularExpressions.Regex]::Replace("$content", "$pattern", $replacement, [System.Text.RegularExpressions.RegexOptions]::Multiline)
-
-    [System.IO.File]::WriteAllText($(Get-Item "$INDEX_HTML_FILE"), $content, [System.Text.Encoding]::UTF8)
+    exit
+    
 }
 finally {
     Write-InfoBlue "█ End creating Insane Emscripten - New Project"

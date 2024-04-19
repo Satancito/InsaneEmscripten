@@ -1,12 +1,12 @@
-[submodule "submodules/InsaneCpp"]
-	path = submodules/InsaneCpp
-	url = https://github.com/Satancito/InsaneCpp.git
-[submodule "submodules/CommonCppIncludes"]
-	path = submodules/CommonCppIncludes
-	url = https://github.com/Satancito/CommonCppIncludes.git
-[submodule "submodules/PsCoreFxs"]
+[submodule "PsCoreFxs"]
 	path = submodules/PsCoreFxs
-	url = https://github.com/Satancito/PsCoreFxs.git
+	url = https://github.com/Satancito/PsCoreFxs
+[submodule "CommonCppIncludes"]
+	path = submodules/CommonCppIncludes
+	url = https://github.com/Satancito/CommonCppIncludes
+[submodule "InsaneCpp"]
+	path = submodules/InsaneCpp
+	url = https://github.com/Satancito/InsaneCpp
 [submodule "PsBotan"]
-	path = Submodules/PsBotan
-	url = https://github.com/Satancito/PsBotan.git
+	path = submodules/PsBotan
+	url = https://github.com/Satancito/PsBotan

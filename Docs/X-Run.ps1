@@ -6,11 +6,11 @@ param (
 
     [Parameter(ParameterSetName = "BrowserNode")]
     [switch]
-    $BrowserNodeServer,
+    $BrowserNode,
 
     [Parameter(ParameterSetName = "BrowserDeno")]
     [switch]
-    $BrowserDenoServer,
+    $BrowserDeno,
 
     [Parameter(ParameterSetName = "ConsoleNode")]
     [switch]
@@ -30,50 +30,25 @@ param (
     
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
-Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
-Import-Module -Name "$(Get-Item "$PSScriptRoot/submodules/PsCoreFxs/Z-PsCoreFxs.ps1")" -Force -NoClobber
-Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
+Import-Module -Name "$PSScriptRoot/Z-Init.ps1" -Force -NoClobber
 
 function Test-RequirementsEmrun {
-    Write-Host
-    Write-InfoBlue "Test - Dependency tools"
-    Write-Host
-
-    Write-InfoMagenta "== Emrun"
-    $command = Get-Command "$env:EMSCRIPTEN_EMRUN"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --list_browsers
-    Write-Host
+    Assert-Executable -ExeName "$env:EMSCRIPTEN_EMRUN" -Parameters @("--list_browsers")
 }
 
 function Test-RequirementsNode {
-    Write-Host
-    Write-InfoBlue "Test - Dependency tools"
-    Write-Host
-
-    Write-InfoMagenta "== Node"
-    $command = Get-Command "node"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
+    Assert-NodeExecutable
 }
 
 function Test-RequirementsDeno {
-    Write-Host
-    Write-InfoBlue "Test - Dependency tools"
-    Write-Host
-
-    Write-InfoMagenta "== Deno"
-    $command = Get-Command "deno"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
+    Assert-DenoExecutable
 }
 
 try {
 
-    $json = [System.IO.File]::ReadAllText($(Get-Item "$PSScriptRoot/ProductInfo.json"))
+    $json = [System.IO.File]::ReadAllText("$PSScriptRoot/ProductInfo.json")
     $productInfo = ConvertFrom-Json $json
+
     $ModuleExportName = $productInfo.Name
     $ModuleVersion = $productInfo.Version
     $ModuleIsES6Module = $productInfo.IsES6Module
@@ -83,45 +58,47 @@ try {
     $EmrunHttpServerPort = $productInfo.EmrunHttpServerPort
     $ConsoleNodeOptions = $productInfo.ConsoleNodeOptions
     $ConsoleDenoOptions = $productInfo.ConsoleDenoOptions
-    $NODE_SCRIPT = "$PSScriptRoot/index.mjs"
-    $DENO_SCRIPT = "$PSScriptRoot/index.ts"
-    $ModuleFileName = "$ModuleExportName-*-$ModuleVersion-*.$ModuleExportExtension"
-
-    $COMPILED_MODULE_DIR = "$PSScriptRoot/Build/Module"
-    $COMPILED_MODULE_FILE = Get-Item "$COMPILED_MODULE_DIR/$ModuleFileName" -ErrorAction SilentlyContinue
+    
+    $nodeScript = "$PSScriptRoot/index.mjs"
+    $denoScript = "$PSScriptRoot/index.ts"
 
     Write-Host
-    Write-InfoDarkGreen "████ Running - Module: ""$COMPILED_MODULE_FILE"""
+    Write-InfoDarkGreen "████ Running - Module: `"$ModuleExportName, Version: $ModuleVersion`""
     Write-Host
 
-    if ($null -eq $COMPILED_MODULE_FILE) {
+    $serverDir = "$PSScriptRoot/Server"
+    $denoServer = "$serverDir/DenoHttpServer.ts"
+    $nodeServer = "$serverDir/NodeHttpServer.mjs"
+    $indexHtml = "$PSScriptRoot/index.html"
+
+    $debugModule = "$PSScriptRoot/Bin/Debug/Module/$ModuleExportName-$ModuleVersion-Debug.$ModuleExportExtension"
+    $releaseModule = "$PSScriptRoot/Bin/Release/Module/$ModuleExportName-$ModuleVersion-Release.$ModuleExportExtension"
+    if((!(Test-Path -Path "$debugModule" -PathType Leaf)) -and (!(Test-Path -Path "$releaseModule" -PathType Leaf))){
         Write-Warning """$ModuleExportExtension"" file is required. Build this project and run again."
-        return
+        exit
     }
-
-    $SERVER_DIR = "$PSScriptRoot/Server"
     
     $launch = !($NoLaunchBrowser.IsPresent)
     
-    if ($BrowserNodeServer.IsPresent) {
+    if ($BrowserNode.IsPresent) {
         Test-RequirementsNode 
         try {
-            Push-Location $SERVER_DIR
+            Push-Location $serverDir
             npm update
             Write-InfoYellow "Press Ctrl+C to exit!"
-            node "$SERVER_DIR/NodeHttpServer.mjs" "$NodeHttpServerPort" "$launch" "$PSScriptRoot"
+            node "$nodeServer" $NodeHttpServerPort "$launch" "$PSScriptRoot"
         }
         finally {
             Pop-Location
         }
     }
 
-    if ($BrowserDenoServer.IsPresent) {
+    if ($BrowserDeno.IsPresent) {
         Test-RequirementsDeno
         try {
-            Push-Location $SERVER_DIR
+            Push-Location $serverDir
             Write-InfoYellow "Press Ctrl+C to exit!"
-            deno run --allow-run --allow-net --allow-read "$SERVER_DIR/DenoHttpServer.ts" "$DenoHttpServerPort" "$launch" "$PSScriptRoot"
+            deno run --allow-run --allow-net --allow-read "$denoServer" $DenoHttpServerPort "$launch" "$PSScriptRoot"
             return
         }
         finally {
@@ -135,7 +112,7 @@ try {
             Write-Warning "ES6 Module(mjs) is required to run on Node."
             return
         }
-        & node $ConsoleNodeOptions $NODE_SCRIPT
+        & node $ConsoleNodeOptions $nodeScript
     }
 
     if ($ConsoleDeno.IsPresent) {
@@ -144,23 +121,23 @@ try {
             Write-Warning "ES6 Module(mjs) is required to run on Deno."
             return
         }
-        & deno run $ConsoleDenoOptions $DENO_SCRIPT
+        & deno run $ConsoleDenoOptions $denoScript
     }
     
     if ($Emrun.IsPresent -or ($PSCmdlet.ParameterSetName -eq "None")) {
+        Install-EmscriptenSDK
         Test-RequirementsEmrun
         if ($ModuleIsES6Module) {
-            Write-Warning "Emscripten Emrun is not compatible with ES6 Module($ModuleExportName.$ModuleExportExtension)."
+            Write-Warning "Emscripten Emrun is not compatible with ES6 Module(.$ModuleExportExtension extension)."
             return
         }
         Write-PrettyKeyValue "LaunchBrowser" $launch
         Write-PrettyKeyValue "Mode" (Get-VariableName $Emrun)
-        & "$PSScriptRoot/X-InsaneEm-SetEmscriptenEnvVars.ps1"
         Write-InfoYellow "Press Ctrl+C to exit!"
         $browser = $launch ?  [string]::Empty : "--no_browser"
-        & $env:EMSCRIPTEN_EMRUN "$PSScriptRoot/index.html" $browser --port $EmrunHttpServerPort --private_browsing
+        & $env:EMSCRIPTEN_EMRUN "$indexHtml" $browser --port $EmrunHttpServerPort --private_browsing
     }
 }
 finally {
-    Write-InfoDarkGreen "█ End running - Module ""$COMPILED_MODULE_FILE"""
+    Write-InfoDarkGreen "█ End running - Module `"$ModuleExportName, Version: $ModuleVersion`""
 }
