@@ -20,7 +20,7 @@ Install the following packages in your operating system.
 
 \* = Windows only.
 
-If your OS is Windows, you need to install the same packages in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
+If your OS is Windows, you need to install the packages in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
 
 ## Get everything up and running
 Steps
@@ -65,7 +65,7 @@ For example if `ProductName` is "MyProject" in `$ProductInfo` parameter, the pro
 2. Run `./X-Build.ps1`   
 **Parameters**  
 *-NoMinifyJsFiles*: Don´t minify js files located in `Dist/MyProject/Js`. Those are used in build step.   
-*-ReleaseMode*: Apply -O3 compiler optimization in the code. You can change this value in the script `Dist\MyProject\ThisBuild.ps1` on `$RELEASE_OPTIMIZATION` variable. Optionally, you can change the value for debug with the `$DEBUG_OPTIMIZATION` variable."
+*-ReleaseMode*: Apply -O3 compiler optimization in the code. You can change this value in the script `Dist\MyProject\X-Build.ps1` on `$RELEASE_OPTIMIZATION` variable. Optionally, you can change the value for debug with the `$DEBUG_OPTIMIZATION` variable."
 
 You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
 

@@ -151,6 +151,8 @@ const instance = await factory(moduleInstantiationParameters);
         }
     }
     
+    $DEBUG_OPTIMIZATION = 0
+    $RELEASE_OPTIMIZATION = 3
     Write-Host
     Write-InfoBlue "Building module js file..."
     $clangd_name = "$generatedCompilationDbDir/$(Get-HexRandomName)_.compile_commands.json"
@@ -161,7 +163,7 @@ const instance = await factory(moduleInstantiationParameters);
         -I $PSScriptRoot/Include `
         -I  "$insaneDir/Include" `
         -o "$compiledModuleDir/$moduleFileName" `
-        -O"$($ReleaseMode.IsPresent ? 3 : 0)" `
+        -O"$($ReleaseMode.IsPresent ? $RELEASE_OPTIMIZATION : $DEBUG_OPTIMIZATION)" `
         -std=c++20 `
         -lembind `
         -fexceptions `
