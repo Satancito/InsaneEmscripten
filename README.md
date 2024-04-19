@@ -26,7 +26,7 @@ If your OS is Windows, you need to install the same packages in WSL. This is req
 Steps
 
 ### 1. Build Botan (libBotan.a)
-Run ```./X-InsaneEm-BuildBotan.ps1```
+Run ```./X-InsaneEm-BuildBotanForInsane.ps1```
 
 Take a 30 mins coffee.
 
@@ -34,7 +34,7 @@ Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:
 For Windows `$env:USERPROFILE/.CppLibs/`   
 For Linux `$env:HOME/.CppLibs/`
 
-> Warning!!! Running `./X-InsaneEm-BuildBotan.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Debug-Emscripten-Insane` and `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Release-Emscripten-Insane` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `ProductInfo.json`.
+> Warning!!! Running `./X-InsaneEm-BuildBotanForInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Emscripten-Wasm-Debug-Insane` and `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Emscripten-Wasm-Release-Insane` folder everytime that it is executed. Copy your unsaved changes to another location.
 
 ### 2. Build Insane (libInsane.a)
 Run ```./X-InsaneEm-BuildInsane.ps1```
@@ -43,45 +43,42 @@ Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:
 For Windows `$env:USERPROFILE/.CppLibs/`   
 For Linux `$env:HOME/.CppLibs/`
 
-> Warning!!! Running `./X-InsaneEm-BuildInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Debug-Emscripten` and `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Release-Emscripten` folder everytime that it is executed. Copy your unsaved changes to another location. Version is obtained from `ProductInfo.json`.
+> Warning!!! Running `./X-InsaneEm-BuildInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Emscripten-Wasm-Debug` and `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Emscripten-Wasm-Release` folder everytime that it is executed. Copy your unsaved changes to another location.
 
 **Parameters**
 
 *-Clean*: Deletes previously compiled files and start the compilation process from scratch.
 
-Compiled libs are copied in:  
-For Windows `$env:USERPROFILE/.CppLibs/`   
-For Linux `$env:HOME/.CppLibs/`
-
 ### 3. Create project 
 Run `./X-InsaneEm-CreateProject.ps1`
 
-The created project is located by default on `Dist/$Name`,
-`$Name` is the name of the project. This name can be configured in `ProductInfo.json` on the property `Name`. This name can be configured later on the created project.
+The created project is located by default on `Dist/$ProductName`, `$ProductName` is the name of the project passed as parameter. This ProductName can be configured later on the created project.
 
-For example if `Name` is "MyProject" in `ProductInfo.json`, the project is created on ```Dist/MyProject```
+For example if `ProductName` is "MyProject" in `$ProductInfo` parameter, the project is created on ```Dist/MyProject```
 
 
 > Warning!!! Running `./X-InsaneEm-CreateProject.ps1` removes the `Dist/MyProject` folder everytime that it is executed. Copy your unsaved changes to another location.
 
-### 4. Build created project 
+### 4. Build module in created project 
  
 1. Run `cd Dist/MyProject`
-2. Run `./ThisBuild.ps1`   
+2. Run `./X-Build.ps1`   
 **Parameters**  
 *-NoMinifyJsFiles*: Don´t minify js files located in `Dist/MyProject/Js`. Those are used in build step.   
 *-ReleaseMode*: Apply -O3 compiler optimization in the code. You can change this value in the script `Dist\MyProject\ThisBuild.ps1` on `$RELEASE_OPTIMIZATION` variable. Optionally, you can change the value for debug with the `$DEBUG_OPTIMIZATION` variable."
 
 You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
 
-### 5. Run created project.
+### 5. Run module in created project.
 1. Run `cd Dist/MyProject` 
-2. Run `./ThisRun.ps1`   
+2. Run `./X-Run.ps1`   
 **Parameters**  
 *-Emrun*: Default option. Serve project using Emscripten Emrun. `Index.html`is launched in browser. Not compatible with ES6 modules.  
-*-BrowserNodeServer*: Serve project using `Server/NodeHttpServer.mjs`. `Index.html`is launched in browser.     
-*-BrowserDenoServer*: Serve project using `Server/DenoHttpServer.ts`. `Index.html`is launched in browser.      
+*-BrowserNode*: Serve project using `Server/NodeHttpServer.mjs`. `Index.html`is launched in browser.     
+*-BrowserDeno*: Serve project using `Server/DenoHttpServer.ts`. `Index.html`is launched in browser.      
 *-ConsoleNode*: Run "index.mjs" using [Node.js](https://nodejs.org/en) runtime.     
 *-ReleaseMode*: Run "index.ts" using [Deno](https://deno.com/) runtime.      
-*-NoLaunchBrowser*: In conjunction with -Emrun, -BrowserNodeServer, BrowserDenoServer. `index.html` is not launched in browser.  
+*-NoLaunchBrowser*: In conjunction with -Emrun, -BrowserNode, BrowserDeno. `index.html` is not launched in browser.  
 
+### 6. Publish module in created project.
+It creates an optimized ES6/Js module on `Dist` folder.
