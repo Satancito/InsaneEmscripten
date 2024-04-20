@@ -39,7 +39,7 @@ $__INSANEEM_INSANE_BUILD_CONFIGURATIONS.Keys | ForEach-Object {
         Write-Host
         New-Item -Path "$($configuration.CurrentWorkingDir)" -ItemType Directory -Force | Out-Null
         Push-Location "$($configuration.CurrentWorkingDir)"
-        $null = Test-ExternalCommand "`"$env:EMSCRIPTEN_EMMAKE`" make -f $PSScriptRoot/Makefile All -j8 SOURCES_DIR=$PSScriptRoot BOTAN_MAJOR_VERSION=$__PSBOTAN_BOTAN_MAJOR_VERSION BUILD_DIR=$($configuration.CurrentWorkingDir) BUILD_CONFIGURATION=$($configuration.Name) BOTAN_DIR=$($configuration.BotanLibDir) DIST_DIR=$DestinationDir/$prefix" -ThrowOnFailure
+        $null = Test-ExternalCommand "`"$env:EMSCRIPTEN_EMMAKE`" make -f $PSScriptRoot/Makefile All -j8 SOURCES_DIR=$PSScriptRoot BOTAN_MAJOR_VERSION=$__PSBOTAN_BOTAN_MAJOR_VERSION BUILD_DIR=$($configuration.CurrentWorkingDir) BUILD_CONFIGURATION=$($configuration.Name) BOTAN_DIR=$($configuration.BotanLibDir) DIST_DIR=$DestinationDir/$prefix" -ThrowOnFailure -NoAssertion
        
         Write-Host "Creating compiler database(`"$__PSCOREFXS_CLANGD_COMPILATION_DATABASE_JSON`")..."
         Join-CompileCommandsJson -SourceDir "$($configuration.CurrentWorkingDir)" -DestinationDir "$PSScriptRoot"

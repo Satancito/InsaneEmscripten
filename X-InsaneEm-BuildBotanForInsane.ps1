@@ -4,7 +4,7 @@ Write-InfoDarkGray "▶▶▶ Running: $PSCommandPath"
 try {
         Write-Host
         Write-OutputIntroOutroMessage -Value "Building libBotan" -ForegroundColor Green
-        & "$__INSANEEM_X_PSBOTAN_EMSCRIPTEN_INTERNAL_SCRIPT" -DestinationDirSuffix "$__INSANEEM_INSANE_BOTAN_DIR_SUFFIX"
+        & "$__INSANEEM_X_PSBOTAN_EMSCRIPTEN_INTERNAL_SCRIPT" -DistDirSuffix "$__INSANEEM_INSANE_BOTAN_DIR_SUFFIX"
 }
 finally {
         
