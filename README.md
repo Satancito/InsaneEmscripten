@@ -3,15 +3,12 @@ Insane native lib for WebAssembly using the Emscripten SDK.
 
 In addition this project allows to create an Emscripten skeleton project. The project allows build, run and publish a WebAssembly module to use in your main web project.
 
-The Project contains:
+The created Project contains:
 - Insane library configured as dependency.
 - Build script.
 - Run script.
 - Publish script.
 - Another related files scripts, tools, etc.   
-
-
-
 
 ## Prerequisites
 Install the following packages in your operating system.
@@ -32,7 +29,11 @@ Install the following packages in your operating system.
 ### Concept List
 - ***DistDir, distDir, DIST_DIR*** refers to the dist folder of the library. Format is `/my/destination/dir/Insane-<Version>-Emscripten-Wasm-<Configuration><DistDirSuffix>`
 Configuration values are Debug or Release. DistDirSuffix is user defined value. All values are computed by the script. In total there are 2 DIST_DIRs, 1 for Debug configuration and 1 for Release configuration.    
-
+e.g.  
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug`   
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release`
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`
 ### how to use?
 
 ## First steps
