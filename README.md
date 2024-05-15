@@ -95,10 +95,6 @@ This Command allows to create an Emscripten skeleton project with Insane as depe
 - ***Name*** The name of the new project.   
 The created project is located by default on `Dist/<PROJECT_NAME>`   
 e.g `Name` is "MyProject", the project is created on ```Dist/MyProject```
-<br />
-<br />
-<br />
-<br />
 
 ## Results 
  
@@ -133,8 +129,11 @@ Compiled Insane lib with default options. Tree.
         └── libInsane.a
 
 ```
+<br />
+<br />
+<br />
 
-# Next Steps - With new project
+# Next Steps - With new project 🚀
 Change location to new project. Run `cd Dist/MyProject`.
 
 You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
