@@ -51,7 +51,7 @@ This command allows building Botan library for WebAssembly. If you have previous
 Command `./X-InsaneEm.ps1 -BuildICU`    
 This command allows activating/pre building ICU library on the Emscripten SDK. If you have previously built ICU, ignore this step.    
 
-## Build Insane
+## Build Insane library
 Command `./X-InsaneEm.ps1 [-Build] [-DestinationDir <string>] [-DistDirSuffix <string>] [-LibSuffix <string>] [-LibsDir <string>]`    
 This command allows building the Insane library for WebAssembly.
 
