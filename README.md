@@ -139,7 +139,7 @@ Change location to new project. Run `cd Dist/MyProject`.
 You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
 
 
-## Build WebAssembly module(new project)
+## Build WebAssembly module
 Command `./X-Build.ps1 [-NoMinifyJsFiles] [-ReleaseMode]`   
 This command allows to build project in Debug or Release configuration.
 - Default configuration is Debug.
@@ -154,16 +154,16 @@ This command allows to build project in Debug or Release configuration.
 Command `./X-Run.ps1 [-NoLaunchBrowser]` or `./X-Run.ps1 -Emrun [-NoLaunchBrowser] `   
 Starts an Emscripten Emrun web server for project files and launchs `./index.html` file on browser. This server type is not compatible with ES6 modules(*.mjs).
 
-Command `./X-Run.ps1 -BrowserNode [-NoLaunchBrowser]` 
+Command `./X-Run.ps1 -BrowserNode [-NoLaunchBrowser]`     
 Starts a web server in NodeJs runtime for serve project files and launchs `./index.html` file on browser. ES6(*.mjs) or normal js(*.js) modules are compatible.
 
-Command `./X-Run.ps1 -BrowserDeno [-NoLaunchBrowser]` 
+Command `./X-Run.ps1 -BrowserDeno [-NoLaunchBrowser]`     
 Starts a web server in Deno runtime for serve project files and launchs `./index.html` file on browser. ES6(*.mjs) or normal js(*.js) modules are compatible.
 
-Command `./X-Run.ps1 -ConsoleNode`   
+Command `./X-Run.ps1 -ConsoleNode`       
 Runs the module `./index.mjs` using NodeJs runtime. Only ES6 modules are compatible.
 
-Command `./X-Run.ps1 -ConsoleDeno`   
+Command `./X-Run.ps1 -ConsoleDeno`       
 Runs the module `./index.ts` using Deno runtime. Only ES6 modules are compatible.
 
 ### Parameters
@@ -172,21 +172,22 @@ Runs the module `./index.ts` using Deno runtime. Only ES6 modules are compatible
 
 ## Publish WebAssembly module
 Command `X-Publish.ps1`   
-It creates an optimized ES6 or Js module on `./Dist` folder.
+It creates an optimized ES6 or Js module on `./Dist` folder.   
+e.g `./Dist/MyProject-1.0.0-Release.mjs` or `./Dist/MyProject-1.0.0-Release.js`
 
 
 ## Configure project
-There are several configurations located in `ProductInfo.json` that you can modifify.
-- `Version` The product version.
-- `IsES6Module` True for ES6 module(*.mjs) or False for normal Js(*.js)
-- `NodeHttpServerPort` 
-- `DenoHttpServerPort`
-- `EmrunHttpServerPort`
+There are several configurations located in `./ProductInfo.json` that you can modifify.
+- `Version` String. The product version. e.g. `MyProject`
+- `IsES6Module` Boolean. True for ES6 module(*.mjs) or False for normal Js(*.js)
+- `NodeHttpServerPort` Int. Port for web server.
+- `DenoHttpServerPort` Int. Port for web server.
+- `EmrunHttpServerPort` Int. Port for web server.
 - `ConsoleNodeOptions` Additional options for send to NodeJs runtime.
 - `ConsoleDenoOptions` Additional options for send to Deno runtime.
-- `InsaneVersion` Insane version to found in `<USER_DIRECTORY>/.CppLibs`
+- `InsaneVersion` String. Insane version to find Insane in `<USER_DIRECTORY>/.CppLibs`
 
-There are several files to modify an test module functionality.
+There are several files to modify and test your module functionality.
 - `index.html` for Browser.
 - `index.mjs` for NodeJs runtime.
 - `index.ts` for Deno runtime.
