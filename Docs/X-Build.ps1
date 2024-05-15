@@ -9,7 +9,6 @@ param (
     
 $Error.Clear()  
 $ErrorActionPreference = "Stop"
-#Import-Module -Name "$(Get-Item "$PSScriptRoot/Z-InsaneEm.ps1")" -Force -NoClobber
 Import-Module -Name "$PSScriptRoot/Z-Init.ps1" -Force -NoClobber
     
 function Test-Requirements {
@@ -20,12 +19,7 @@ function Test-Requirements {
     Write-InfoBlue "Test - Build - Dependency tools"
     Write-Host
 
-    Write-InfoMagenta "== Emscripten"
-    $command = Get-Command "$env:EMSCRIPTEN_COMPILER"
-    Write-Host "$($command.Source)"
-    & "$($command.Source)" --version
-    Write-Host
-
+    Assert-Executable -ExeName $env:EMSCRIPTEN_COMPILER -Parameters @("--version")
     Assert-JavaExecutable
 }
 
@@ -40,10 +34,8 @@ try {
     $moduleExportExtension = $productInfo.IsES6Module ? "mjs": "js"
     $exportConfiguration = "$($ReleaseMode.IsPresent ? "Release" : "Debug")"
     $moduleFileName = "$moduleExportName-$moduleVersion-$exportConfiguration.$moduleExportExtension"
-    $projectVariablePrefix = "__INSANEEM_PROJECT_$($productInfo.Name.ToUpper())"
-    $tempDir = Get-Variable -Name "$($projectVariablePrefix)_TEMP_DIR" -ValueOnly
-    $insaneVersion = Get-Variable -Name "$($projectVariablePrefix)_INSANE_VERSION" -ValueOnly
-    $insaneDir = "$(Get-CppLibsDir)/Insane-$insaneVersion-Emscripten-Wasm-$($ReleaseMode.IsPresent ? "Debug": "Release")"
+    $tempDir = $__INSANEEM_PROJECT_PROJECTNAME_TEMP_DIR
+    $insaneDir = Get-InsaneDistDir -ReleaseMode:$ReleaseMode
     Write-Host
     Write-InfoBlue "████ Building Module: ""$moduleFileName"""
     Write-Host
@@ -59,18 +51,10 @@ try {
     $indexHtml = "$PSScriptRoot/index.html"
     $indexMjs = "$PSScriptRoot/index.mjs"
     $indexTs = "$PSScriptRoot/index.ts"
-    Remove-Item -Path "$PSScriptRoot/Bin"-Force -Recurse -ErrorAction Ignore
+    Remove-Item -Path "$PSScriptRoot/Bin" -Force -Recurse -ErrorAction Ignore
     New-Item "$compiledJsDir" -ItemType Container -Force | Out-Null
     New-Item "$compiledModuleDir" -ItemType Container -Force | Out-Null
     New-Item "$generatedCompilationDbDir" -ItemType Container -Force | Out-Null
-    if (!$NoMinifyJsFiles.IsPresent) {
-        Write-InfoBlue "Minifying Js files"
-        New-Item "$toolsDir" -ItemType Container -Force | Out-Null
-        $closureCompilerUrl = "$(Get-Variable -Name "$($projectVariablePrefix)_CLOSURE_COMPILER_URL" -ValueOnly)"
-        $closureCompilerHash = "$(Get-Variable -Name "$($projectVariablePrefix)_CLOSURE_COMPILER_HASH" -ValueOnly)"
-        $closureCompiler = Invoke-HttpDownload -Url "$closureCompilerUrl" -DestinationPath "$toolsDir" -HashAlgorithm SHA1 -Hash "$closureCompilerHash" -ReturnFilename
-    }
-
 
     $es6BrowserCode = @"
 <!-- _BEGIN_MODULE_SCRIPT_ -->
@@ -124,15 +108,13 @@ const instance = await factory(moduleInstantiationParameters);
 
     $AdditionalPreJsContent = @"
 "@
-
+    if (!$NoMinifyJsFiles.IsPresent) {
+        New-Item "$toolsDir" -ItemType Container -Force | Out-Null
+        $closureCompiler = Invoke-HttpDownload -Url "$__INSANEEM_PROJECT_PROJECTNAME_CLOSURE_COMPILER_URL" -DestinationPath "$toolsDir" -HashAlgorithm SHA1 -Hash "$__INSANEEM_PROJECT_PROJECTNAME_CLOSURE_COMPILER_HASH" -ReturnFilename
+    }
     $Crlf = [System.Environment]::NewLine
-
     $filenames = @("$PSScriptRoot/Js/ExternPost.js", "$PSScriptRoot/Js/ExternPre.js", "$PSScriptRoot/Js/Post.js", "$PSScriptRoot/Js/Pre.js")
     $additionalContents = @($AdditionalExternPostJsContent, $AdditionalExternPreJsContent, $AdditionalPostJsContent, $AdditionalPreJsContent)
-    
-
-   
-
     for ($i = 0; $i -lt $filenames.Length; $i++) {
         $content = [System.IO.File]::ReadAllText("$($filenames[$i])")
         $content += "$Crlf$Crlf$($additionalContents[$i])"
@@ -151,23 +133,21 @@ const instance = await factory(moduleInstantiationParameters);
         }
     }
     
-    $DEBUG_OPTIMIZATION = 0
-    $RELEASE_OPTIMIZATION = 3
     Write-Host
-    Write-InfoBlue "Building module js file..."
+    Write-InfoBlue "Building module $moduleExportExtension file..."
     $clangd_name = "$generatedCompilationDbDir/$(Get-HexRandomName)_.compile_commands.json"
     & "$env:EMSCRIPTEN_COMPILER" `
         -MJ "$clangd_name" `
         "$PSScriptRoot/Source/main.cpp" `
         "$insaneDir/Lib/libInsane.a" `
-        -I $PSScriptRoot/Include `
+        -I "$PSScriptRoot/Include" `
         -I  "$insaneDir/Include" `
         -o "$compiledModuleDir/$moduleFileName" `
-        -O"$($ReleaseMode.IsPresent ? $RELEASE_OPTIMIZATION : $DEBUG_OPTIMIZATION)" `
+        $($ReleaseMode.IsPresent ? @("-O3") : @("-fno-inline","-O2", "-gseparate-dwarf=$compiledModuleDir/$moduleFileName.dwarf.wasm")) `
         -std=c++20 `
         -lembind `
         -fexceptions `
-        -s SINGLE_FILE=1 `
+        -s SINGLE_FILE=$($ReleaseMode.IsPresent ? 1 : 0) `
         -s WASM=1 `
         -s VERBOSE=0 `
         -s USE_WEBGPU=1 `
@@ -184,10 +164,11 @@ const instance = await factory(moduleInstantiationParameters);
         -s ASYNCIFY=1 `
         -D LIB_COMPILE_TIME `
         -D LIB_PRODUCT_NAME="\`"$($moduleExportName)\`"" `
-        -D LIB_PRODUCT_VERSION="\`"$($moduleVersion)\`"" 
+        -D LIB_PRODUCT_VERSION="\`"$($moduleVersion)\`"" `
+        -D ENABLE_DEBUG_EXTENSIONS=$($ReleaseMode.IsPresent ? "false" : "true" ) 
 
-    Write-Host "Creating compiler database `"compile_commands.json`""
     #Clangd compile_commands.json gen.
+    Write-Host "Creating compiler database `"compile_commands.json`""
     Join-CompileCommandsJson -SourceDir "$generatedCompilationDbDir" -DestinationDir "$PSScriptRoot"
     #Browser - Code gen.
     Write-Host "Generating code for browser..."

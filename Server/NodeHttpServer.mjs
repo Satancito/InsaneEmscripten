@@ -23,6 +23,8 @@ const server = http.createServer((req, res) => {
         ['.html', 'text/html; charset=utf-8'],
         ['.js', 'application/javascript; charset=utf-8'],
         ['.mjs', 'application/javascript; charset=utf-8'],
+        ['.cpp', 'text/x-c++src; charset=utf-8'],
+        ['.h', 'text/x-c++hdr; charset=utf-8'],
         ['.wasm', 'application/wasm'],
         ['.wat', 'text/plain; charset=utf-8']
     ]);

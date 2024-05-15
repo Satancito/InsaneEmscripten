@@ -1,14 +1,21 @@
 # InsaneEmscripten
+Insane native lib for WebAssembly using the Emscripten SDK.
 
-This project helps for:
+In addition this project allows to create an Emscripten skeleton project. The project allows build, run and publish a WebAssembly module to use in your main web project.
 
-1. Build Botan library for Emscripten. 
-2. Build Insane library for Emscripten.
-3. Create an empty Emscripten project with the build, run and publish scripts. This project uses Insane as a dependency.
+The Project contains:
+- Insane library configured as dependency.
+- Build script.
+- Run script.
+- Publish script.
+- Another related files scripts, tools, etc.   
 
-## Prerequisites 
+
+
+
+## Prerequisites
 Install the following packages in your operating system.
-
+- [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.4).
 - [Python](https://www.python.org/)
 - [Make](https://www.gnu.org/software/make)
 - [Git](https://git-scm.com/)
@@ -17,68 +24,172 @@ Install the following packages in your operating system.
 - [Deno](https://deno.com/)
 - [Wsl - Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install)*   
 - [Make for Windows](https://gnuwin32.sourceforge.net/packages/make.htm)*   
+- Build Botan library.
+- Build ICU library.
 
-\* = Windows only.
+> \* Windows only. If your OS is Windows, you need to install the packages Python, Make, Git in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
 
-If your OS is Windows, you need to install the packages in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
+### Concept List
+- ***DistDir, distDir, DIST_DIR*** refers to the dist folder of the library. Format is `/my/destination/dir/Insane-<Version>-Emscripten-Wasm-<Configuration><DistDirSuffix>`
+Configuration values are Debug or Release. DistDirSuffix is user defined value. All values are computed by the script. In total there are 2 DIST_DIRs, 1 for Debug configuration and 1 for Release configuration.    
 
-## Get everything up and running
-Steps
+### how to use?
 
-### 1. Build Botan (libBotan.a)
-Run ```./X-InsaneEm-BuildBotanForInsane.ps1```
+## First steps
+- Clone repository `git clone https://github.com/Satancito/InsaneEmscripten.git`
+- Update repository submodules. Inside repo run `./T-UpdateSubmodules.ps1`
 
-Take a 30 mins coffee.
+## Build Botan library
+Command `./X-InsaneEm.ps1 -BuildBotan [-DestinationDir <string>]`    
+This command allows building Botan library for WebAssembly. If you have previously built ICU, ignore this step.
+### Parameters
 
-Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:  
-For Windows `$env:USERPROFILE/.CppLibs/`   
-For Linux `$env:HOME/.CppLibs/`
+- ***DestinationDir*** Optional. Defaults to `<USER_DIRECTORY>/.CppLibs`. This is the destination where the dist folder will be created.   
 
-> Warning!!! Running `./X-InsaneEm-BuildBotanForInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Emscripten-Wasm-Debug-Insane` and `<USER_DIRECTORY>/.CppLibs/Botan-$BotanVersion-Emscripten-Wasm-Release-Insane` folder everytime that it is executed. Copy your unsaved changes to another location.
+## Build ICU library
+Command `./X-InsaneEm.ps1 -BuildICU`    
+This command allows activating/pre building ICU library on the Emscripten SDK. If you have previously built ICU, ignore this step.    
 
-### 2. Build Insane (libInsane.a)
-Run ```./X-InsaneEm-BuildInsane.ps1```
+## Build Insane
+Command `./X-InsaneEm.ps1 [-Build] [-DestinationDir <string>] [-DistDirSuffix <string>] [-LibSuffix <string>] [-LibsDir <string>]`    
+This command allows building the Insane library for WebAssembly.
 
-Compiled libs are copied in `USER_DIRECTORY/.CppLibs/`:  
-For Windows `$env:USERPROFILE/.CppLibs/`   
-For Linux `$env:HOME/.CppLibs/`
+### Parameters
+- ***DestinationDir*** Optional. Defaults to `<USER_DIRECTORY>/.CppLibs`. This is the destination where the dist folder will be created.
 
-> Warning!!! Running `./X-InsaneEm-BuildInsane.ps1` removes the `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Emscripten-Wasm-Debug` and `<USER_DIRECTORY>/.CppLibs/Insane-$InsaneVersion-Emscripten-Wasm-Release` folder everytime that it is executed. Copy your unsaved changes to another location.
+- ***DistDirSuffix*** Optional. Defaults to empty. This is a suffix to add to the name of the dist folder.    
+e.g. if `DistDirSuffix` is `Dev`, the dist folder is `<USER_DIRECTORY>/.CppLibs/<DIST_DIR>-Dev`
 
-**Parameters**
+- ***LibSuffix*** Optional. Defaults to empty. This is a suffix to add to the name of the library.    
+e.g. `LibSuffix` is `Internal`, the library name is `<USER_DIRECTORY>/.CppLibs/<DIST_DIR>/Lib/libInsaneInternal.a`.
 
-*-Clean*: Deletes previously compiled files and start the compilation process from scratch.
+- ***LibsDir*** Optional. Defaults to `<USER_DIRECTORY>/.CppLibs` This is the path where Botan library and others are located. 
 
-### 3. Create project 
-Run `./X-InsaneEm-CreateProject.ps1`
+## Build Combo - (Botan + ICU + Insane)
+Command `./X-InsaneEm.ps1 -BuildAll [-DestinationDir <string>] [-DistDirSuffix <string>] [-LibSuffix <string>] [-LibsDir <string>] [-SkipBotan] [-SkipICU]`    
+This command allows building Botan, ICU and Insane libs. Building Botan and ICU can be skipped.
 
-The created project is located by default on `Dist/$ProductName`, `$ProductName` is the name of the project passed as parameter. This ProductName can be configured later on the created project.
+### Parameters
 
-For example if `ProductName` is "MyProject" in `$ProductInfo` parameter, the project is created on ```Dist/MyProject```
+Same parameters as Insane build command with the following aditions
 
+- ***SkipBotan*** Optional. This flag allow skipping Botan build.
 
-> Warning!!! Running `./X-InsaneEm-CreateProject.ps1` removes the `Dist/MyProject` folder everytime that it is executed. Copy your unsaved changes to another location.
+- ***SkipICU*** Optional. This flag allow skipping ICU build.
 
-### 4. Build module in created project 
- 
-1. Run `cd Dist/MyProject`
-2. Run `./X-Build.ps1`   
-**Parameters**  
-*-NoMinifyJsFiles*: Don´t minify js files located in `Dist/MyProject/Js`. Those are used in build step.   
-*-ReleaseMode*: Apply -O3 compiler optimization in the code. You can change this value in the script `Dist\MyProject\X-Build.ps1` on `$RELEASE_OPTIMIZATION` variable. Optionally, you can change the value for debug with the `$DEBUG_OPTIMIZATION` variable."
+## Clean - Temp
+Command `./X-InsaneEm.ps1 -Clean`   
+This Command allows to remove InsaneEmscripten temp dir `<USER_DIRECTORY>/.InsaneEm`
+
+## Install Emscripten
+Command `./X-InsaneEm.ps1 -InstallEmscriptenSDK [-Force]`   
+This Command allows to install Emscripten SDK.
+### Parameters
+- ***Force*** Optional. This flag allow reinstall Emscripten SDK.
+
+## Create Emscripten project + Insane
+Command `./X-InsaneEm.ps1 -CreateProject [-Name] <string>`   
+This Command allows to create an Emscripten skeleton project with Insane as dependency, build script, run script, publish script and other related files(scripts, tools, configs, etc).
+
+### Parameters
+- ***Name*** The name of the new project.   
+The created project is located by default on `Dist/<PROJECT_NAME>`   
+e.g `Name` is "MyProject", the project is created on ```Dist/MyProject```
+<br />
+<br />
+<br />
+<br />
+
+## Results 
+ 
+Compiled Insane lib with default options. Tree.
+```
+<DIST_DIR>
+├── Insane-1.0.0-Emscripten-Wasm-Debug
+│   ├── Include
+│   │   └── Insane
+│   │       ├── Insane.h
+│   │       ├── InsaneEmscripten.h
+│   │       ├── InsaneCore.h
+│   │       ├── InsaneCryptography.h
+│   │       ├── InsaneException.h
+│   │       ├── InsanePreprocessor.h
+│   │       ├── InsaneString.h
+│   │       └── InsaneTest.h
+│   └── Lib
+│       └── libInsane.a
+└── Insane-1.0.0-Emscripten-Wasm-Release
+    ├── Include
+    │   └── Insane
+    │       ├── Insane.h
+    │       ├── InsaneEmscripten.h
+    │       ├── InsaneCore.h
+    │       ├── InsaneCryptography.h
+    │       ├── InsaneException.h
+    │       ├── InsanePreprocessor.h
+    │       ├── InsaneString.h
+    │       └── InsaneTest.h
+    └── Lib
+        └── libInsane.a
+
+```
+
+# Next Steps - With new project
+Change location to new project. Run `cd Dist/MyProject`.
 
 You can change module type(normal script or ES6 module) in `ProductInfo.json`, the property `IsES6Module` you can set to `true` or `false`.
 
-### 5. Run module in created project.
-1. Run `cd Dist/MyProject` 
-2. Run `./X-Run.ps1`   
-**Parameters**  
-*-Emrun*: Default option. Serve project using Emscripten Emrun. `Index.html`is launched in browser. Not compatible with ES6 modules.  
-*-BrowserNode*: Serve project using `Server/NodeHttpServer.mjs`. `Index.html`is launched in browser.     
-*-BrowserDeno*: Serve project using `Server/DenoHttpServer.ts`. `Index.html`is launched in browser.      
-*-ConsoleNode*: Run "index.mjs" using [Node.js](https://nodejs.org/en) runtime.     
-*-ReleaseMode*: Run "index.ts" using [Deno](https://deno.com/) runtime.      
-*-NoLaunchBrowser*: In conjunction with -Emrun, -BrowserNode, BrowserDeno. `index.html` is not launched in browser.  
 
-### 6. Publish module in created project.
-It creates an optimized ES6/Js module on `Dist` folder.
+## Build WebAssembly module(new project)
+Command `./X-Build.ps1 [-NoMinifyJsFiles] [-ReleaseMode]`   
+This command allows to build project in Debug or Release configuration.
+- Default configuration is Debug.
+- All Emscripten pre/post js files on `./Js` are minified by default and generated in `./Bin/Js`.
+- Generated module is located in `./Bin/Module`.
+
+### Parameters
+- ***NoMinifyJsFiles***  Allows skipping minify js files located in `./Js`. 
+- ***ReleaseMode*** Optional. Apply Release configuration instead of Debug configuration.
+
+## Run WebAssembly module
+Command `./X-Run.ps1 [-NoLaunchBrowser]` or `./X-Run.ps1 -Emrun [-NoLaunchBrowser] `   
+Starts an Emscripten Emrun web server for project files and launchs `./index.html` file on browser. This server type is not compatible with ES6 modules(*.mjs).
+
+Command `./X-Run.ps1 -BrowserNode [-NoLaunchBrowser]` 
+Starts a web server in NodeJs runtime for serve project files and launchs `./index.html` file on browser. ES6(*.mjs) or normal js(*.js) modules are compatible.
+
+Command `./X-Run.ps1 -BrowserDeno [-NoLaunchBrowser]` 
+Starts a web server in Deno runtime for serve project files and launchs `./index.html` file on browser. ES6(*.mjs) or normal js(*.js) modules are compatible.
+
+Command `./X-Run.ps1 -ConsoleNode`   
+Runs the module `./index.mjs` using NodeJs runtime. Only ES6 modules are compatible.
+
+Command `./X-Run.ps1 -ConsoleDeno`   
+Runs the module `./index.ts` using Deno runtime. Only ES6 modules are compatible.
+
+### Parameters
+***NoLaunchBrowser*** Optional. In conjunction with -Emrun, -BrowserNode, -BrowserDeno. `./index.html` is not launched in browser.  
+
+
+## Publish WebAssembly module
+Command `X-Publish.ps1`   
+It creates an optimized ES6 or Js module on `./Dist` folder.
+
+
+## Configure project
+There are several configurations located in `ProductInfo.json` that you can modifify.
+- `Version` The product version.
+- `IsES6Module` True for ES6 module(*.mjs) or False for normal Js(*.js)
+- `NodeHttpServerPort` 
+- `DenoHttpServerPort`
+- `EmrunHttpServerPort`
+- `ConsoleNodeOptions` Additional options for send to NodeJs runtime.
+- `ConsoleDenoOptions` Additional options for send to Deno runtime.
+- `InsaneVersion` Insane version to found in `<USER_DIRECTORY>/.CppLibs`
+
+There are several files to modify an test module functionality.
+- `index.html` for Browser.
+- `index.mjs` for NodeJs runtime.
+- `index.ts` for Deno runtime.
+
+> Caution: Do not modify the sections labeled as autogenerated code in the aforementioned files, as they regenerate automatically with each build. One section contains markers that the build script detects to generate the code and function correctly when invoking the run script.

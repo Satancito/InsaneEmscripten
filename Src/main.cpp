@@ -23,6 +23,7 @@ USING_NS_EMSCRIPTEN;
 #ifndef LIB_COMPILE_TIME
 #define LIB_PRODUCT_NAME "<No product>"
 #define LIB_PRODUCT_VERSION "<No Version>"
+#define ENABLE_DEBUG_EXTENSIONS true
 #endif
 
 using JsConsole = InsaneIO::Insane::Emscripten::Console;
@@ -30,8 +31,8 @@ using Terminal = InsaneIO::Insane::Core::Console;
 
 int main()
 {
-    DebugExtensions::Debug(true);
-    JsConsole::Log("Hello World!!! from WebAssembly with Emscripten \""s + LIB_PRODUCT_NAME + " " + LIB_PRODUCT_VERSION + "\".");
+    DebugExtensions::Debug(ENABLE_DEBUG_EXTENSIONS);
+    JsConsole::Log("Hello World!!! from WebAssembly \"ProductName: "s + LIB_PRODUCT_NAME + " / Version:" + LIB_PRODUCT_VERSION + "\".");
     return EXIT_SUCCESS;
 }
 
