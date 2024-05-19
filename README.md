@@ -149,12 +149,12 @@ This command allows to build project in Debug or Release configuration.
 - Generated module is located in `./Bin/Module`.
 
 ### Parameters
-- ***NoMinifyJsFiles***  Allows skipping minify js files located in `./Js`. 
+- ***NoMinifyJsFiles*** Optional. Allows skipping minify js files located in `./Js`. 
 - ***ReleaseMode*** Optional. Apply Release configuration instead of Debug configuration.
 
 ## Run WebAssembly module
 Command `./X-Run.ps1 [-NoLaunchBrowser]` or `./X-Run.ps1 -Emrun [-NoLaunchBrowser] `   
-Starts an Emscripten Emrun web server for project files and launchs `./index.html` file on browser. This server type is not compatible with ES6 modules(*.mjs).
+Starts an Emscripten Emrun web server for serve project files and launchs `./index.html` file on browser. This server type is not compatible with ES6 modules(*.mjs).
 
 Command `./X-Run.ps1 -BrowserNode [-NoLaunchBrowser]`     
 Starts a web server in NodeJs runtime for serve project files and launchs `./index.html` file on browser. ES6(*.mjs) or normal js(*.js) modules are compatible.
