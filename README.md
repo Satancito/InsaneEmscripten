@@ -12,10 +12,10 @@ The created Project contains:
 
 ## Prerequisites
 Install the following packages in your operating system.
-- [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.4).
-- [Python](https://www.python.org/)
+- [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.4)*.
+- [Python](https://www.python.org/)*
 - [Make](https://www.gnu.org/software/make)
-- [Git](https://git-scm.com/)
+- [Git](https://git-scm.com/)*
 - [OpenJDK](https://jdk.java.net/) or [OracleJDK](https://www.oracle.com/java/technologies/downloads/)
 - [Node.js](https://nodejs.org/en)
 - [Deno](https://deno.com/)
@@ -24,16 +24,17 @@ Install the following packages in your operating system.
 - Build Botan library.
 - Build ICU library.
 
-> \* Windows only. If your OS is Windows, you need to install the packages Python, Make, Git in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
+> \* If your OS is Windows, you need to install the packages PowerShell, Python, Make, Git in WSL. This is required for building Botan due to incompatibilities with the Botan script on Windows platforms.
 
 ### Concept List
 - ***DistDir, distDir, DIST_DIR*** refers to the dist folder of the library. Format is `/my/destination/dir/Insane-<Version>-Emscripten-Wasm-<Configuration><DistDirSuffix>`
 Configuration values are Debug or Release. DistDirSuffix is user defined value. All values are computed by the script. In total there are 2 DIST_DIRs, 1 for Debug configuration and 1 for Release configuration.    
 e.g.  
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug`   
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release`
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug`     
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release` 
+<br />       
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`   
+`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release-Dev`  
 ### how to use?
 
 ## First steps
@@ -97,9 +98,9 @@ This Command allows to create an Emscripten skeleton project with Insane as depe
 The created project is located by default on `Dist/<PROJECT_NAME>`   
 e.g `Name` is "MyProject", the project is created on ```Dist/MyProject```
 
-## Results 
+## Results tree 
  
-Compiled Insane lib with default options. Tree.
+Compiled Insane lib with default options.
 ```
 <DIST_DIR>
 ├── Insane-1.0.0-Emscripten-Wasm-Debug
