@@ -30,11 +30,14 @@ Install the following packages in your operating system.
 - ***DistDir, distDir, DIST_DIR*** refers to the dist folder of the library. Format is `/my/destination/dir/Insane-<Version>-Emscripten-Wasm-<Configuration><DistDirSuffix>`
 Configuration values are Debug or Release. DistDirSuffix is user defined value. All values are computed by the script. In total there are 2 DIST_DIRs, 1 for Debug configuration and 1 for Release configuration.    
 e.g.  
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug`     
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release` 
-<br />       
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev`   
-`/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release-Dev`  
+```
+/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug
+/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release
+
+/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Debug-Dev
+/my/destination/dir/Insane-1.0.0-Emscripten-Wasm-Release-Dev
+```  
+
 ### how to use?
 
 ## First steps
