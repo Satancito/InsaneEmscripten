@@ -1186,7 +1186,7 @@ Emval FetchOptions::Build() const
 Emval Fetch::SendAsync(const String &url, const FetchOptions &options){
     static String statusErrorLabel = "ResponseError, Status: "s;
     EMSCRIPTEN_VOID_FUNCTOR_TYPE(2)
-    promiseCallback = [url, options](Emval resolve, MAYBE_UNUSED_ATTRIB Emval reject) -> void
+    promiseCallback = [url, options](Emval resolve, INSANE_MAYBE_UNUSED_ATTRIB Emval reject) -> void
     {
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
         errorCallback = [resolve](Emval error) -> void
