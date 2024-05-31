@@ -871,7 +871,7 @@ EmscriptenVal Browser::GetFingerprintAsync(const String &key)
 }
 
 /* Js */
-Emval Js::SetProperty(const Emval &object, const String &property, const Emval &value, const bool &replaceIfExists)
+Emval Js::SetProperty(Emval &object, const String &property, const Emval &value, const bool &replaceIfExists)
 {
     Emval result = object;
     if (Operator::IsNullOrUndefined(result[property]))
@@ -888,33 +888,34 @@ Emval Js::SetProperty(const Emval &object, const String &property, const Emval &
     return result;
 }
 
-Emval Js::SetPropertyEmptyObject(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyEmptyObject(EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
     return SetProperty(object, property, EmscriptenVal::global().object(), replaceIfExists);
 }
 
-Emval Js::SetPropertyEmptyArray(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyEmptyArray(EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
     return SetProperty(object, property, EmscriptenVal::global().array(), replaceIfExists);
 }
 
-Emval Js::SetPropertyNull(const EmscriptenVal &object, const String &property, const bool &replaceIfExists)
+Emval Js::SetPropertyNull(EmscriptenVal &object, const String &property, const bool &replaceIfExists)
 {
     return SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
-String Js::GetPropertyName(const String &name, const String &key, const String &suffix)
+String Js::GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String &keyPrefix)
 {
-    return (suffix.empty() ? INSANE_PROPERTY_SUFFIX : suffix) + HexEncodingExtensions::EncodeToHex(HashExtensions::ComputeHmac(name, key, HashAlgorithm::Sha512));
+    return (keyPrefix.empty() ? INSANE_STRING : keyPrefix) + "_" + (keyHasher != nullptr ? keyHasher->ComputeEncoded(name) : name) ;
 }
 
 template <>
 emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
 {
-    String id = Js::GetPropertyName(scriptpath.as<String>(), EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
-    Js::SetPropertyEmptyObject(val::global(), INSANE_STRING, false);
-    String loadedName = Js::GetPropertyName("Loaded"s, EMPTY_STRING, INSANE_PROPERTY_SUFFIX);
-    Js::SetPropertyEmptyObject(val::global()["Insane"], loadedName, false);
+    String id = Js::GetPropertyName(scriptpath.as<String>());
+    Emval object = val::global();
+    Js::SetPropertyEmptyObject(object, INSANE_STRING, false);
+    String loadedName = Js::GetPropertyName("Loaded"s);
+    Js::SetPropertyEmptyObject(object = object["Insane"], loadedName, false);
     val loaded = EMVAL_INSANE[loadedName];
     if (!Operator::IsNullOrUndefined(loaded[id]))
     {
@@ -954,39 +955,38 @@ emscripten::val Js::LoadScriptAsync(const String &scriptpath)
 }
 
 /* LocalStorage */
-void LocalStorage::SetItem(const String &key, const String &value, const StdUniquePtr<IEncryptor> &encryptor)
+void LocalStorage::SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
 {
     try
     {
-        EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("setItem", key, encryptor != nullptr ? encryptor->EncryptEncoded(value) : value);
+        EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("setItem", Js::GetPropertyName(key, keyHasher, keyPrefix), valueEncryptor != nullptr ? valueEncryptor->EncryptEncoded(value) : value);
     }
-    catch (const Insane::Exception::ExceptionBase)
+    catch (...)
     {
         __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
     }
 }
 
-EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<IEncryptor> &encryptor)
+EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
 {
     try
     {
-        EmscriptenVal value = EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("getItem", key);
+        EmscriptenVal value = EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("getItem", Js::GetPropertyName(key, keyHasher, keyPrefix));
         if (!value)
         {
             return value;
         }
-        return encryptor != nullptr ? EmscriptenVal(ConverterExtensions::StdVectorUint8ToString(encryptor->DecryptEncoded(value.as<String>()))) : value;
+        return valueEncryptor != nullptr ? EmscriptenVal(ConverterExtensions::StdVectorUint8ToString(valueEncryptor->DecryptEncoded(value.as<String>()))) : value;
     }
     catch (...)
     {
-
         __INSANE_THROW_DEFAULT_EXCEPTION(JsException, DebugType::Debug);
     }
 }
 
-void LocalStorage::RemoveItem(const String &key)
+void LocalStorage::RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
 {
-    EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("removeItem", key);
+    EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("removeItem", Js::GetPropertyName(key, keyHasher, keyPrefix));
 }
 
 void LocalStorage::Clear()
@@ -994,7 +994,7 @@ void LocalStorage::Clear()
     EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("clear");
 }
 
-void LocalStorage::RemoveItemsWithPrefix(const String &prefix)
+void LocalStorage::RemoveItemsWithKeyPrefix(const String &prefix)
 {
     StdVector<EmscriptenVal> items;
     int localStorageSize = EMVAL_GLOBAL["localStorage"]["length"].as<int>();
@@ -1163,12 +1163,12 @@ Emval FetchOptions::Build() const
     {
         options = Js::SetProperty(options, "body", *_body);
     }
-    options = Js::SetProperty(options, "method", Emval(StringExtensions::ToUpper(FetchRequestMethodEnumExtensions::ToString(_requestMethod))));
-    options = Js::SetProperty(options, "mode", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchModeEnumExtensions::ToString(_mode), "_", "-"))));
-    options = Js::SetProperty(options, "cache", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCacheTypeEnumExtensions::ToString(_cacheType), "_", "-"))));
-    options = Js::SetProperty(options, "credentials", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCredentialsTypeEnumExtensions::ToString(_credentialsType), "_", "-"))));
-    options = Js::SetProperty(options, "redirect", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchRedirectTypeEnumExtensions::ToString(_redirectType), "_", "-"))));
-    options = Js::SetProperty(options, "referrerPolicy", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchReferrerPolicyEnumExtensions::ToString(_referrerPolicy), "_", "-"))));
+    Js::SetProperty(options, "method", Emval(StringExtensions::ToUpper(FetchRequestMethodEnumExtensions::ToString(_requestMethod))));
+    Js::SetProperty(options, "mode", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchModeEnumExtensions::ToString(_mode), "_", "-"))));
+    Js::SetProperty(options, "cache", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCacheTypeEnumExtensions::ToString(_cacheType), "_", "-"))));
+    Js::SetProperty(options, "credentials", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCredentialsTypeEnumExtensions::ToString(_credentialsType), "_", "-"))));
+    Js::SetProperty(options, "redirect", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchRedirectTypeEnumExtensions::ToString(_redirectType), "_", "-"))));
+    Js::SetProperty(options, "referrerPolicy", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchReferrerPolicyEnumExtensions::ToString(_referrerPolicy), "_", "-"))));
     if (_headers.size() > 0)
     {
         Emval headers = EMVAL_GLOBAL["Headers"].new_();
@@ -1176,7 +1176,7 @@ Emval FetchOptions::Build() const
         {
             headers.call<void>("append", value.first, value.second);
         }
-        options = Js::SetProperty(options, "headers", headers);
+        Js::SetProperty(options, "headers", headers);
     }
     return options;
 }

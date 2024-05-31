@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #ifndef __INSANE_EMSCRIPTEN_H__
 #define __INSANE_EMSCRIPTEN_H__
 
@@ -7,6 +8,7 @@
 #include <Insane/InsanePreprocessor.h>
 #include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneException.h>
+#include <Insane/InsaneCore.h>
 
 #include <emscripten/bind.h>
 
@@ -37,7 +39,6 @@
 #define USING_NS_EMSCRIPTEN using namespace emscripten
 #define USING_NS_INSANE_EMSCRIPTEN using namespace InsaneIO::Insane::Emscripten
 
-#define INSANE_PROPERTY_SUFFIX ("Insane_"s)
 #define EMVAL_GLOBAL emscripten::val::global()
 #define EMVAL_INSANE EMVAL_GLOBAL[INSANE_STRING]
 
@@ -445,11 +446,11 @@ namespace InsaneIO::Insane::Emscripten
     {
     private:
     public:
-        static Emval SetPropertyNull(const EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
-        static Emval SetPropertyEmptyObject(const EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
-        static Emval SetPropertyEmptyArray(const EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
-        static Emval SetProperty(const EmscriptenVal &object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists = true);
-        static String GetPropertyName(const String &name, const String &key = EMPTY_STRING, const String &suffix = INSANE_PROPERTY_SUFFIX);
+        static Emval SetPropertyNull(EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
+        static Emval SetPropertyEmptyObject(EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
+        static Emval SetPropertyEmptyArray(EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
+        static Emval SetProperty(EmscriptenVal &object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists = true);
+        static String GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
         template <typename ReturnType,
                   typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ReturnType, void> ||
@@ -472,14 +473,13 @@ namespace InsaneIO::Insane::Emscripten
 
     class LocalStorage final
     {
-
     private:
     public:
-        static void SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &encryptor = nullptr);
-        [[nodiscard]] static EmscriptenVal GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &encryptor = nullptr);
-        static void RemoveItem(const String &key);
+        static void SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
+        [[nodiscard]] static EmscriptenVal GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
+        static void RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
         static void Clear();
-        static void RemoveItemsWithPrefix(const String &preffix);
+        static void RemoveItemsWithKeyPrefix(const String &prefix = EMPTY_STRING);
     };
 
     class InteropExtensions
