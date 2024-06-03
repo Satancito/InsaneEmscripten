@@ -1,11 +1,12 @@
+#include <Insane/InsaneCryptography.h>
 #include <Insane/InsaneEmscripten.h>
-#include <emscripten/emscripten.h>
-#include <emscripten/bind.h>
+#include <Insane/InsaneException.h>
 #include <Insane/InsanePreprocessor.h>
 #include <Insane/InsaneString.h>
-#include <Insane/InsaneCryptography.h>
-#include <Insane/InsaneException.h>
+#include <emscripten/bind.h>
+#include <emscripten/emscripten.h>
 #include <utility>
+
 
 USING_NS_EMSCRIPTEN;
 USING_NS_INSANE_EXCEPTION;
@@ -69,7 +70,7 @@ USING_NS_INSANE_EMSCRIPTEN;
 // } // namespace Internal
 
 /* Operators */
-EmscriptenVal Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
+EmscriptenVal JsOperator::CallOperator(const EmscriptenVal &a, const EmscriptenVal &b, const OperatorType &operatorType, const OperatorArityType &operatorArityType)
 {
     val global = val::global();
     if (!EMVAL_INSANE)
@@ -80,47 +81,47 @@ EmscriptenVal Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal
     String script = EMPTY_STRING;
     switch (operatorArityType)
     {
-    case OperatorArityType::Unary:
-        script = "Insane."s + opName + "= (a) => { return ###; };"s;
-        break;
-    case OperatorArityType::Binary:
-        script = "Insane."s + opName + "= (a,b) => { return ###; };"s;
-        break;
-    default:
-        break;
+        case OperatorArityType::Unary:
+            script = "Insane."s + opName + "= (a) => { return ###; };"s;
+            break;
+        case OperatorArityType::Binary:
+            script = "Insane."s + opName + "= (a,b) => { return ###; };"s;
+            break;
+        default:
+            break;
     }
 
     String op = EMPTY_STRING;
     switch (operatorType)
     {
-    case OperatorType::Addition:
-        op = "a + b"s;
-        break;
-    case OperatorType::Subtraction:
-        op = "a - b"s;
-        break;
-    case OperatorType::Multiplication:
-        op = "a * b"s;
-        break;
-    case OperatorType::Division:
-        op = "a / b"s;
-        break;
-    case OperatorType::Import:
-        op = "import(a)"s;
-        break;
-    case OperatorType::TypeOf:
-        op = "typeof a";
-        break;
-    case OperatorType::IsNull:
-        op = "a === null";
-        break;
-    case OperatorType::IsUndefined:
-        op = "typeof a === 'undefined'";
-        break;
-    case OperatorType::IsNullOrUndefined:
-        break;
-    default:
-        break;
+        case OperatorType::Addition:
+            op = "a + b"s;
+            break;
+        case OperatorType::Subtraction:
+            op = "a - b"s;
+            break;
+        case OperatorType::Multiplication:
+            op = "a * b"s;
+            break;
+        case OperatorType::Division:
+            op = "a / b"s;
+            break;
+        case OperatorType::Import:
+            op = "import(a)"s;
+            break;
+        case OperatorType::TypeOf:
+            op = "typeof a";
+            break;
+        case OperatorType::IsNull:
+            op = "a === null";
+            break;
+        case OperatorType::IsUndefined:
+            op = "typeof a === 'undefined'";
+            break;
+        case OperatorType::IsNullOrUndefined:
+            break;
+        default:
+            break;
     }
 
     global.call<val>("eval", StringExtensions::Replace(script, {{"###"s, op}}));
@@ -129,65 +130,65 @@ EmscriptenVal Operator::CallOperator(const EmscriptenVal &a, const EmscriptenVal
     val result = val::null();
     switch (operatorArityType)
     {
-    case OperatorArityType::Unary:
-        result = insane.call<val>(opName.c_str(), a);
-        break;
-    case OperatorArityType::Binary:
-        result = insane.call<val>(opName.c_str(), a, b);
-        break;
-    default:
-        break;
+        case OperatorArityType::Unary:
+            result = insane.call<val>(opName.c_str(), a);
+            break;
+        case OperatorArityType::Binary:
+            result = insane.call<val>(opName.c_str(), a, b);
+            break;
+        default:
+            break;
     }
     insane.delete_(opName);
     return result;
 }
 
-EmscriptenVal Operator::Add(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal JsOperator::Add(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Addition, OperatorArityType::Binary);
 }
 
-EmscriptenVal Operator::Subtract(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal JsOperator::Subtract(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Subtraction, OperatorArityType::Binary);
 }
 
-EmscriptenVal Operator::Multiply(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal JsOperator::Multiply(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Multiplication, OperatorArityType::Binary);
 }
 
-EmscriptenVal Operator::Divide(const EmscriptenVal &a, const EmscriptenVal &b)
+EmscriptenVal JsOperator::Divide(const EmscriptenVal &a, const EmscriptenVal &b)
 {
     return CallOperator(a, b, OperatorType::Division, OperatorArityType::Binary);
 }
 
-EmscriptenVal Operator::ImportAsync(const EmscriptenVal &a)
+EmscriptenVal JsOperator::ImportAsync(const EmscriptenVal &a)
 {
     return CallOperator(a, EmscriptenVal::null(), OperatorType::Import, OperatorArityType::Unary);
 }
 
-EmscriptenVal Operator::TypeOf(const EmscriptenVal &a)
+EmscriptenVal JsOperator::TypeOf(const EmscriptenVal &a)
 {
     return CallOperator(a, EmscriptenVal::null(), OperatorType::TypeOf, OperatorArityType::Unary);
 }
 
-bool Operator::IsNull(const EmscriptenVal &a)
+bool JsOperator::IsNull(const EmscriptenVal &a)
 {
     return CallOperator(a, EmscriptenVal::null(), OperatorType::IsNull, OperatorArityType::Unary).as<bool>();
 }
 
-bool Operator::IsUndefined(const EmscriptenVal &a)
+bool JsOperator::IsUndefined(const EmscriptenVal &a)
 {
     return CallOperator(a, EmscriptenVal::null(), OperatorType::IsUndefined, OperatorArityType::Unary).as<bool>();
 }
 
-bool Operator::IsNullOrUndefined(const emscripten::val &a)
+bool JsOperator::IsNullOrUndefined(const emscripten::val &a)
 {
     return IsNull(a) || IsUndefined(a);
 }
 
-EmscriptenVal Operator::ToString(const emscripten::val &a)
+EmscriptenVal JsOperator::ToString(const emscripten::val &a)
 {
     return EMVAL_GLOBAL.call<val>("String", a);
 }
@@ -285,7 +286,7 @@ emscripten::val Browser::GetNameAsync(const emscripten::val &ua)
         return Promise::Resolve(val("Opera"));
     }
 
-    if (Operator::TypeOf(val::global()["InstallTrigger"]).as<String>() != "undefined" || StringExtensions::Contains(userAgent, " Firefox/", false))
+    if (JsOperator::TypeOf(val::global()["InstallTrigger"]).as<String>() != "undefined" || StringExtensions::Contains(userAgent, " Firefox/", false))
     {
         return Promise::Resolve(val("Firefox"));
     }
@@ -858,7 +859,7 @@ EmscriptenVal Browser::GetFingerprintAsync(const EmscriptenVal &key)
         val objectClass = val::global()["Object"];
         val props = objectClass.call<val>("getOwnPropertyNames", objectClass.call<val>("getPrototypeOf", val::global()["navigator"])).call<val>("sort");
         ret += Json::Serialize<String>(props);
-        ret += Operator::ToString(props["length"]).as<String>();
+        ret += JsOperator::ToString(props["length"]).as<String>();
         return val("Insane"s + Base64EncodingExtensions::EncodeToBase64(HashExtensions::ComputeHmac(ConverterExtensions::StringToStdVectorUint8(ret), ConverterExtensions::StringToStdVectorUint8(key.as<String>()))));
     };
     return Browser::GetNameAsync().call<val>("then", Js::Bind(callback));
@@ -874,7 +875,7 @@ EmscriptenVal Browser::GetFingerprintAsync(const String &key)
 Emval Js::SetProperty(Emval &object, const String &property, const Emval &value, const bool &replaceIfExists)
 {
     Emval result = object;
-    if (Operator::IsNullOrUndefined(result[property]))
+    if (JsOperator::IsNullOrUndefined(result[property]))
     {
         result.set(property, value);
     }
@@ -903,9 +904,9 @@ Emval Js::SetPropertyNull(EmscriptenVal &object, const String &property, const b
     return SetProperty(object, property, EmscriptenVal::global().null(), replaceIfExists);
 }
 
-String Js::GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String &keyPrefix)
+String Js::GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> &keyHasher, const String &keyPrefix)
 {
-    return (keyPrefix.empty() ? INSANE_STRING : keyPrefix) + "_" + (keyHasher != nullptr ? keyHasher->ComputeEncoded(name) : name) ;
+    return (keyPrefix.empty() ? INSANE_STRING : keyPrefix) + "_" + (keyHasher != nullptr ? keyHasher->ComputeEncoded(name) : name);
 }
 
 template <>
@@ -917,7 +918,7 @@ emscripten::val Js::LoadScriptAsync(const emscripten::val &scriptpath)
     String loadedName = Js::GetPropertyName("Loaded"s);
     Js::SetPropertyEmptyObject(object = object["Insane"], loadedName, false);
     val loaded = EMVAL_INSANE[loadedName];
-    if (!Operator::IsNullOrUndefined(loaded[id]))
+    if (!JsOperator::IsNullOrUndefined(loaded[id]))
     {
         return Promise::Resolve(id);
     }
@@ -954,8 +955,18 @@ emscripten::val Js::LoadScriptAsync(const String &scriptpath)
     return LoadScriptAsync(val(scriptpath));
 }
 
+Emval Js::NewError(const String &message, const Emval &options)
+{
+    return EMVAL_GLOBAL["Error"].new_(message, options);
+}
+
+void Js::ThrowError(const String &message, const Emval &options)
+{
+    NewError(message, options).throw_();
+}
+
 /* LocalStorage */
-void LocalStorage::SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
+void LocalStorage::SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> &keyHasher, const String &keyPrefix)
 {
     try
     {
@@ -967,7 +978,7 @@ void LocalStorage::SetItem(const String &key, const String &value, const StdUniq
     }
 }
 
-EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
+EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor, const StdUniquePtr<Cryptography::IHasher> &keyHasher, const String &keyPrefix)
 {
     try
     {
@@ -984,7 +995,7 @@ EmscriptenVal LocalStorage::GetItem(const String &key, const StdUniquePtr<Crypto
     }
 }
 
-void LocalStorage::RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> & keyHasher, const String & keyPrefix)
+void LocalStorage::RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> &keyHasher, const String &keyPrefix)
 {
     EMVAL_GLOBAL["localStorage"].call<EmscriptenVal>("removeItem", Js::GetPropertyName(key, keyHasher, keyPrefix));
 }
@@ -1053,10 +1064,14 @@ FetchOptions::FetchOptions(const FetchOptions &options)
       _credentialsType(options._credentialsType),
       _redirectType(options._redirectType),
       _referrerPolicy(options._referrerPolicy),
-      _headers(options._headers) {
-    if (options._body) {
+      _headers(options._headers)
+{
+    if (options._body)
+    {
         _body = std::make_unique<Emval>(*options._body);
-    } else {
+    }
+    else
+    {
         _body.reset();
     }
 }
@@ -1182,30 +1197,34 @@ Emval FetchOptions::Build() const
 }
 
 // ███ Fetch ███
+Emval Fetch::CreateResult(const Emval &status, const Emval &data, const Emval &error)
+{
+    Emval result = Emval::object();
+    Js::SetProperty(result, "Status", status);
+    Js::SetProperty(result, "Data", data);
+    Js::SetProperty(result, "Error", error);
+    return result;
+}
 
-Emval Fetch::SendAsync(const String &url, const FetchOptions &options){
+Emval Fetch::SendAsync(const String &url, const FetchOptions &options)
+{
     static String statusErrorLabel = "ResponseError, Status: "s;
     EMSCRIPTEN_VOID_FUNCTOR_TYPE(2)
     promiseCallback = [url, options](Emval resolve, INSANE_MAYBE_UNUSED_ATTRIB Emval reject) -> void
     {
         EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
-        errorCallback = [resolve](Emval error) -> void
+        errorCallback = [resolve, reject](Emval error) -> void
         {
-            Emval result = Emval::object();
-            String message = error["message"].as<String>();
-            result = Js::SetProperty(result, "Status", StringExtensions::Contains(message, statusErrorLabel)? Emval(StringExtensions::ToNumber<int>(StringExtensions::Remove(message, statusErrorLabel))) :  Emval(0));
-            result = Js::SetProperty(result, "Data", Emval::null());
-            result = Js::SetProperty(result, "Error", error);
-            resolve(result);
+            resolve(CreateResult(Emval(0), Emval::null(), error));
         };
 
         EMSCRIPTEN_VAL_FUNCTOR_TYPE(1)
-        responseCallback = [options, resolve](EmscriptenVal response) -> EmscriptenVal
+        responseCallback = [options, resolve, reject](EmscriptenVal response) -> EmscriptenVal
         {
             Emval status = response["status"];
             if (!response["ok"])
             {
-                EMVAL_GLOBAL["Error"].new_(statusErrorLabel + Operator::ToString(status).as<String>()).throw_();
+                resolve(CreateResult(status, Emval::null(), Js::NewError(statusErrorLabel + JsOperator::ToString(status).as<String>())));
             }
             EMSCRIPTEN_VOID_FUNCTOR_TYPE(1)
             dataCallback = [resolve, status](EmscriptenVal data) -> void
@@ -1213,7 +1232,8 @@ Emval Fetch::SendAsync(const String &url, const FetchOptions &options){
                 Emval result = Emval::object();
                 result = Js::SetProperty(result, "Status", status);
                 result = Js::SetProperty(result, "Data", data);
-                resolve(result);
+                result = Js::SetProperty(result, "Error", data);
+                resolve(CreateResult(status, data));
             };
 
             return ResolveDataAsync(response, options.GetResponseType())
@@ -1229,8 +1249,8 @@ Emval Fetch::SendAsync(const String &url, const FetchOptions &options){
 
 Emval Fetch::ResolveDataAsync(const Emval &fetchResponse, const FetchResponseType &responseType)
 {
- switch (responseType)
-        {
+    switch (responseType)
+    {
         case FetchResponseType::Json:
             return fetchResponse.call<Emval>("json");
         case FetchResponseType::Text:
@@ -1243,5 +1263,5 @@ Emval Fetch::ResolveDataAsync(const Emval &fetchResponse, const FetchResponseTyp
             return fetchResponse.call<Emval>("formData");
         default:
             __INSANE_THROW_EXCEPTION(NotImplementedException, "Not implemented response data type. " + FetchResponseTypeEnumExtensions::ToString(responseType), 0, nullptr, DebugType::Debug);
-        }
+    }
 }

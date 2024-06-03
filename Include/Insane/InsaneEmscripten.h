@@ -1,46 +1,46 @@
 #pragma once
 #include <cstddef>
 #ifndef __INSANE_EMSCRIPTEN_H__
-#define __INSANE_EMSCRIPTEN_H__
+    #define __INSANE_EMSCRIPTEN_H__
 
-#include <Insane/Insane.h>
-#include <Insane/InsaneString.h>
-#include <Insane/InsanePreprocessor.h>
-#include <Insane/InsaneCryptography.h>
-#include <Insane/InsaneException.h>
-#include <Insane/InsaneCore.h>
+    #include <Insane/Insane.h>
+    #include <Insane/InsaneCore.h>
+    #include <Insane/InsaneCryptography.h>
+    #include <Insane/InsaneException.h>
+    #include <Insane/InsanePreprocessor.h>
+    #include <Insane/InsaneString.h>
 
-#include <emscripten/bind.h>
+    #include <emscripten/bind.h>
 
-#include <type_traits>
-#include <functional>
+    #include <functional>
+    #include <type_traits>
 
-#define VAL_TYPE_EXP() emscripten::val
-#define EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_CHAR_ARRAY ("CallOperator")
+    #define VAL_TYPE_EXP() emscripten::val
+    #define EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_CHAR_ARRAY ("CallOperator")
 
-#define EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP(n, nprev, c, cnext, se, sae, returnTypeExp, name, p3, p4, p5) emscripten::class_<std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>>(CSTRINGIFY_DEFER(name##c)).constructor<>().function(EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_CHAR_ARRAY, &std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>::operator());
+    #define EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP(n, nprev, c, cnext, se, sae, returnTypeExp, name, p3, p4, p5) emscripten::class_<std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>>(CSTRINGIFY_DEFER(name##c)).constructor<>().function(EMSCRIPTEN_CALL_OPERATOR_PROPERTY_NAME_CHAR_ARRAY, &std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, c, COMMA_VALUE_EXP, 0))>::operator());
 
-#define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VOID_TYPE_EXP, name, 3, 4, 5)
-#define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VAL_TYPE_EXP, name, 3, 4, 5)
-#define EMSCRIPTEN_EXPORT_ALL_FUNCTORS(arity, name) EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name##ValFunctor) EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name##VoidFunctor)
+    #define EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VOID_TYPE_EXP, name, 3, 4, 5)
+    #define EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name) INSANE_REPEAT_SEQ(EMSCRIPTEN_EXPORT_FUNCTOR_SEQ_EXP, arity, EMPTY_VALUE_EXP, 0, VAL_TYPE_EXP, name, 3, 4, 5)
+    #define EMSCRIPTEN_EXPORT_ALL_FUNCTORS(arity, name) EMSCRIPTEN_EXPORT_ALL_VAL_FUNCTORS(arity, name##ValFunctor) EMSCRIPTEN_EXPORT_ALL_VOID_FUNCTORS(arity, name##VoidFunctor)
 
-#define EMSCRIPTEN_FUNCTOR_TYPE(arity, returnTypeExp) std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, arity, COMMA_VALUE_EXP, 0))>
-#define EMSCRIPTEN_VOID_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VOID_TYPE_EXP)
-#define EMSCRIPTEN_VAL_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VAL_TYPE_EXP)
+    #define EMSCRIPTEN_FUNCTOR_TYPE(arity, returnTypeExp) std::function<returnTypeExp()(INSANE_REPEAT(emscripten::val, arity, COMMA_VALUE_EXP, 0))>
+    #define EMSCRIPTEN_VOID_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VOID_TYPE_EXP)
+    #define EMSCRIPTEN_VAL_FUNCTOR_TYPE(arity) EMSCRIPTEN_FUNCTOR_TYPE(arity, VAL_TYPE_EXP)
 
-#define __EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT_EXPAND(insaneEnumType, suffix) class_<insaneEnumType##EnumExtensions>(CSTRINGIFY_DEFER(insaneEnumType##EnumExtensions))                                    \
-                                                                               .class_function("ParseString", select_overload<insaneEnumType(const String &)>(&insaneEnumType##EnumExtensions::Parse)) \
-                                                                               .class_function("ParseInt", select_overload<insaneEnumType(const int &)>(&insaneEnumType##EnumExtensions::Parse))       \
-                                                                               .class_function("ToIntegral", &insaneEnumType##EnumExtensions::ToIntegral)                                              \
-                                                                               .class_function("ToString", &insaneEnumType##EnumExtensions::ToString)                                                  \
-                                                                               .class_function("ToIntegralString", &insaneEnumType##EnumExtensions::ToIntegralString)
-#define EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT(insaneEnumType) __EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT_EXPAND(insaneEnumType, EnumExtensions)
+    #define __EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT_EXPAND(insaneEnumType, suffix) class_<insaneEnumType##EnumExtensions>(CSTRINGIFY_DEFER(insaneEnumType##EnumExtensions))                                    \
+                                                                                   .class_function("ParseString", select_overload<insaneEnumType(const String &)>(&insaneEnumType##EnumExtensions::Parse)) \
+                                                                                   .class_function("ParseInt", select_overload<insaneEnumType(const int &)>(&insaneEnumType##EnumExtensions::Parse))       \
+                                                                                   .class_function("ToIntegral", &insaneEnumType##EnumExtensions::ToIntegral)                                              \
+                                                                                   .class_function("ToString", &insaneEnumType##EnumExtensions::ToString)                                                  \
+                                                                                   .class_function("ToIntegralString", &insaneEnumType##EnumExtensions::ToIntegralString)
+    #define EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT(insaneEnumType) __EMSCRIPTEN_ENUM_EXTENSIONS_EXPORT_EXPAND(insaneEnumType, EnumExtensions)
 
-#define USING_NS_EMSCRIPTEN using namespace emscripten
-#define USING_NS_INSANE_EMSCRIPTEN using namespace InsaneIO::Insane::Emscripten
+    #define USING_NS_EMSCRIPTEN using namespace emscripten
+    #define USING_NS_INSANE_EMSCRIPTEN using namespace InsaneIO::Insane::Emscripten
 
-#define EMVAL_GLOBAL emscripten::val::global()
-#define EMVAL_INSANE EMVAL_GLOBAL[INSANE_STRING]
+    #define EMVAL_GLOBAL emscripten::val::global()
+    #define EMVAL_INSANE EMVAL_GLOBAL[INSANE_STRING]
 
 static inline emscripten::val operator"" _valb(unsigned long long value)
 {
@@ -99,7 +99,7 @@ namespace InsaneIO::Insane::Emscripten
         }
     };
 
-    class Operator final
+    class JsOperator final
     {
     private:
         enum class OperatorArityType
@@ -189,18 +189,18 @@ namespace InsaneIO::Insane::Emscripten
             String method = EMPTY_STRING;
             switch (type)
             {
-            case ConsoleMessageType::INFO:
-                method = "info"s;
-                break;
-            case ConsoleMessageType::WARN:
-                method = "warn"s;
-                break;
-            case ConsoleMessageType::ERROR:
-                method = "error"s;
-                break;
-            default:
-                method = "log";
-                break;
+                case ConsoleMessageType::INFO:
+                    method = "info"s;
+                    break;
+                case ConsoleMessageType::WARN:
+                    method = "warn"s;
+                    break;
+                case ConsoleMessageType::ERROR:
+                    method = "error"s;
+                    break;
+                default:
+                    method = "log";
+                    break;
             }
             val::global("console").call<void>(method.c_str(), EmscriptenValManager::Transform(args)...);
         };
@@ -450,7 +450,7 @@ namespace InsaneIO::Insane::Emscripten
         static Emval SetPropertyEmptyObject(EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
         static Emval SetPropertyEmptyArray(EmscriptenVal &object, const String &property, const bool &replaceIfExists = true);
         static Emval SetProperty(EmscriptenVal &object, const String &property, const EmscriptenVal &value, const bool &replaceIfExists = true);
-        static String GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
+        static String GetPropertyName(const String &name, const StdUniquePtr<Cryptography::IHasher> &keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
         template <typename ReturnType,
                   typename... ParamType,
                   typename = typename std::void_t<std::enable_if_t<std::is_same_v<ReturnType, void> ||
@@ -468,16 +468,17 @@ namespace InsaneIO::Insane::Emscripten
                                                                    std::is_same_v<ParamType, String>>>>
         static emscripten::val LoadScriptAsync(const ParamType &scriptpath);
 
-        static void ThrowError(const String &message = "An error has ocurred.");
+        static void ThrowError(const String &message, const Emval &options = Emval::null());
+        static Emval NewError(const String &message, const Emval &options = Emval::null());
     };
 
     class LocalStorage final
     {
     private:
     public:
-        static void SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
-        [[nodiscard]] static EmscriptenVal GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
-        static void RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> & keyHasher = nullptr, const String & keyPrefix = EMPTY_STRING);
+        static void SetItem(const String &key, const String &value, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> &keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
+        [[nodiscard]] static EmscriptenVal GetItem(const String &key, const StdUniquePtr<Cryptography::IEncryptor> &valueEncryptor = nullptr, const StdUniquePtr<Cryptography::IHasher> &keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
+        static void RemoveItem(const String &key, const StdUniquePtr<Cryptography::IHasher> &keyHasher = nullptr, const String &keyPrefix = EMPTY_STRING);
         static void Clear();
         static void RemoveItemsWithKeyPrefix(const String &prefix = EMPTY_STRING);
     };
@@ -546,24 +547,24 @@ namespace InsaneIO::Insane::Emscripten
     public:
         FetchOptions() = default;
         ~FetchOptions() = default;
-        FetchOptions(const FetchOptions & options);
-        void SetRequestMethod(const FetchRequestMethod & requestMethod);
-        void SetResponseType(const FetchResponseType & responseType);
-        void SetMode(const FetchMode & mode);
-        void SetCacheType(const FetchCacheType & cacheType);
-        void SetCredentialsType(const FetchCredentialsType & credentialsType);
-        void SetRedirectType(const FetchRedirectType & redirectType);
-        void SetReferrerPolicy(const FetchReferrerPolicy & referrerPolicy);
-        void SetBody(StdUniquePtr<Emval> && body);
-        void AddHeader(const String & key, const String & value);
-        void RemoveHeader(const String & key);
+        FetchOptions(const FetchOptions &options);
+        void SetRequestMethod(const FetchRequestMethod &requestMethod);
+        void SetResponseType(const FetchResponseType &responseType);
+        void SetMode(const FetchMode &mode);
+        void SetCacheType(const FetchCacheType &cacheType);
+        void SetCredentialsType(const FetchCredentialsType &credentialsType);
+        void SetRedirectType(const FetchRedirectType &redirectType);
+        void SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy);
+        void SetBody(StdUniquePtr<Emval> &&body);
+        void AddHeader(const String &key, const String &value);
+        void RemoveHeader(const String &key);
         void ClearHeaders();
 
         FetchRequestMethod GetRequestMethod() const;
-        FetchResponseType GetResponseType() const ;
-        FetchMode GetMode()const;
+        FetchResponseType GetResponseType() const;
+        FetchMode GetMode() const;
         FetchCacheType GetCacheType() const;
-        FetchCredentialsType GetCredentialsType()const;
+        FetchCredentialsType GetCredentialsType() const;
         FetchRedirectType GetRedirectType() const;
         FetchReferrerPolicy GetReferrerPolicy() const;
         Emval GetBody() const;
@@ -575,7 +576,7 @@ namespace InsaneIO::Insane::Emscripten
         FetchResponseType _responseType = FetchResponseType::Json;
         FetchMode _mode = FetchMode::Cors;
         FetchCacheType _cacheType = FetchCacheType::Default;
-        FetchCredentialsType _credentialsType =  FetchCredentialsType::Same_Origin;
+        FetchCredentialsType _credentialsType = FetchCredentialsType::Same_Origin;
         FetchRedirectType _redirectType = FetchRedirectType::Follow;
         FetchReferrerPolicy _referrerPolicy = FetchReferrerPolicy::No_Referrer_When_Downgrade;
         std::map<String, String> _headers;
@@ -585,10 +586,11 @@ namespace InsaneIO::Insane::Emscripten
     class Fetch
     {
     public:
-
         INSANE_NODISCARD_ATTRIB static Emval SendAsync(const String &url, const FetchOptions &options);
+
     private:
         INSANE_NODISCARD_ATTRIB static Emval ResolveDataAsync(const Emval &fetchResponse, const FetchResponseType &responseType);
+        INSANE_NODISCARD_ATTRIB Emval static CreateResult(const Emval & status, const Emval & data, const Emval &error = Emval::null());
     };
 
 } // namespace Insane::Emscripten
