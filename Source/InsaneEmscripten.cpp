@@ -1064,56 +1064,58 @@ FetchOptions::FetchOptions(const FetchOptions &options)
       _credentialsType(options._credentialsType),
       _redirectType(options._redirectType),
       _referrerPolicy(options._referrerPolicy),
-      _headers(options._headers)
+      _headers(options._headers),
+      _body(options._body)
 {
-    if (options._body)
-    {
-        _body = std::make_unique<Emval>(*options._body);
-    }
-    else
-    {
-        _body.reset();
-    }
+    
 }
 
-void FetchOptions::SetRequestMethod(const FetchRequestMethod &requestMethod)
+FetchOptions& FetchOptions::SetRequestMethod(const FetchRequestMethod &requestMethod)
 {
     _requestMethod = requestMethod;
+    return * this;
 }
 
-void FetchOptions::SetResponseType(const FetchResponseType &responseType)
+FetchOptions& FetchOptions::SetResponseType(const FetchResponseType &responseType)
 {
     _responseType = responseType;
+    return * this;
 }
 
-void FetchOptions::SetMode(const FetchMode &mode)
+FetchOptions& FetchOptions::SetMode(const FetchMode &mode)
 {
     _mode = mode;
+    return * this;
 }
 
-void FetchOptions::SetCacheType(const FetchCacheType &cacheType)
+FetchOptions& FetchOptions::SetCacheType(const FetchCacheType &cacheType)
 {
     _cacheType = cacheType;
+    return * this;
 }
 
-void FetchOptions::SetCredentialsType(const FetchCredentialsType &credentialsType)
+FetchOptions& FetchOptions::SetCredentialsType(const FetchCredentialsType &credentialsType)
 {
     _credentialsType = credentialsType;
+    return * this;
 }
 
-void FetchOptions::SetRedirectType(const FetchRedirectType &redirectType)
+FetchOptions& FetchOptions::SetRedirectType(const FetchRedirectType &redirectType)
 {
     _redirectType = redirectType;
+    return * this;
 }
 
-void FetchOptions::SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy)
+FetchOptions& FetchOptions::SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy)
 {
     _referrerPolicy = referrerPolicy;
+    return *this;
 }
 
-void FetchOptions::SetBody(StdUniquePtr<Emval> &&body)
+FetchOptions& FetchOptions::SetBody(const Emval &body)
 {
-    _body = std::move(body);
+    _body = body;
+    return * this;
 }
 
 void FetchOptions::AddHeader(const String &key, const String &value)
@@ -1168,16 +1170,13 @@ FetchReferrerPolicy FetchOptions::GetReferrerPolicy() const
 
 Emval FetchOptions::GetBody() const
 {
-    return *_body;
+    return _body;
 }
 
 Emval FetchOptions::Build() const
 {
     Emval options = Emval::object();
-    if (_body)
-    {
-        options = Js::SetProperty(options, "body", *_body);
-    }
+    Js::SetProperty(options, "body", _body);
     Js::SetProperty(options, "method", Emval(StringExtensions::ToUpper(FetchRequestMethodEnumExtensions::ToString(_requestMethod))));
     Js::SetProperty(options, "mode", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchModeEnumExtensions::ToString(_mode), "_", "-"))));
     Js::SetProperty(options, "cache", Emval(StringExtensions::ToLower(StringExtensions::Replace(FetchCacheTypeEnumExtensions::ToString(_cacheType), "_", "-"))));

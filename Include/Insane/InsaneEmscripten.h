@@ -548,14 +548,14 @@ namespace InsaneIO::Insane::Emscripten
         FetchOptions() = default;
         ~FetchOptions() = default;
         FetchOptions(const FetchOptions &options);
-        void SetRequestMethod(const FetchRequestMethod &requestMethod);
-        void SetResponseType(const FetchResponseType &responseType);
-        void SetMode(const FetchMode &mode);
-        void SetCacheType(const FetchCacheType &cacheType);
-        void SetCredentialsType(const FetchCredentialsType &credentialsType);
-        void SetRedirectType(const FetchRedirectType &redirectType);
-        void SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy);
-        void SetBody(StdUniquePtr<Emval> &&body);
+        FetchOptions& SetRequestMethod(const FetchRequestMethod &requestMethod);
+        FetchOptions& SetResponseType(const FetchResponseType &responseType);
+        FetchOptions& SetMode(const FetchMode &mode);
+        FetchOptions& SetCacheType(const FetchCacheType &cacheType);
+        FetchOptions& SetCredentialsType(const FetchCredentialsType &credentialsType);
+        FetchOptions& SetRedirectType(const FetchRedirectType &redirectType);
+        FetchOptions& SetReferrerPolicy(const FetchReferrerPolicy &referrerPolicy);
+        FetchOptions& SetBody(const Emval &body);
         void AddHeader(const String &key, const String &value);
         void RemoveHeader(const String &key);
         void ClearHeaders();
@@ -580,7 +580,7 @@ namespace InsaneIO::Insane::Emscripten
         FetchRedirectType _redirectType = FetchRedirectType::Follow;
         FetchReferrerPolicy _referrerPolicy = FetchReferrerPolicy::No_Referrer_When_Downgrade;
         std::map<String, String> _headers;
-        StdUniquePtr<Emval> _body;
+        Emval _body = Emval::null();
     };
 
     class Fetch
